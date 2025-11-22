@@ -1,3 +1,5 @@
+// ============================================
+// src/app/account/logout/page.tsx
 "use client";
 import useAuth from "@/utils/useAuth";
 
@@ -31,6 +33,3 @@ export default function LogoutPage() {
     </div>
   );
 }
-
-
-

@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+-- =====================================================
+-- CREATE ADMIN USER (OPTIONAL - Update with your email)
+-- =====================================================
+-- Uncomment and update with your admin email after first signup:
+-- UPDATE profiles SET role = 'admin' WHERE email = 'your-admin-email@example.com';

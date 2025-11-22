@@ -1,10 +1,24 @@
+// src/components/AnimatedCounter.tsx
 "use client";
+
 import { useEffect, useState, useRef } from "react";
 
-export default function AnimatedCounter({ end, duration = 2000, suffix = "" }) {
+interface AnimatedCounterProps {
+  end: number;
+  duration?: number;
+  suffix?: string;
+  prefix?: string;
+}
+
+export default function AnimatedCounter({ 
+  end, 
+  duration = 2000, 
+  suffix = "",
+  prefix = ""
+}: AnimatedCounterProps) {
   const [count, setCount] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
-  const ref = useRef(null);
+  const ref = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -13,7 +27,7 @@ export default function AnimatedCounter({ end, duration = 2000, suffix = "" }) {
           setIsVisible(true);
         }
       },
-      { threshold: 0.1 },
+      { threshold: 0.1 }
     );
 
     if (ref.current) {
@@ -30,8 +44,8 @@ export default function AnimatedCounter({ end, duration = 2000, suffix = "" }) {
   useEffect(() => {
     if (!isVisible) return;
 
-    let startTime;
-    const animate = (currentTime) => {
+    let startTime: number;
+    const animate = (currentTime: number) => {
       if (!startTime) startTime = currentTime;
       const progress = Math.min((currentTime - startTime) / duration, 1);
 
@@ -48,11 +62,9 @@ export default function AnimatedCounter({ end, duration = 2000, suffix = "" }) {
 
   return (
     <span ref={ref}>
+      {prefix}
       {count.toLocaleString()}
       {suffix}
     </span>
   );
 }
-
-
-

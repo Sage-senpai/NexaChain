@@ -7,7 +7,7 @@
  * not attempt to edit it. Modifying it will have no effect on your project as it is controlled by our system.
  * Do not import @auth/create or @auth/create anywhere else or it may break. This is an internal package.
  */
-import CreateAuth from "@auth/create"
+import NextAuth from "next-auth"
 import Credentials from "@auth/core/providers/credentials"
 import { Pool } from '@neondatabase/serverless'
 import { hash, verify } from 'argon2'
@@ -258,7 +258,8 @@ const pool = new Pool({
     });
 const adapter = Adapter(pool);
 
-export const { auth } = CreateAuth({
+export const { auth } = NextAuth({
+
   providers: [Credentials({
   id: 'credentials-signin',
   name: 'Credentials Sign in',

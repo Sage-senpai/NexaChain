@@ -1,15 +1,16 @@
+// src/app/account/signup/page.tsx
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import useAuth from "@/utils/useAuth";
 
 export default function SignUpPage() {
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [referralCode, setReferralCode] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [fullName, setFullName] = useState<string>("");
+  const [phone, setPhone] = useState<string>("");
+  const [referralCode, setReferralCode] = useState<string>("");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -21,7 +22,7 @@ export default function SignUpPage() {
 
   const { signUpWithCredentials } = useAuth();
 
-  const onSubmit = async (e) => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -45,28 +46,22 @@ export default function SignUpPage() {
         callbackUrl: "/onboarding",
         redirect: true,
       });
-    } catch (err) {
-      const errorMessages = {
-        OAuthSignin:
-          "Couldn't start sign-up. Please try again or use a different method.",
+    } catch (err: any) {
+      const errorMessages: Record<string, string> = {
+        OAuthSignin: "Couldn't start sign-up. Please try again or use a different method.",
         OAuthCallback: "Sign-up failed after redirecting. Please try again.",
-        OAuthCreateAccount:
-          "Couldn't create an account with this sign-up option. Try another one.",
-        EmailCreateAccount:
-          "This email can't be used. It may already be registered.",
+        OAuthCreateAccount: "Couldn't create an account with this sign-up option. Try another one.",
+        EmailCreateAccount: "This email can't be used. It may already be registered.",
         Callback: "Something went wrong during sign-up. Please try again.",
-        OAuthAccountNotLinked:
-          "This account is linked to a different sign-in method. Try using that instead.",
-        CredentialsSignin:
-          "Invalid email or password. If you already have an account, try signing in instead.",
+        OAuthAccountNotLinked: "This account is linked to a different sign-in method. Try using that instead.",
+        CredentialsSignin: "Invalid email or password. If you already have an account, try signing in instead.",
         AccessDenied: "You don't have permission to sign up.",
-        Configuration:
-          "Sign-up isn't working right now. Please try again later.",
+        Configuration: "Sign-up isn't working right now. Please try again later.",
         Verification: "Your sign-up link has expired. Request a new one.",
       };
 
       setError(
-        errorMessages[err.message] || "Something went wrong. Please try again.",
+        errorMessages[err.message] || "Something went wrong. Please try again."
       );
       setLoading(false);
     }
@@ -98,7 +93,7 @@ export default function SignUpPage() {
               name="fullName"
               type="text"
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setFullName(e.target.value)}
               placeholder="Enter your full name"
               className="w-full px-4 py-3 rounded-lg border-2 border-[#D4AF37]/20 bg-white dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#D4AF37] focus:outline-none transition-colors"
             />
@@ -113,7 +108,7 @@ export default function SignUpPage() {
               name="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
               placeholder="Enter your email"
               className="w-full px-4 py-3 rounded-lg border-2 border-[#D4AF37]/20 bg-white dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#D4AF37] focus:outline-none transition-colors"
             />
@@ -127,7 +122,7 @@ export default function SignUpPage() {
               name="phone"
               type="tel"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
               placeholder="Enter your phone number"
               className="w-full px-4 py-3 rounded-lg border-2 border-[#D4AF37]/20 bg-white dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#D4AF37] focus:outline-none transition-colors"
             />
@@ -142,7 +137,7 @@ export default function SignUpPage() {
               name="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
               placeholder="Create a strong password"
               className="w-full px-4 py-3 rounded-lg border-2 border-[#D4AF37]/20 bg-white dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#D4AF37] focus:outline-none transition-colors"
             />
@@ -185,6 +180,3 @@ export default function SignUpPage() {
     </div>
   );
 }
-
-
-

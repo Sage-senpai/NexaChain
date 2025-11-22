@@ -1,5 +1,7 @@
+// src/app/api/investments/route.ts
 import sql from "@/app/api/utils/sql";
 import { auth } from "@/auth";
+import { ActiveInvestment } from "@/types/database.types";
 
 // Get user's active investments
 export async function GET() {
@@ -11,7 +13,7 @@ export async function GET() {
 
     const userId = session.user.id;
 
-    const investments = await sql`
+    const investments = await sql<ActiveInvestment[]>`
       SELECT i.*, p.name as plan_name, p.emoji as plan_emoji, 
              p.daily_roi, p.duration_days
       FROM active_investments i
@@ -26,6 +28,3 @@ export async function GET() {
     return Response.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
-
-
-

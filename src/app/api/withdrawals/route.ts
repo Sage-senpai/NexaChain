@@ -1,11 +1,14 @@
+// src/app/api/withdrawals/route.ts
 import sql from "@/app/api/utils/sql";
 import { auth } from "@/auth";
+import { NextRequest } from "next/server";
+import { Withdrawal } from "@/types/database.types";
 
 // Create a new withdrawal request
-export async function POST(request) {
+export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -15,13 +18,13 @@ export async function POST(request) {
     if (!amount || !crypto_type || !wallet_address) {
       return Response.json(
         { error: "Missing required fields" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Get user's profile and check balance
-    const [profile] = await sql`
-      SELECT id, account_balance FROM profiles WHERE email = ${session.user.email}
+    const [profile] = await sql<Array<{ id: string; account_balance: string }>>`
+      SELECT id, account_balance FROM profiles WHERE id = ${session.user.id}
     `;
 
     if (!profile) {
@@ -29,19 +32,21 @@ export async function POST(request) {
     }
 
     const numAmount = parseFloat(amount);
-    if (numAmount > parseFloat(profile.account_balance)) {
+    const balance = parseFloat(profile.account_balance);
+    
+    if (numAmount > balance) {
       return Response.json({ error: "Insufficient balance" }, { status: 400 });
     }
 
     if (numAmount < 10) {
       return Response.json(
         { error: "Minimum withdrawal is $10" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Create withdrawal request
-    const [withdrawal] = await sql`
+    const [withdrawal] = await sql<Withdrawal[]>`
       INSERT INTO withdrawals (user_id, amount, crypto_type, wallet_address)
       VALUES (${profile.id}, ${numAmount}, ${crypto_type}, ${wallet_address})
       RETURNING *
@@ -58,19 +63,19 @@ export async function POST(request) {
 export async function GET() {
   try {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const [profile] = await sql`
-      SELECT id FROM profiles WHERE email = ${session.user.email}
+    const [profile] = await sql<Array<{ id: string }>>`
+      SELECT id FROM profiles WHERE id = ${session.user.id}
     `;
 
     if (!profile) {
       return Response.json({ error: "Profile not found" }, { status: 404 });
     }
 
-    const withdrawals = await sql`
+    const withdrawals = await sql<Withdrawal[]>`
       SELECT * FROM withdrawals
       WHERE user_id = ${profile.id}
       ORDER BY created_at DESC
@@ -82,6 +87,3 @@ export async function GET() {
     return Response.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
-
-
-

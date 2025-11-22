@@ -1,31 +1,50 @@
+// src/app/onboarding/page.tsx
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import useUser from "@/utils/useUser";
+
+interface OnboardingFormData {
+  phone: string;
+  city: string;
+  state: string;
+  country: string;
+  referralCode: string;
+}
 
 export default function OnboardingPage() {
   const { data: user, loading: userLoading } = useUser();
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [success, setSuccess] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const [phone, setPhone] = useState("");
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
-  const [country, setCountry] = useState("Nigeria");
-  const [referralCode, setReferralCode] = useState("");
+  const [formData, setFormData] = useState<OnboardingFormData>({
+    phone: "",
+    city: "",
+    state: "",
+    country: "Nigeria",
+    referralCode: "",
+  });
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const pendingPhone = localStorage.getItem("pendingPhone");
       const pendingReferralCode = localStorage.getItem("pendingReferralCode");
 
-      if (pendingPhone && !phone) setPhone(pendingPhone);
-      if (pendingReferralCode && !referralCode)
-        setReferralCode(pendingReferralCode);
+      if (pendingPhone && !formData.phone) {
+        setFormData(prev => ({ ...prev, phone: pendingPhone }));
+      }
+      if (pendingReferralCode && !formData.referralCode) {
+        setFormData(prev => ({ ...prev, referralCode: pendingReferralCode }));
+      }
     }
-  }, [phone, referralCode]);
+  }, []);
 
-  const handleSubmit = async (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -35,11 +54,11 @@ export default function OnboardingPage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          phone,
-          city,
-          state,
-          country,
-          referredBy: referralCode || null,
+          phone: formData.phone,
+          city: formData.city,
+          state: formData.state,
+          country: formData.country,
+          referredBy: formData.referralCode || null,
         }),
       });
 
@@ -118,8 +137,9 @@ export default function OnboardingPage() {
               </label>
               <input
                 type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
                 placeholder="Enter your phone number"
                 className="w-full px-4 py-3 rounded-lg border-2 border-[#D4AF37]/20 bg-white dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#D4AF37] focus:outline-none transition-colors"
               />
@@ -131,8 +151,9 @@ export default function OnboardingPage() {
               </label>
               <input
                 type="text"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
+                name="city"
+                value={formData.city}
+                onChange={handleChange}
                 placeholder="Enter your city"
                 className="w-full px-4 py-3 rounded-lg border-2 border-[#D4AF37]/20 bg-white dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#D4AF37] focus:outline-none transition-colors"
               />
@@ -146,8 +167,9 @@ export default function OnboardingPage() {
               </label>
               <input
                 type="text"
-                value={state}
-                onChange={(e) => setState(e.target.value)}
+                name="state"
+                value={formData.state}
+                onChange={handleChange}
                 placeholder="Enter your state"
                 className="w-full px-4 py-3 rounded-lg border-2 border-[#D4AF37]/20 bg-white dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#D4AF37] focus:outline-none transition-colors"
               />
@@ -159,8 +181,9 @@ export default function OnboardingPage() {
               </label>
               <input
                 type="text"
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
+                name="country"
+                value={formData.country}
+                onChange={handleChange}
                 placeholder="Enter your country"
                 className="w-full px-4 py-3 rounded-lg border-2 border-[#D4AF37]/20 bg-white dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#D4AF37] focus:outline-none transition-colors"
               />
@@ -193,6 +216,3 @@ export default function OnboardingPage() {
     </div>
   );
 }
-
-
-
