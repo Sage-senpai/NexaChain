@@ -1,14 +1,25 @@
+// src/app/api/admin/deposits/[id]/reject/route.ts
 import sql from "@/app/api/utils/sql";
 import { auth } from "@/auth";
+import { NextRequest } from "next/server";
 
-export async function POST(request, { params }) {
+interface RouteParams {
+  params: {
+    id: string;
+  };
+}
+
+export async function POST(
+  request: NextRequest,
+  { params }: RouteParams
+) {
   try {
     const session = await auth();
     if (!session?.user) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const [admin] = await sql`
+    const [admin] = await sql<Array<{ id: string; role: string }>>`
       SELECT id, role FROM profiles WHERE email = ${session.user.email}
     `;
 
@@ -30,6 +41,3 @@ export async function POST(request, { params }) {
     return Response.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
-
-
-

@@ -1,14 +1,25 @@
+// src/app/api/admin/deposits/[id]/approve/route.ts
 import sql from "@/app/api/utils/sql";
 import { auth } from "@/auth";
+import { NextRequest } from "next/server";
 
-export async function POST(request, { params }) {
+interface RouteParams {
+  params: {
+    id: string;
+  };
+}
+
+export async function POST(
+  request: NextRequest,
+  { params }: RouteParams
+) {
   try {
     const session = await auth();
     if (!session?.user) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const [admin] = await sql`
+    const [admin] = await sql<Array<{ id: string; role: string }>>`
       SELECT id, role FROM profiles WHERE email = ${session.user.email}
     `;
 
@@ -19,7 +30,12 @@ export async function POST(request, { params }) {
     const depositId = params.id;
 
     // Get deposit details
-    const [deposit] = await sql`
+    const [deposit] = await sql<Array<{
+      id: string;
+      user_id: string;
+      plan_id: string;
+      amount: string;
+    }>>`
       SELECT * FROM deposits WHERE id = ${depositId}
     `;
 
@@ -35,7 +51,12 @@ export async function POST(request, { params }) {
     `;
 
     // Get plan details
-    const [plan] = await sql`
+    const [plan] = await sql<Array<{
+      id: string;
+      duration_days: number;
+      total_roi: string;
+      referral_bonus_percent: string;
+    }>>`
       SELECT * FROM investment_plans WHERE id = ${deposit.plan_id}
     `;
 
@@ -74,12 +95,44 @@ export async function POST(request, { params }) {
       )
     `;
 
+    // Check if user was referred and credit referrer
+    const [userProfile] = await sql<Array<{ referred_by: string | null }>>`
+      SELECT referred_by FROM profiles WHERE id = ${deposit.user_id}
+    `;
+
+    if (userProfile?.referred_by) {
+      const bonusAmount = parseFloat(deposit.amount) * (parseFloat(plan.referral_bonus_percent) / 100);
+      
+      // Credit referrer's account
+      await sql`
+        UPDATE profiles
+        SET 
+          account_balance = account_balance + ${bonusAmount},
+          total_referral_bonus = total_referral_bonus + ${bonusAmount}
+        WHERE id = ${userProfile.referred_by}
+      `;
+
+      // Create referral record
+      await sql`
+        INSERT INTO referrals (referrer_id, referred_id, bonus_amount, status)
+        VALUES (${userProfile.referred_by}, ${deposit.user_id}, ${bonusAmount}, 'paid')
+        ON CONFLICT (referrer_id, referred_id) 
+        DO UPDATE SET bonus_amount = referrals.bonus_amount + ${bonusAmount}
+      `;
+
+      // Create transaction for referrer
+      await sql`
+        INSERT INTO transactions (user_id, type, amount, description, reference_id)
+        VALUES (
+          ${userProfile.referred_by}, 'referral_bonus', ${bonusAmount}, 
+          'Referral bonus from deposit', ${depositId}
+        )
+      `;
+    }
+
     return Response.json({ success: true });
   } catch (err) {
     console.error("POST /api/admin/deposits/[id]/approve error", err);
     return Response.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
-
-
-
