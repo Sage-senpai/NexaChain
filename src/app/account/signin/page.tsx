@@ -2,33 +2,17 @@
 "use client";
 
 import { useState, FormEvent } from "react";
-import useAuth from "@/utils/useAuth";
+import { createClient } from "@/lib/supabase/client";
 import { motion } from "framer-motion";
-
-interface ErrorMessages {
-  [key: string]: string;
-}
+import { useRouter } from "next/navigation";
 
 export default function SignInPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-
-  const { signInWithCredentials } = useAuth();
-
-  const errorMessages: ErrorMessages = {
-    OAuthSignin: "Couldn't start sign-in. Please try again or use a different method.",
-    OAuthCallback: "Sign-in failed after redirecting. Please try again.",
-    OAuthCreateAccount: "Couldn't create an account with this sign-in method. Try another option.",
-    EmailCreateAccount: "This email can't be used to create an account. It may already exist.",
-    Callback: "Something went wrong during sign-in. Please try again.",
-    OAuthAccountNotLinked: "This account is linked to a different sign-in method. Try using that instead.",
-    CredentialsSignin: "Incorrect email or password. Try again or reset your password.",
-    AccessDenied: "You don't have permission to sign in.",
-    Configuration: "Sign-in isn't working right now. Please try again later.",
-    Verification: "Your sign-in link has expired. Request a new one.",
-  };
+  const router = useRouter();
+  const supabase = createClient();
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -42,15 +26,22 @@ export default function SignInPage() {
     }
 
     try {
-      await signInWithCredentials({
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
-        callbackUrl: "/dashboard",
-        redirect: true,
       });
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      setError(errorMessages[errorMessage] || "Something went wrong. Please try again.");
+
+      if (signInError) {
+        throw signInError;
+      }
+
+      if (data.session) {
+        router.push("/dashboard");
+        router.refresh();
+      }
+    } catch (err: any) {
+      console.error("Sign in error:", err);
+      setError(err.message || "Invalid email or password. Please try again.");
       setLoading(false);
     }
   };
@@ -121,6 +112,15 @@ export default function SignInPage() {
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>
+
+          <div className="text-center">
+            <a
+              href="/account/forgot-password"
+              className="text-sm text-[#D4AF37] hover:text-[#FFD700] font-semibold"
+            >
+              Forgot password?
+            </a>
+          </div>
 
           <p className="text-center text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">
             Don&apos;t have an account?{" "}

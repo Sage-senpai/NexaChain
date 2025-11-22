@@ -1,7 +1,10 @@
 // src/app/account/signup/page.tsx
 "use client";
+
 import { useState, useEffect, FormEvent, ChangeEvent } from "react";
-import useAuth from "@/utils/useAuth";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null);
@@ -11,6 +14,8 @@ export default function SignUpPage() {
   const [fullName, setFullName] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
   const [referralCode, setReferralCode] = useState<string>("");
+  const router = useRouter();
+  const supabase = createClient();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -19,8 +24,6 @@ export default function SignUpPage() {
       if (ref) setReferralCode(ref);
     }
   }, []);
-
-  const { signUpWithCredentials } = useAuth();
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -33,44 +36,71 @@ export default function SignUpPage() {
       return;
     }
 
-    try {
-      // Store additional data in localStorage for onboarding
-      if (phone) localStorage.setItem("pendingPhone", phone);
-      if (referralCode)
-        localStorage.setItem("pendingReferralCode", referralCode);
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      setLoading(false);
+      return;
+    }
 
-      await signUpWithCredentials({
+    try {
+      // Sign up with Supabase Auth
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
-        name: fullName,
-        callbackUrl: "/onboarding",
-        redirect: true,
+        options: {
+          data: {
+            full_name: fullName,
+            phone: phone || null,
+          },
+        },
       });
-    } catch (err: any) {
-      const errorMessages: Record<string, string> = {
-        OAuthSignin: "Couldn't start sign-up. Please try again or use a different method.",
-        OAuthCallback: "Sign-up failed after redirecting. Please try again.",
-        OAuthCreateAccount: "Couldn't create an account with this sign-up option. Try another one.",
-        EmailCreateAccount: "This email can't be used. It may already be registered.",
-        Callback: "Something went wrong during sign-up. Please try again.",
-        OAuthAccountNotLinked: "This account is linked to a different sign-in method. Try using that instead.",
-        CredentialsSignin: "Invalid email or password. If you already have an account, try signing in instead.",
-        AccessDenied: "You don't have permission to sign up.",
-        Configuration: "Sign-up isn't working right now. Please try again later.",
-        Verification: "Your sign-up link has expired. Request a new one.",
-      };
 
-      setError(
-        errorMessages[err.message] || "Something went wrong. Please try again."
-      );
+      if (signUpError) {
+        throw signUpError;
+      }
+
+      if (data.user) {
+        // Create profile with referral code if provided
+        const { error: profileError } = await supabase.from("profiles").insert({
+          id: data.user.id,
+          email: data.user.email!,
+          full_name: fullName,
+          phone: phone || null,
+          referral_code: `NXC${Date.now().toString(36).toUpperCase()}${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+          referred_by: referralCode || null,
+        });
+
+        if (profileError) {
+          console.error("Profile creation error:", profileError);
+        }
+
+        // Store additional data for onboarding
+        if (phone) localStorage.setItem("pendingPhone", phone);
+        if (referralCode) localStorage.setItem("pendingReferralCode", referralCode);
+
+        // Redirect to onboarding
+        router.push("/onboarding");
+        router.refresh();
+      }
+    } catch (err: any) {
+      console.error("Sign up error:", err);
+      const errorMessage = err.message || "Something went wrong. Please try again.";
+      
+      if (errorMessage.includes("already registered")) {
+        setError("This email is already registered. Please sign in instead.");
+      } else {
+        setError(errorMessage);
+      }
       setLoading(false);
     }
   };
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-[#F8F9FA] to-white dark:from-[#0A0A0A] dark:to-[#1A1A1A] p-4">
-      <form
-        noValidate
+      <motion.form
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
         onSubmit={onSubmit}
         className="w-full max-w-md rounded-2xl bg-white dark:bg-[#1A1A1A] p-8 shadow-2xl border-2 border-[#D4AF37]/20"
       >
@@ -93,7 +123,9 @@ export default function SignUpPage() {
               name="fullName"
               type="text"
               value={fullName}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setFullName(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setFullName(e.target.value)
+              }
               placeholder="Enter your full name"
               className="w-full px-4 py-3 rounded-lg border-2 border-[#D4AF37]/20 bg-white dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#D4AF37] focus:outline-none transition-colors"
             />
@@ -108,7 +140,9 @@ export default function SignUpPage() {
               name="email"
               type="email"
               value={email}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setEmail(e.target.value)
+              }
               placeholder="Enter your email"
               className="w-full px-4 py-3 rounded-lg border-2 border-[#D4AF37]/20 bg-white dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#D4AF37] focus:outline-none transition-colors"
             />
@@ -122,7 +156,9 @@ export default function SignUpPage() {
               name="phone"
               type="tel"
               value={phone}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setPhone(e.target.value)
+              }
               placeholder="Enter your phone number"
               className="w-full px-4 py-3 rounded-lg border-2 border-[#D4AF37]/20 bg-white dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#D4AF37] focus:outline-none transition-colors"
             />
@@ -137,8 +173,10 @@ export default function SignUpPage() {
               name="password"
               type="password"
               value={password}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-              placeholder="Create a strong password"
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setPassword(e.target.value)
+              }
+              placeholder="Create a strong password (min. 6 characters)"
               className="w-full px-4 py-3 rounded-lg border-2 border-[#D4AF37]/20 bg-white dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#D4AF37] focus:outline-none transition-colors"
             />
           </div>
@@ -153,15 +191,19 @@ export default function SignUpPage() {
           )}
 
           {error && (
-            <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3 text-sm text-red-600 dark:text-red-400">
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3 text-sm text-red-600 dark:text-red-400"
+            >
               {error}
-            </div>
+            </motion.div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white text-lg font-semibold rounded-lg hover:shadow-2xl transition-all disabled:opacity-50"
+            className="w-full py-3 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white text-lg font-semibold rounded-lg hover:shadow-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Creating Account..." : "Sign Up"}
           </button>
@@ -176,7 +218,7 @@ export default function SignUpPage() {
             </a>
           </p>
         </div>
-      </form>
+      </motion.form>
     </div>
   );
 }
