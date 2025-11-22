@@ -1,12 +1,12 @@
 // src/app/api/admin/withdrawals/[id]/reject/route.ts
-import sql from "@/app/api/utils/sql";
-import { auth } from "@/auth";
+// ==========================================
+import { createClient } from "@/lib/supabase/server";
 import { NextRequest } from "next/server";
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function POST(
@@ -14,26 +14,34 @@ export async function POST(
   { params }: RouteParams
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const supabase = await createClient();
+    
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const [admin] = await sql<Array<{ id: string; role: string }>>`
-      SELECT id, role FROM profiles WHERE email = ${session.user.email}
-    `;
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
 
-    if (!admin || admin.role !== "admin") {
+    if (!profile || profile.role !== "admin") {
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const withdrawalId = params.id;
+    const { id: withdrawalId } = await params;
 
-    await sql`
-      UPDATE withdrawals
-      SET status = 'rejected', processed_by = ${admin.id}, processed_at = NOW()
-      WHERE id = ${withdrawalId}
-    `;
+    await supabase
+      .from("withdrawals")
+      .update({
+        status: "rejected",
+        processed_by: user.id,
+        processed_at: new Date().toISOString(),
+      })
+      .eq("id", withdrawalId);
 
     return Response.json({ success: true });
   } catch (err) {

@@ -1,12 +1,11 @@
 // src/app/api/admin/deposits/[id]/approve/route.ts
-import sql from "@/app/api/utils/sql";
-import { auth } from "@/auth";
+import { createClient } from "@/lib/supabase/server";
 import { NextRequest } from "next/server";
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function POST(
@@ -14,51 +13,58 @@ export async function POST(
   { params }: RouteParams
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const supabase = await createClient();
+    
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const [admin] = await sql<Array<{ id: string; role: string }>>`
-      SELECT id, role FROM profiles WHERE email = ${session.user.email}
-    `;
+    // Check if user is admin
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
 
-    if (!admin || admin.role !== "admin") {
+    if (!profile || profile.role !== "admin") {
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const depositId = params.id;
+    const { id: depositId } = await params;
 
     // Get deposit details
-    const [deposit] = await sql<Array<{
-      id: string;
-      user_id: string;
-      plan_id: string;
-      amount: string;
-    }>>`
-      SELECT * FROM deposits WHERE id = ${depositId}
-    `;
+    const { data: deposit, error: depositError } = await supabase
+      .from("deposits")
+      .select("*")
+      .eq("id", depositId)
+      .single();
 
-    if (!deposit) {
+    if (depositError || !deposit) {
       return Response.json({ error: "Deposit not found" }, { status: 404 });
     }
 
-    // Update deposit status
-    await sql`
-      UPDATE deposits
-      SET status = 'confirmed', confirmed_by = ${admin.id}, confirmed_at = NOW()
-      WHERE id = ${depositId}
-    `;
-
     // Get plan details
-    const [plan] = await sql<Array<{
-      id: string;
-      duration_days: number;
-      total_roi: string;
-      referral_bonus_percent: string;
-    }>>`
-      SELECT * FROM investment_plans WHERE id = ${deposit.plan_id}
-    `;
+    const { data: plan } = await supabase
+      .from("investment_plans")
+      .select("*")
+      .eq("id", deposit.plan_id)
+      .single();
+
+    if (!plan) {
+      return Response.json({ error: "Plan not found" }, { status: 404 });
+    }
+
+    // Update deposit status
+    await supabase
+      .from("deposits")
+      .update({
+        status: "confirmed",
+        confirmed_by: user.id,
+        confirmed_at: new Date().toISOString(),
+      })
+      .eq("id", depositId);
 
     // Create active investment
     const endDate = new Date();
@@ -67,67 +73,68 @@ export async function POST(
     const expectedReturn =
       parseFloat(deposit.amount) * (1 + parseFloat(plan.total_roi) / 100);
 
-    await sql`
-      INSERT INTO active_investments (
-        user_id, plan_id, deposit_id, principal_amount, 
-        current_value, expected_return, start_date, end_date
-      )
-      VALUES (
-        ${deposit.user_id}, ${deposit.plan_id}, ${depositId}, 
-        ${deposit.amount}, ${deposit.amount}, ${expectedReturn}, 
-        NOW(), ${endDate.toISOString()}
-      )
-    `;
+    await supabase.from("active_investments").insert({
+      user_id: deposit.user_id,
+      plan_id: deposit.plan_id,
+      deposit_id: depositId,
+      principal_amount: deposit.amount,
+      current_value: deposit.amount,
+      expected_return: expectedReturn,
+      start_date: new Date().toISOString(),
+      end_date: endDate.toISOString(),
+    });
 
     // Update user profile
-    await sql`
-      UPDATE profiles
-      SET total_invested = total_invested + ${deposit.amount}
-      WHERE id = ${deposit.user_id}
-    `;
+    await supabase.rpc("increment_total_invested", {
+      user_id: deposit.user_id,
+      amount: parseFloat(deposit.amount),
+    });
 
     // Create transaction record
-    await sql`
-      INSERT INTO transactions (user_id, type, amount, description, reference_id)
-      VALUES (
-        ${deposit.user_id}, 'deposit', ${deposit.amount}, 
-        'Deposit confirmed', ${depositId}
-      )
-    `;
+    await supabase.from("transactions").insert({
+      user_id: deposit.user_id,
+      type: "deposit",
+      amount: deposit.amount,
+      description: "Deposit confirmed",
+      reference_id: depositId,
+    });
 
     // Check if user was referred and credit referrer
-    const [userProfile] = await sql<Array<{ referred_by: string | null }>>`
-      SELECT referred_by FROM profiles WHERE id = ${deposit.user_id}
-    `;
+    const { data: userProfile } = await supabase
+      .from("profiles")
+      .select("referred_by")
+      .eq("id", deposit.user_id)
+      .single();
 
     if (userProfile?.referred_by) {
-      const bonusAmount = parseFloat(deposit.amount) * (parseFloat(plan.referral_bonus_percent) / 100);
-      
-      // Credit referrer's account
-      await sql`
-        UPDATE profiles
-        SET 
-          account_balance = account_balance + ${bonusAmount},
-          total_referral_bonus = total_referral_bonus + ${bonusAmount}
-        WHERE id = ${userProfile.referred_by}
-      `;
+      const bonusAmount =
+        parseFloat(deposit.amount) *
+        (parseFloat(plan.referral_bonus_percent) / 100);
 
-      // Create referral record
-      await sql`
-        INSERT INTO referrals (referrer_id, referred_id, bonus_amount, status)
-        VALUES (${userProfile.referred_by}, ${deposit.user_id}, ${bonusAmount}, 'paid')
-        ON CONFLICT (referrer_id, referred_id) 
-        DO UPDATE SET bonus_amount = referrals.bonus_amount + ${bonusAmount}
-      `;
+      // Credit referrer's account
+      await supabase.rpc("credit_referral_bonus", {
+        referrer_id: userProfile.referred_by,
+        bonus_amount: bonusAmount,
+      });
+
+      // Create/update referral record
+      await supabase
+        .from("referrals")
+        .upsert({
+          referrer_id: userProfile.referred_by,
+          referred_id: deposit.user_id,
+          bonus_amount: bonusAmount,
+          status: "paid",
+        });
 
       // Create transaction for referrer
-      await sql`
-        INSERT INTO transactions (user_id, type, amount, description, reference_id)
-        VALUES (
-          ${userProfile.referred_by}, 'referral_bonus', ${bonusAmount}, 
-          'Referral bonus from deposit', ${depositId}
-        )
-      `;
+      await supabase.from("transactions").insert({
+        user_id: userProfile.referred_by,
+        type: "referral_bonus",
+        amount: bonusAmount,
+        description: "Referral bonus from deposit",
+        reference_id: depositId,
+      });
     }
 
     return Response.json({ success: true });

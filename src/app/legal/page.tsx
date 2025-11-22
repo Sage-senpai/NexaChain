@@ -201,7 +201,7 @@ export default function LegalPage() {
                   <br />
                   Email: legal@nexachain.com
                   <br />
-                  Address: Lagos, Nigeria
+                  Address: Wales, United Kingdom
                 </p>
               </section>
             </div>

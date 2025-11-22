@@ -1,14 +1,16 @@
 // src/app/api/withdrawals/route.ts
-import sql from "@/app/api/utils/sql";
-import { auth } from "@/auth";
+// ==========================================
+import { createClient } from "@/lib/supabase/server";
 import { NextRequest } from "next/server";
-import { Withdrawal } from "@/types/database.types";
 
 // Create a new withdrawal request
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const supabase = await createClient();
+    
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -23,16 +25,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user's profile and check balance
-    const [profile] = await sql<Array<{ id: string; account_balance: string }>>`
-      SELECT id, account_balance FROM profiles WHERE id = ${session.user.id}
-    `;
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id, account_balance")
+      .eq("id", user.id)
+      .single();
 
     if (!profile) {
       return Response.json({ error: "Profile not found" }, { status: 404 });
     }
 
     const numAmount = parseFloat(amount);
-    const balance = parseFloat(profile.account_balance);
+    const balance = parseFloat(profile.account_balance.toString());
     
     if (numAmount > balance) {
       return Response.json({ error: "Insufficient balance" }, { status: 400 });
@@ -46,11 +50,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Create withdrawal request
-    const [withdrawal] = await sql<Withdrawal[]>`
-      INSERT INTO withdrawals (user_id, amount, crypto_type, wallet_address)
-      VALUES (${profile.id}, ${numAmount}, ${crypto_type}, ${wallet_address})
-      RETURNING *
-    `;
+    const { data: withdrawal, error: withdrawalError } = await supabase
+      .from("withdrawals")
+      .insert({
+        user_id: user.id,
+        amount: numAmount,
+        crypto_type,
+        wallet_address,
+      })
+      .select()
+      .single();
+
+    if (withdrawalError) {
+      console.error("Withdrawal creation error:", withdrawalError);
+      return Response.json({ error: "Failed to create withdrawal" }, { status: 500 });
+    }
 
     return Response.json({ withdrawal });
   } catch (err) {
@@ -62,26 +76,26 @@ export async function POST(request: NextRequest) {
 // Get user's withdrawal history
 export async function GET() {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const supabase = await createClient();
+    
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const [profile] = await sql<Array<{ id: string }>>`
-      SELECT id FROM profiles WHERE id = ${session.user.id}
-    `;
+    const { data: withdrawals, error } = await supabase
+      .from("withdrawals")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
 
-    if (!profile) {
-      return Response.json({ error: "Profile not found" }, { status: 404 });
+    if (error) {
+      console.error("Withdrawals fetch error:", error);
+      return Response.json({ error: "Failed to fetch withdrawals" }, { status: 500 });
     }
 
-    const withdrawals = await sql<Withdrawal[]>`
-      SELECT * FROM withdrawals
-      WHERE user_id = ${profile.id}
-      ORDER BY created_at DESC
-    `;
-
-    return Response.json({ withdrawals });
+    return Response.json({ withdrawals: withdrawals || [] });
   } catch (err) {
     console.error("GET /api/withdrawals error", err);
     return Response.json({ error: "Internal Server Error" }, { status: 500 });

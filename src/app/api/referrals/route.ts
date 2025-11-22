@@ -1,32 +1,29 @@
-// ============================================
 // src/app/api/referrals/route.ts
-import sql from "@/app/api/utils/sql";
-import { auth } from "@/auth";
-import { Referral } from "@/types/database.types";
+// ==========================================
+import { createClient } from "@/lib/supabase/server";
 
-// Get user's referral history
 export async function GET() {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const supabase = await createClient();
+    
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const [profile] = await sql<Array<{ id: string }>>`
-      SELECT id FROM profiles WHERE id = ${session.user.id}
-    `;
+    const { data: referrals, error } = await supabase
+      .from("referrals")
+      .select("*")
+      .eq("referrer_id", user.id)
+      .order("created_at", { ascending: false });
 
-    if (!profile) {
-      return Response.json({ error: "Profile not found" }, { status: 404 });
+    if (error) {
+      console.error("Referrals fetch error:", error);
+      return Response.json({ error: "Failed to fetch referrals" }, { status: 500 });
     }
 
-    const referrals = await sql<Referral[]>`
-      SELECT * FROM referrals
-      WHERE referrer_id = ${profile.id}
-      ORDER BY created_at DESC
-    `;
-
-    return Response.json({ referrals });
+    return Response.json({ referrals: referrals || [] });
   } catch (err) {
     console.error("GET /api/referrals error", err);
     return Response.json({ error: "Internal Server Error" }, { status: 500 });

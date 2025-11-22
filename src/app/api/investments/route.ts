@@ -1,28 +1,46 @@
 // src/app/api/investments/route.ts
-import sql from "@/app/api/utils/sql";
-import { auth } from "@/auth";
-import { ActiveInvestment } from "@/types/database.types";
+// ==========================================
+import { createClient } from "@/lib/supabase/server";
 
-// Get user's active investments
 export async function GET() {
   try {
-    const session = await auth();
-    if (!session || !session.user?.id) {
+    const supabase = await createClient();
+    
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = session.user.id;
+    const { data: investments, error } = await supabase
+      .from("active_investments")
+      .select(`
+        *,
+        investment_plans (
+          name,
+          emoji,
+          daily_roi,
+          duration_days
+        )
+      `)
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .order("created_at", { ascending: false });
 
-    const investments = await sql<ActiveInvestment[]>`
-      SELECT i.*, p.name as plan_name, p.emoji as plan_emoji, 
-             p.daily_roi, p.duration_days
-      FROM active_investments i
-      LEFT JOIN investment_plans p ON i.plan_id = p.id
-      WHERE i.user_id = ${userId} AND i.status = 'active'
-      ORDER BY i.created_at DESC
-    `;
+    if (error) {
+      console.error("Investments fetch error:", error);
+      return Response.json({ error: "Failed to fetch investments" }, { status: 500 });
+    }
 
-    return Response.json({ investments });
+    const transformedInvestments = investments?.map(inv => ({
+      ...inv,
+      plan_name: inv.investment_plans?.name,
+      plan_emoji: inv.investment_plans?.emoji,
+      daily_roi: inv.investment_plans?.daily_roi,
+      duration_days: inv.investment_plans?.duration_days,
+    })) || [];
+
+    return Response.json({ investments: transformedInvestments });
   } catch (err) {
     console.error("GET /api/investments error", err);
     return Response.json({ error: "Internal Server Error" }, { status: 500 });

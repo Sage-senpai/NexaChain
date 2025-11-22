@@ -22,7 +22,7 @@ export default function TestimonialsModal({ isOpen, onClose }: TestimonialsModal
   const testimonials: Testimonial[] = [
     {
       name: "Sarah Johnson",
-      location: "Lagos, Nigeria",
+      location: "Manchester, United Kingdom",
       comment:
         "Nexachain transformed my financial future. I've earned consistent returns for 6 months now! The platform is easy to use and the support team is always responsive.",
       avatar: "SJ",
@@ -38,7 +38,7 @@ export default function TestimonialsModal({ isOpen, onClose }: TestimonialsModal
     },
     {
       name: "Amara Okafor",
-      location: "Abuja, Nigeria",
+      location: "Wales, United Kingdom",
       comment:
         "Started with the Beginner Plan and now I'm on VIP. The ROI is exactly as promised! I've referred 5 friends and earned great bonuses.",
       avatar: "AO",
@@ -62,7 +62,7 @@ export default function TestimonialsModal({ isOpen, onClose }: TestimonialsModal
     },
     {
       name: "James Wilson",
-      location: "London, UK",
+      location: "London, United Kingdom",
       comment:
         "As someone who's tried multiple investment platforms, Nexachain stands out for its transparency and consistent returns. The daily ROI is genuine.",
       avatar: "JW",

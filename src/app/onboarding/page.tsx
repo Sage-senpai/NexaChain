@@ -21,7 +21,7 @@ export default function OnboardingPage() {
     phone: "",
     city: "",
     state: "",
-    country: "Nigeria",
+    country: "United Kingdom",
     referralCode: "",
   });
 
@@ -170,7 +170,7 @@ export default function OnboardingPage() {
                 name="state"
                 value={formData.state}
                 onChange={handleChange}
-                placeholder="Enter your state"
+                placeholder="Enter your state or province"
                 className="w-full px-4 py-3 rounded-lg border-2 border-[#D4AF37]/20 bg-white dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#D4AF37] focus:outline-none transition-colors"
               />
             </div>

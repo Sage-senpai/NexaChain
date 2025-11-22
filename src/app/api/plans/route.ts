@@ -1,17 +1,23 @@
 // src/app/api/plans/route.ts
-import sql from "@/app/api/utils/sql";
-import { InvestmentPlan } from "@/types/database.types";
+// ==========================================
+import { createClient } from "@/lib/supabase/server";
 
-// Get all active investment plans
 export async function GET() {
   try {
-    const plans = await sql<InvestmentPlan[]>`
-      SELECT * FROM investment_plans 
-      WHERE is_active = true 
-      ORDER BY min_amount ASC
-    `;
+    const supabase = await createClient();
+    
+    const { data: plans, error } = await supabase
+      .from("investment_plans")
+      .select("*")
+      .eq("is_active", true)
+      .order("min_amount", { ascending: true });
 
-    return Response.json({ plans });
+    if (error) {
+      console.error("Plans fetch error:", error);
+      return Response.json({ error: "Failed to fetch plans" }, { status: 500 });
+    }
+
+    return Response.json({ plans: plans || [] });
   } catch (err) {
     console.error("GET /api/plans error", err);
     return Response.json({ error: "Internal Server Error" }, { status: 500 });
