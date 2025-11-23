@@ -89,7 +89,7 @@ export async function PUT(request: NextRequest) {
           wallet_address: walletAddress || null,
           city: city || null,
           state: state || null,
-          country: country || "Nigeria",
+          country: country || "United Kingdom",
           referral_code: generatedReferralCode,
           referred_by: referrerUserId,
         })

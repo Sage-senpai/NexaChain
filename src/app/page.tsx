@@ -455,14 +455,14 @@ export default function LandingPage() {
               <Phone className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
               <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">Phone</h3>
               <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                +1 9989754
+                +44 7853383650
               </p>
             </div>
             <div className="text-center p-6 bg-white dark:bg-[#0A0A0A] rounded-xl border-2 border-[#D4AF37]/20">
               <MapPin className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
               <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">Location</h3>
               <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                Houston, Texas
+               United Kingdom
               </p>
             </div>
           </div>
