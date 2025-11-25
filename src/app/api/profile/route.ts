@@ -2,6 +2,16 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest } from "next/server";
 
+interface UpdateProfileData {
+  phone?: string | null;
+  walletAddress?: string | null;
+  city?: string | null;
+  state?: string | null;
+  country?: string;
+  referralCode?: string;
+  referredBy?: string | null;
+}
+
 // Get user profile
 export async function GET() {
   try {
@@ -42,7 +52,7 @@ export async function PUT(request: NextRequest) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
+    const body = await request.json() as UpdateProfileData;
     const {
       phone,
       walletAddress,
@@ -51,7 +61,7 @@ export async function PUT(request: NextRequest) {
       country,
       referralCode,
       referredBy,
-    } = body || {};
+    } = body;
 
     // Check if profile exists
     const { data: existingProfile } = await supabase
@@ -112,7 +122,7 @@ export async function PUT(request: NextRequest) {
       return Response.json({ profile: newProfile });
     } else {
       // Update existing profile
-      const updateData: any = {};
+      const updateData: Record<string, string | null> = {};
       
       if (phone !== undefined) updateData.phone = phone;
       if (walletAddress !== undefined) updateData.wallet_address = walletAddress;

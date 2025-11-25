@@ -1,8 +1,12 @@
+// src/app/dashboard/page.tsx
 "use client";
 import { useState, useEffect } from "react";
 import useUser from "@/utils/useUser";
+import useAdmin from "@/utils/useAdmin";
 import LoadingScreen from "@/components/LoadingScreen";
 import AnimatedCounter from "@/components/AnimatedCounter";
+import LiveCryptoGraph from "@/components/LiveCryptoGraph"; // ← Import the new component
+import { createClient } from "@/lib/supabase/client";
 import {
   Wallet,
   TrendingUp,
@@ -10,14 +14,60 @@ import {
   Users,
   Copy,
   Check,
+  ChevronDown,
+  ChevronUp,
+  LogOut,
+  Shield,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+interface CryptoPrice {
+  symbol: string;
+  name: string;
+  price: number;
+  change: number;
+}
 
 export default function DashboardPage() {
   const { data: user, loading: userLoading } = useUser();
-  const [profile, setProfile] = useState(null);
+  const { isAdmin } = useAdmin();
+  const [profile, setProfile] = useState<any>(null);
   const [investments, setInvestments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [showCryptoFeed, setShowCryptoFeed] = useState(true);
+  const [cryptoPrices, setCryptoPrices] = useState<CryptoPrice[]>([]);
+  const supabase = createClient();
+
+  // Initialize crypto prices
+  useEffect(() => {
+    const initialPrices = [
+      { symbol: "BTC", name: "Bitcoin", price: 45230.5, change: 2.4 },
+      { symbol: "ETH", name: "Ethereum", price: 2850.75, change: 3.1 },
+      { symbol: "USDT", name: "Tether", price: 1.0, change: 0.01 },
+      { symbol: "BNB", name: "Binance Coin", price: 312.45, change: 1.8 },
+      { symbol: "SOL", name: "Solana", price: 125.3, change: 5.2 },
+      { symbol: "XRP", name: "Ripple", price: 0.62, change: -0.8 },
+      { symbol: "ADA", name: "Cardano", price: 0.58, change: 1.2 },
+      { symbol: "DOGE", name: "Dogecoin", price: 0.08, change: 4.5 },
+    ];
+    setCryptoPrices(initialPrices);
+  }, []);
+
+  // Simulate price updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCryptoPrices((prev) =>
+        prev.map((crypto) => ({
+          ...crypto,
+          price: crypto.price * (1 + (Math.random() - 0.5) * 0.002),
+          change: (Math.random() - 0.5) * 10,
+        }))
+      );
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,6 +97,15 @@ export default function DashboardPage() {
       fetchData();
     }
   }, [user]);
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      window.location.href = "/";
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+  };
 
   const copyReferralLink = () => {
     if (profile?.referral_code) {
@@ -98,7 +157,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8F9FA] to-white dark:from-[#0A0A0A] dark:to-[#1A1A1A]">
       {/* Header */}
-      <nav className="border-b border-[#D4AF37]/20 bg-white/80 dark:bg-[#0A0A0A]/80 backdrop-blur-md">
+      <nav className="border-b border-[#D4AF37]/20 bg-white/80 dark:bg-[#0A0A0A]/80 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <span className="text-2xl font-bold bg-gradient-to-r from-[#D4AF37] to-[#FFD700] bg-clip-text text-transparent">
@@ -106,18 +165,108 @@ export default function DashboardPage() {
             </span>
             <div className="flex items-center gap-4">
               <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                Welcome, {user.name || user.email}
+                Welcome, {profile?.full_name || user.email?.split("@")[0]}
               </span>
-              <a
-                href="/account/logout"
-                className="px-4 py-2 border-2 border-[#D4AF37]/20 text-[#000000] dark:text-[#FFFFFF] rounded-lg hover:bg-[#D4AF37]/10 transition-all"
+              {isAdmin && (
+                <a
+                  href="/admin"
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white rounded-lg hover:shadow-lg transition-all"
+                >
+                  <Shield className="w-4 h-4" />
+                  Admin Panel
+                </a>
+              )}
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-4 py-2 border-2 border-[#D4AF37]/20 text-[#000000] dark:text-[#FFFFFF] rounded-lg hover:bg-[#D4AF37]/10 transition-all"
               >
+                <LogOut className="w-4 h-4" />
                 Logout
-              </a>
+              </button>
             </div>
           </div>
         </div>
       </nav>
+
+      {/* Live Crypto Feed - Collapsible Ticker */}
+      <div className="border-b border-[#D4AF37]/20 bg-[#1A1A1A] dark:bg-[#0A0A0A]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <button
+            onClick={() => setShowCryptoFeed(!showCryptoFeed)}
+            className="w-full py-2 flex items-center justify-between text-[#D4AF37] hover:text-[#FFD700] transition-colors"
+          >
+            <span className="text-sm font-semibold">Live Market Ticker</span>
+            {showCryptoFeed ? (
+              <ChevronUp className="w-5 h-5" />
+            ) : (
+              <ChevronDown className="w-5 h-5" />
+            )}
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {showCryptoFeed && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden"
+            >
+              <div className="py-4 overflow-hidden">
+                <div className="relative">
+                  <div className="flex animate-scroll whitespace-nowrap hover:pause-animation">
+                    {[...cryptoPrices, ...cryptoPrices].map((crypto, index) => (
+                      <div
+                        key={`${crypto.symbol}-${index}`}
+                        className="inline-flex items-center space-x-2 px-6 py-2"
+                      >
+                        <span className="text-[#D4AF37] font-bold">
+                          {crypto.symbol}
+                        </span>
+                        <span className="text-white font-mono">
+                          $
+                          {crypto.price.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: crypto.price < 1 ? 4 : 2,
+                          })}
+                        </span>
+                        <span
+                          className={`text-sm ${
+                            crypto.change >= 0
+                              ? "text-[#10B981]"
+                              : "text-[#EF4444]"
+                          }`}
+                        >
+                          {crypto.change >= 0 ? "+" : ""}
+                          {crypto.change.toFixed(2)}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <style jsx>{`
+        @keyframes scroll {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
+        }
+        .animate-scroll {
+          animation: scroll 60s linear infinite;
+        }
+        .animate-scroll:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Grid */}
@@ -125,8 +274,11 @@ export default function DashboardPage() {
           {stats.map((stat, index) => {
             const Icon = stat.icon;
             return (
-              <div
+              <motion.div
                 key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
                 className="bg-white dark:bg-[#1A1A1A] p-6 rounded-2xl border-2 border-[#D4AF37]/20 hover:border-[#D4AF37] transition-all"
               >
                 <div className="flex items-center justify-between mb-4">
@@ -139,9 +291,14 @@ export default function DashboardPage() {
                 <div className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">
                   {stat.label}
                 </div>
-              </div>
+              </motion.div>
             );
           })}
+        </div>
+
+        {/* LIVE CRYPTO GRAPH - NEW ADDITION */}
+        <div className="mb-8">
+          <LiveCryptoGraph />
         </div>
 
         {/* Quick Actions */}
@@ -156,7 +313,7 @@ export default function DashboardPage() {
             </p>
           </a>
           <a
-            href="/dashboard/withdraw"
+            href="/dashboard/withdrawal"
             className="bg-white dark:bg-[#1A1A1A] p-6 rounded-2xl border-2 border-[#D4AF37]/20 hover:border-[#D4AF37] transition-all"
           >
             <h3 className="text-xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">
@@ -167,7 +324,7 @@ export default function DashboardPage() {
             </p>
           </a>
           <a
-            href="/dashboard/referrals"
+            href="/dashboard/referral"
             className="bg-white dark:bg-[#1A1A1A] p-6 rounded-2xl border-2 border-[#D4AF37]/20 hover:border-[#D4AF37] transition-all"
           >
             <h3 className="text-xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">
@@ -226,7 +383,7 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="grid md:grid-cols-2 gap-4">
-              {investments.map((inv) => (
+              {investments.map((inv: any) => (
                 <div
                   key={inv.id}
                   className="p-4 rounded-lg bg-[#F8F9FA] dark:bg-[#0A0A0A] border border-[#D4AF37]/20"
@@ -248,7 +405,7 @@ export default function DashboardPage() {
                         Principal:
                       </span>
                       <span className="font-semibold text-[#000000] dark:text-[#FFFFFF]">
-                        ${inv.principal_amount}
+                        ${parseFloat(inv.principal_amount).toFixed(2)}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -256,7 +413,7 @@ export default function DashboardPage() {
                         Current Value:
                       </span>
                       <span className="font-semibold text-[#000000] dark:text-[#FFFFFF]">
-                        ${inv.current_value}
+                        ${parseFloat(inv.current_value).toFixed(2)}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -264,7 +421,7 @@ export default function DashboardPage() {
                         Expected Return:
                       </span>
                       <span className="font-semibold text-[#10B981]">
-                        ${inv.expected_return}
+                        ${parseFloat(inv.expected_return).toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -277,6 +434,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-
-

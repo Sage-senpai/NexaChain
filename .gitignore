@@ -46,3 +46,46 @@ next-env.d.ts
 -- =====================================================
 -- Uncomment and update with your admin email after first signup:
 -- UPDATE profiles SET role = 'admin' WHERE email = 'your-admin-email@example.com';
+SELECT set_admin_role('your-admin-email@example.com');
+
+
+
+-- ============================================
+-- USAGE EXAMPLES
+-- ============================================
+
+-- Example 1: Add a single admin
+-- SELECT * FROM set_admin_role('admin1@example.com');
+
+-- Example 2: Add multiple admins at once
+-- SELECT * FROM set_multiple_admins(ARRAY[
+--   'admin1@example.com',
+--   'admin2@example.com',
+--   'admin3@example.com'
+-- ]);
+
+-- Example 3: List all current admins
+-- SELECT * FROM list_all_admins();
+
+-- Example 4: Remove admin role from someone
+-- SELECT * FROM remove_admin_role('user@example.com');
+
+-- Example 5: Sync all admin roles (repair mismatches)
+-- SELECT * FROM sync_all_admin_roles();
+
+-- ============================================
+-- QUICK SETUP: Add your admins here
+-- ============================================
+
+-- Method 1: Add admins one by one
+SELECT * FROM set_admin_role('your-first-admin@example.com');
+SELECT * FROM set_admin_role('your-second-admin@example.com');
+SELECT * FROM set_admin_role('your-third-admin@example.com');
+
+-- Method 2: Add multiple admins at once (RECOMMENDED)
+-- SELECT * FROM set_multiple_admins(ARRAY[
+--   'admin1@yourcompany.com',
+--   'admin2@yourcompany.com',
+--   'admin3@yourcompany.com',
+--   'admin4@yourcompany.com'
+-- ]);

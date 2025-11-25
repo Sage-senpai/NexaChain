@@ -237,7 +237,7 @@ export default function FAQPage() {
             Our support team is available 24/7 to help you
           </p>
           <a
-            href="mailto:support@nexachain.com"
+            href="mailto:NexaBChain@Gmail.com"
             className="inline-block px-8 py-3 bg-white text-[#D4AF37] font-semibold rounded-lg hover:shadow-lg transition-all"
           >
             Contact Support

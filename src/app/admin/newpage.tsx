@@ -465,7 +465,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-       {/* Tabs */}
+        {/* Tabs */}
         <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border-2 border-[#D4AF37]/20 overflow-hidden">
           <div className="flex border-b border-[#D4AF37]/20">
             <button
@@ -484,22 +484,27 @@ export default function AdminDashboard() {
               onClick={() => setActiveTab("users")}
               className={`flex-1 px-6 py-4 font-semibold transition-all ${activeTab === "users" ? "bg-[#D4AF37] text-white" : "text-[#4A4A4A] dark:text-[#B8B8B8] hover:bg-[#D4AF37]/10"}`}
             >
-              Users & ROI
-            </button>
-            <button
-              onClick={() => setActiveTab("testdata")}
-              className={`flex-1 px-6 py-4 font-semibold transition-all ${
-                activeTab === "testdata" 
-                  ? "bg-[#D4AF37] text-white" 
-                  : "text-[#4A4A4A] dark:text-[#B8B8B8] hover:bg-[#D4AF37]/10"
-              }`}
-            >
-              🧪 Test Data
+              Users & ROI Management
             </button>
           </div>
+           <button
+  onClick={() => setActiveTab("testdata")}
+  className={`flex-1 px-6 py-4 font-semibold transition-all ${
+    activeTab === "testdata" 
+      ? "bg-[#D4AF37] text-white" 
+      : "text-[#4A4A4A] dark:text-[#B8B8B8] hover:bg-[#D4AF37]/10"
+  }`}
+>
+  🧪 Test Data
+</button>
+
+{activeTab === "testdata" && (
+  <TestDataGenerator />
+)}
+
 
           <div className="p-6">
-            {/* DEPOSITS TAB */}
+            {/* DEPOSITS TAB - Keep existing code */}
             {activeTab === "deposits" && (
               <div className="overflow-x-auto">
                 {filteredDeposits.length === 0 ? (
@@ -508,98 +513,13 @@ export default function AdminDashboard() {
                   </p>
                 ) : (
                   <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-[#D4AF37]/20">
-                        <th className="text-left py-3 px-4 font-semibold text-[#4A4A4A] dark:text-[#B8B8B8]">User</th>
-                        <th className="text-left py-3 px-4 font-semibold text-[#4A4A4A] dark:text-[#B8B8B8]">Date</th>
-                        <th className="text-left py-3 px-4 font-semibold text-[#4A4A4A] dark:text-[#B8B8B8]">Amount</th>
-                        <th className="text-left py-3 px-4 font-semibold text-[#4A4A4A] dark:text-[#B8B8B8]">Crypto</th>
-                        <th className="text-left py-3 px-4 font-semibold text-[#4A4A4A] dark:text-[#B8B8B8]">Plan</th>
-                        <th className="text-left py-3 px-4 font-semibold text-[#4A4A4A] dark:text-[#B8B8B8]">Proof</th>
-                        <th className="text-left py-3 px-4 font-semibold text-[#4A4A4A] dark:text-[#B8B8B8]">Status</th>
-                        <th className="text-left py-3 px-4 font-semibold text-[#4A4A4A] dark:text-[#B8B8B8]">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredDeposits.map((deposit) => (
-                        <motion.tr
-                          key={deposit.id}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="border-b border-[#D4AF37]/10 hover:bg-[#D4AF37]/5"
-                        >
-                          <td className="py-3 px-4 text-[#000000] dark:text-[#FFFFFF]">
-                            {deposit.user_email || 'N/A'}
-                          </td>
-                          <td className="py-3 px-4 text-[#000000] dark:text-[#FFFFFF]">
-                            {new Date(deposit.created_at).toLocaleDateString()}
-                          </td>
-                          <td className="py-3 px-4 font-semibold text-[#000000] dark:text-[#FFFFFF]">
-                            ${parseFloat(deposit.amount.toString()).toFixed(2)}
-                          </td>
-                          <td className="py-3 px-4 text-[#000000] dark:text-[#FFFFFF]">
-                            {deposit.crypto_type}
-                          </td>
-                          <td className="py-3 px-4 text-[#000000] dark:text-[#FFFFFF]">
-                            {deposit.plan_emoji} {deposit.plan_name}
-                          </td>
-                          <td className="py-3 px-4">
-                            {deposit.proof_image_url ? (
-                              <button
-                                onClick={() => setSelectedImage(deposit.proof_image_url!)}
-                                className="flex items-center gap-2 text-[#D4AF37] hover:underline"
-                              >
-                                <Eye className="w-4 h-4" />
-                                View
-                              </button>
-                            ) : (
-                              <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">No proof</span>
-                            )}
-                          </td>
-                          <td className="py-3 px-4">
-                            <span
-                              className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                                deposit.status === "confirmed"
-                                  ? "bg-[#10B981]/10 text-[#10B981]"
-                                  : deposit.status === "rejected"
-                                    ? "bg-red-100 dark:bg-red-900/20 text-red-600"
-                                    : "bg-[#D4AF37]/10 text-[#D4AF37]"
-                              }`}
-                            >
-                              {deposit.status}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            {deposit.status === "pending" && (
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={() => handleApproveDeposit(deposit.id)}
-                                  disabled={actionLoading}
-                                  className="p-2 bg-[#10B981] text-white rounded-lg hover:bg-[#059669] transition-all disabled:opacity-50"
-                                  title="Approve"
-                                >
-                                  <CheckCircle className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() => handleRejectDeposit(deposit.id)}
-                                  disabled={actionLoading}
-                                  className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all disabled:opacity-50"
-                                  title="Reject"
-                                >
-                                  <XCircle className="w-4 h-4" />
-                                </button>
-                              </div>
-                            )}
-                          </td>
-                        </motion.tr>
-                      ))}
-                    </tbody>
+                    {/* Keep your existing deposits table */}
                   </table>
                 )}
               </div>
             )}
 
-            {/* WITHDRAWALS TAB */}
+            {/* WITHDRAWALS TAB - Keep existing code */}
             {activeTab === "withdrawals" && (
               <div className="overflow-x-auto">
                 {filteredWithdrawals.length === 0 ? (
@@ -608,84 +528,13 @@ export default function AdminDashboard() {
                   </p>
                 ) : (
                   <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-[#D4AF37]/20">
-                        <th className="text-left py-3 px-4 font-semibold text-[#4A4A4A] dark:text-[#B8B8B8]">User</th>
-                        <th className="text-left py-3 px-4 font-semibold text-[#4A4A4A] dark:text-[#B8B8B8]">Date</th>
-                        <th className="text-left py-3 px-4 font-semibold text-[#4A4A4A] dark:text-[#B8B8B8]">Amount</th>
-                        <th className="text-left py-3 px-4 font-semibold text-[#4A4A4A] dark:text-[#B8B8B8]">Crypto</th>
-                        <th className="text-left py-3 px-4 font-semibold text-[#4A4A4A] dark:text-[#B8B8B8]">Wallet Address</th>
-                        <th className="text-left py-3 px-4 font-semibold text-[#4A4A4A] dark:text-[#B8B8B8]">Status</th>
-                        <th className="text-left py-3 px-4 font-semibold text-[#4A4A4A] dark:text-[#B8B8B8]">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredWithdrawals.map((withdrawal) => (
-                        <motion.tr
-                          key={withdrawal.id}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="border-b border-[#D4AF37]/10 hover:bg-[#D4AF37]/5"
-                        >
-                          <td className="py-3 px-4 text-[#000000] dark:text-[#FFFFFF]">
-                            {withdrawal.user_email || 'N/A'}
-                          </td>
-                          <td className="py-3 px-4 text-[#000000] dark:text-[#FFFFFF]">
-                            {new Date(withdrawal.created_at).toLocaleDateString()}
-                          </td>
-                          <td className="py-3 px-4 font-semibold text-[#000000] dark:text-[#FFFFFF]">
-                            ${parseFloat(withdrawal.amount.toString()).toFixed(2)}
-                          </td>
-                          <td className="py-3 px-4 text-[#000000] dark:text-[#FFFFFF]">
-                            {withdrawal.crypto_type}
-                          </td>
-                          <td className="py-3 px-4 font-mono text-xs text-[#000000] dark:text-[#FFFFFF]">
-                            {withdrawal.wallet_address.substring(0, 10)}...{withdrawal.wallet_address.substring(withdrawal.wallet_address.length - 8)}
-                          </td>
-                          <td className="py-3 px-4">
-                            <span
-                              className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                                withdrawal.status === "approved" || withdrawal.status === "completed"
-                                  ? "bg-[#10B981]/10 text-[#10B981]"
-                                  : withdrawal.status === "rejected"
-                                    ? "bg-red-100 dark:bg-red-900/20 text-red-600"
-                                    : "bg-[#D4AF37]/10 text-[#D4AF37]"
-                              }`}
-                            >
-                              {withdrawal.status}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            {withdrawal.status === "pending" && (
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={() => handleApproveWithdrawal(withdrawal.id)}
-                                  disabled={actionLoading}
-                                  className="p-2 bg-[#10B981] text-white rounded-lg hover:bg-[#059669] transition-all disabled:opacity-50"
-                                  title="Approve & Deduct Balance"
-                                >
-                                  <CheckCircle className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() => handleRejectWithdrawal(withdrawal.id)}
-                                  disabled={actionLoading}
-                                  className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all disabled:opacity-50"
-                                  title="Reject"
-                                >
-                                  <XCircle className="w-4 h-4" />
-                                </button>
-                              </div>
-                            )}
-                          </td>
-                        </motion.tr>
-                      ))}
-                    </tbody>
+                    {/* Keep your existing withdrawals table */}
                   </table>
                 )}
               </div>
             )}
 
-            {/* USERS TAB */}
+            {/* USERS TAB - With Search & Filter */}
             {activeTab === "users" && (
               <div className="space-y-6">
                 <div className="bg-[#FEF3C7] dark:bg-[#78350F]/20 border border-[#FCD34D] dark:border-[#78350F] p-4 rounded-lg mb-6">
@@ -705,163 +554,10 @@ export default function AdminDashboard() {
                 ) : (
                   filteredUsers.map((userData) => (
                     <div key={userData.id} className="border-2 border-[#D4AF37]/20 rounded-xl p-6 hover:border-[#D4AF37]/50 transition-all">
-                      {/* User Header */}
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-4">
-                          <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#FFD700] flex items-center justify-center text-white text-2xl font-bold">
-                            {userData.full_name ? userData.full_name.charAt(0).toUpperCase() : userData.email.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-bold text-[#000000] dark:text-[#FFFFFF]">
-                              {userData.full_name || 'No name'}
-                            </h3>
-                            <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">{userData.email}</p>
-                            <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">
-                              {userData.city && userData.country ? `${userData.city}, ${userData.country}` : 'Location not set'}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-[#D4AF37] mb-1">
-                            ${parseFloat(userData.account_balance.toString()).toFixed(2)}
-                          </div>
-                          <div className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">Available Balance</div>
-                        </div>
-                      </div>
-
-                      {/* User Stats */}
-                      <div className="grid grid-cols-3 gap-4 mb-4 p-4 bg-[#F8F9FA] dark:bg-[#0A0A0A] rounded-lg">
-                        <div className="text-center">
-                          <div className="text-lg font-bold text-[#000000] dark:text-[#FFFFFF]">
-                            {userData.active_investments?.length || 0}
-                          </div>
-                          <div className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8]">Active Investments</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-lg font-bold text-[#10B981]">
-                            ${userData.active_investments?.reduce((sum, inv) => sum + parseFloat(inv.current_value), 0).toFixed(2) || '0.00'}
-                          </div>
-                          <div className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8]">Total Portfolio</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-lg font-bold text-[#3B82F6]">
-                            ${userData.active_investments?.reduce((sum, inv) => sum + parseFloat(inv.principal_amount), 0).toFixed(2) || '0.00'}
-                          </div>
-                          <div className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8]">Total Invested</div>
-                        </div>
-                      </div>
-
-                      {/* Active Investments */}
-                      {userData.active_investments && userData.active_investments.length > 0 ? (
-                        <div className="space-y-3">
-                          <h4 className="font-semibold text-[#000000] dark:text-[#FFFFFF] mb-2">Active Investments:</h4>
-                          {userData.active_investments.map((investment) => (
-                            <div key={investment.id} className="border border-[#D4AF37]/20 rounded-lg p-4 bg-white dark:bg-[#0A0A0A]">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-2xl">{investment.investment_plans?.emoji}</span>
-                                  <div>
-                                    <h5 className="font-semibold text-[#000000] dark:text-[#FFFFFF]">
-                                      {investment.investment_plans?.name}
-                                    </h5>
-                                    <p className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8]">
-                                      Started {new Date(investment.start_date).toLocaleDateString()}
-                                    </p>
-                                  </div>
-                                </div>
-                                <button
-                                  onClick={() => openCreditModal(investment, userData)}
-                                  className="px-4 py-2 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2"
-                                >
-                                  <Plus className="w-4 h-4" />
-                                  Credit ROI
-                                </button>
-                              </div>
-                              <div className="grid grid-cols-3 gap-4 text-sm">
-                                <div>
-                                  <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">Principal:</span>
-                                  <div className="font-semibold text-[#000000] dark:text-[#FFFFFF]">
-                                    ${parseFloat(investment.principal_amount).toFixed(2)}
-                                  </div>
-                                </div>
-                                <div>
-                                  <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">Current Value:</span>
-                                  <div className="font-semibold text-[#10B981]">
-                                    ${parseFloat(investment.current_value).toFixed(2)}
-                                  </div>
-                                </div>
-                                <div>
-                                  <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">Profit:</span>
-                                  <div className="font-semibold text-[#D4AF37]">
-                                    +${(parseFloat(investment.current_value) - parseFloat(investment.principal_amount)).toFixed(2)}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-4 text-[#4A4A4A] dark:text-[#B8B8B8] bg-[#F8F9FA] dark:bg-[#0A0A0A] rounded-lg">
-                          No active investments
-                        </div>
-                      )}
+                      {/* Keep your existing user card code */}
                     </div>
                   ))
                 )}
-              </div>
-            )}
-
-            {/* TEST DATA TAB */}
-            {activeTab === "testdata" && (
-              <div className="bg-white dark:bg-[#1A1A1A] rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-3 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#FFD700]">
-                    <TrendingUp className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF]">
-                      Test Data Generator
-                    </h2>
-                    <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">
-                      Quickly populate test accounts with realistic data
-                    </p>
-                  </div>
-                </div>
-
-                <div className="bg-[#FEF3C7] dark:bg-[#78350F]/20 border border-[#FCD34D] dark:border-[#78350F] rounded-lg p-4">
-                  <h4 className="font-bold text-[#92400E] dark:text-[#FCD34D] mb-2">
-                    💡 Quick Start
-                  </h4>
-                  <ol className="text-sm text-[#92400E] dark:text-[#FCD34D] space-y-1 list-decimal list-inside">
-                    <li>Open browser console (F12)</li>
-                    <li>Make sure you're logged in as admin</li>
-                    <li>Paste this command:</li>
-                  </ol>
-                  <div className="mt-3 p-3 bg-[#000000] rounded-lg overflow-x-auto">
-                    <code className="text-[#10B981] text-xs font-mono block whitespace-pre">
-{`fetch('/api/admin/test-data', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    email: 'testbot001@test.com',
-    scenario: 'active_investor'
-  })
-}).then(r => r.json()).then(console.log);`}
-                    </code>
-                  </div>
-                  <p className="text-xs text-[#92400E] dark:text-[#FCD34D] mt-3 mb-3">
-                    ℹ️ <strong>Available Scenarios:</strong>
-                  </p>
-                  <ul className="text-xs text-[#92400E] dark:text-[#FCD34D] space-y-1 ml-4">
-                    <li>• <strong>'new_user'</strong> - 1 pending deposit</li>
-                    <li>• <strong>'active_investor'</strong> - 2 investments + $500 balance</li>
-                    <li>• <strong>'experienced_trader'</strong> - 4 investments + withdrawals</li>
-                    <li>• <strong>'vip_whale'</strong> - 3 large investments + $15k balance</li>
-                  </ul>
-                  <p className="text-xs text-[#92400E] dark:text-[#FCD34D] mt-3">
-                    🗑️ <strong>To clear data:</strong> Replace <code className="bg-black/20 px-1 rounded">POST</code> with <code className="bg-black/20 px-1 rounded">DELETE</code> and remove the body.
-                  </p>
-                </div>
               </div>
             )}
           </div>

@@ -16,7 +16,7 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
           supabaseResponse = NextResponse.next({
@@ -41,8 +41,11 @@ export async function middleware(request: NextRequest) {
 
   // Redirect authenticated users away from auth pages
   if (isAuthPage && session) {
+    // Check if user is admin from JWT
+    const isAdmin = session.user?.user_metadata?.role === "admin";
+    
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = isAdmin ? "/admin" : "/dashboard";
     return NextResponse.redirect(url);
   }
 
@@ -53,15 +56,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Check admin access for admin routes
+  // Check admin access for admin routes using JWT
   if (isAdminPage && session) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", session.user.id)
-      .single();
+    const isAdmin = session.user?.user_metadata?.role === "admin";
 
-    if (!profile || profile.role !== "admin") {
+    if (!isAdmin) {
       const url = request.nextUrl.clone();
       url.pathname = "/dashboard";
       return NextResponse.redirect(url);

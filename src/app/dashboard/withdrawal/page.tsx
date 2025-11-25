@@ -1,5 +1,6 @@
+// src/app/dashboard/withdrawal/page.tsx
 "use client";
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 import useUser from "@/utils/useUser";
 import LoadingScreen from "@/components/LoadingScreen";
 import { ArrowLeft, Wallet, Check } from "lucide-react";
@@ -13,7 +14,7 @@ export default function WithdrawPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!amount || !walletAddress) {
@@ -53,7 +54,8 @@ export default function WithdrawPage() {
       }, 3000);
     } catch (err) {
       console.error("Error submitting withdrawal:", err);
-      setError(err.message || "Failed to submit withdrawal. Please try again.");
+      const errorMessage = err instanceof Error ? err.message : "Failed to submit withdrawal. Please try again.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -212,6 +214,3 @@ export default function WithdrawPage() {
     </div>
   );
 }
-
-
-

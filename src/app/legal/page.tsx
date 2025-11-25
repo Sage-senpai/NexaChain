@@ -199,7 +199,7 @@ export default function LegalPage() {
                 <p className="text-[#4A4A4A] dark:text-[#B8B8B8] leading-relaxed">
                   For questions about these terms, contact us at:
                   <br />
-                  Email: legal@nexachain.com
+                  Email: NexaBChain@Gmail.com
                   <br />
                   Address: Wales, United Kingdom
                 </p>
@@ -209,7 +209,7 @@ export default function LegalPage() {
             <div className="prose dark:prose-invert max-w-none">
               <h2 className="text-3xl font-bold text-[#D4AF37] mb-6">Privacy Policy</h2>
               <p className="text-[#4A4A4A] dark:text-[#B8B8B8] mb-4">
-                Last Updated: November 22, 2025
+                Last Updated: March 22, 2025
               </p>
 
               <section className="mb-8">
@@ -324,10 +324,10 @@ export default function LegalPage() {
                 <p className="text-[#4A4A4A] dark:text-[#B8B8B8] leading-relaxed">
                   For privacy-related inquiries:
                   <br />
-                  Email: privacy@nexachain.com
+                  Email: NexaBChain@Gmail.com
                   <br />
                   Data Protection Officer: dpo@nexachain.com
-                </p>
+                </p> 
               </section>
             </div>
           )}

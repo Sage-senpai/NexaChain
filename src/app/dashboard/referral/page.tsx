@@ -1,3 +1,4 @@
+// src/app/dashboard/referral/page.tsx
 "use client";
 import { useState, useEffect } from "react";
 import useUser from "@/utils/useUser";
@@ -5,10 +6,21 @@ import LoadingScreen from "@/components/LoadingScreen";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import { ArrowLeft, Users, Copy, Check, Gift } from "lucide-react";
 
+interface Profile {
+  referral_code?: string;
+}
+
+interface Referral {
+  id: string;
+  bonus_amount: string | number;
+  status: string;
+  created_at: string;
+}
+
 export default function ReferralsPage() {
   const { data: user, loading: userLoading } = useUser();
-  const [profile, setProfile] = useState(null);
-  const [referrals, setReferrals] = useState([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [referrals, setReferrals] = useState<Referral[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
@@ -62,7 +74,7 @@ export default function ReferralsPage() {
   }
 
   const totalEarned = referrals.reduce(
-    (sum, ref) => sum + parseFloat(ref.bonus_amount || 0),
+    (sum, ref) => sum + parseFloat(ref.bonus_amount?.toString() || "0"),
     0,
   );
   const paidReferrals = referrals.filter((r) => r.status === "paid").length;
@@ -235,7 +247,7 @@ export default function ReferralsPage() {
                         {new Date(ref.created_at).toLocaleDateString()}
                       </td>
                       <td className="py-3 px-4 text-[#10B981] font-semibold">
-                        ${parseFloat(ref.bonus_amount || 0).toFixed(2)}
+                        ${parseFloat(ref.bonus_amount?.toString() || "0").toFixed(2)}
                       </td>
                       <td className="py-3 px-4">
                         <span
@@ -255,6 +267,3 @@ export default function ReferralsPage() {
     </div>
   );
 }
-
-
-

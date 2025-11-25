@@ -12,9 +12,9 @@ import QRCode from "react-qr-code";
 
 interface WalletAddresses {
   BTC: string;
-  ETH: string;
-  USDT: string;
-  SOL: string;
+  XRP: string;
+  USDT_BEP20: string;
+  USDT_TRC20: string;
 }
 
 type CryptoType = keyof WalletAddresses;
@@ -34,10 +34,10 @@ export default function FundPage() {
   const [upload] = useUpload();
 
   const wallets: WalletAddresses = {
-    BTC: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
-    ETH: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
-    USDT: "TN3W4H6rK2ce4vX9YnFQHwKENnHjoxb3m9",
-    SOL: "7UX2i7SucgLMQcfZ75s3VXmZZY4YRUyJN9X1RgfMoDUi",
+    BTC: "1N3BavTnSRLiDiq5yWP4SLPJyPajBsFKR3",
+    XRP: "rJn2zAPdFA193sixJwuFixRkYDUtx3apQh",
+    USDT_TRC20: "THUxhmgffKvb8aN8Fx5ZmSXtJNDNL8goFa",
+    USDT_BEP20: "0x1aea8691637110d926adaa9e96a3cfab4a531ebc",
   };
 
   useEffect(() => {
