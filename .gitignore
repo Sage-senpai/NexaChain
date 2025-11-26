@@ -89,3 +89,21 @@ SELECT * FROM set_admin_role('your-third-admin@example.com');
 --   'admin3@yourcompany.com',
 --   'admin4@yourcompany.com'
 -- ]);
+
+
+
+
+// Generate Active Investor (RECOMMENDED FOR FIRST TEST)
+fetch('/api/admin/test-data', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ 
+    email: 'testbot001@test.com', 
+    scenario: 'active_investor' 
+  })
+}).then(r => r.json()).then(console.log);
+
+// Clear Everything (when done testing)
+fetch('/api/admin/test-data?email=testbot001@test.com', {
+  method: 'DELETE'
+}).then(r => r.json()).then(console.log);

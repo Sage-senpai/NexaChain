@@ -1,4 +1,4 @@
-// src/app/admin/page.tsx
+// src/app/admin/page.tsx - ENHANCED VERSION WITH ALL CONTROLS
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -15,9 +15,10 @@ import {
   Search, 
   Plus, 
   TrendingUp,
-  Shield 
+  Shield,
+  Settings,
+  Bell
 } from "lucide-react";
-import TestDataGenerator from '@/components/admin/TestDataGenerator';
 import { motion, AnimatePresence } from "framer-motion";
 
 interface UserWithInvestments extends Profile {
@@ -27,9 +28,8 @@ interface UserWithInvestments extends Profile {
 export default function AdminDashboard() {
   const { data: user, loading: userLoading } = useUser();
   
-  // ALL useState hooks must be at the top, before any conditional logic
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [activeTab, setActiveTab] = useState<"deposits" | "withdrawals" | "users" | "testdata">("deposits");
+  const [activeTab, setActiveTab] = useState<"deposits" | "withdrawals" | "users">("deposits");
   const [users, setUsers] = useState<UserWithInvestments[]>([]);
   const [deposits, setDeposits] = useState<any[]>([]);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
@@ -39,13 +39,23 @@ export default function AdminDashboard() {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [userSearchTerm, setUserSearchTerm] = useState<string>("");
   const [userFilterType, setUserFilterType] = useState<string>("all");
-  const [showCreditModal, setShowCreditModal] = useState(false);
-  const [selectedInvestment, setSelectedInvestment] = useState<any>(null);
-  const [creditAmount, setCreditAmount] = useState("");
-  const [creditDescription, setCreditDescription] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+  
+  // NEW: Balance/ROI Control States
+  const [showBalanceModal, setShowBalanceModal] = useState(false);
+  const [showROIModal, setShowROIModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserWithInvestments | null>(null);
+  const [selectedInvestment, setSelectedInvestment] = useState<any>(null);
+  const [balanceAction, setBalanceAction] = useState<'set' | 'adjust'>('adjust');
+  const [balanceAmount, setBalanceAmount] = useState('');
+  const [balanceDescription, setBalanceDescription] = useState('');
+  const [roiValue, setRoiValue] = useState('');
+  const [controlMessage, setControlMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
 
-  // ALL useMemo hooks must be before useEffect
+  // NEW: Notifications
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+
   const pendingDeposits = useMemo(() => deposits.filter((d) => d.status === "pending"), [deposits]);
   const pendingWithdrawals = useMemo(() => withdrawals.filter((w) => w.status === "pending"), [withdrawals]);
 
@@ -93,7 +103,6 @@ export default function AdminDashboard() {
     return users.filter(u => u.active_investments && u.active_investments.length > 0).length;
   }, [users]);
 
-  // NOW useEffect hooks
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -128,6 +137,9 @@ export default function AdminDashboard() {
           const data = await withdrawalsRes.json();
           setWithdrawals(data.withdrawals || []);
         }
+
+        // Update notifications
+        updateNotifications(depositsRes, withdrawalsRes);
       } catch (err) {
         console.error("Error fetching admin data:", err);
       } finally {
@@ -139,6 +151,36 @@ export default function AdminDashboard() {
       fetchData();
     }
   }, [user]);
+
+  const updateNotifications = async (depositsRes: any, withdrawalsRes: any) => {
+    const deposits = depositsRes.ok ? (await depositsRes.json()).deposits || [] : [];
+    const withdrawals = withdrawalsRes.ok ? (await withdrawalsRes.json()).withdrawals || [] : [];
+
+    const pendingDeposits = deposits.filter((d: any) => d.status === 'pending');
+    const pendingWithdrawals = withdrawals.filter((w: any) => w.status === 'pending');
+
+    const newNotifications = [
+      ...pendingDeposits.map((d: any) => ({
+        id: `deposit-${d.id}`,
+        type: 'deposit',
+        title: 'New Deposit',
+        message: `${d.user_email} deposited $${parseFloat(d.amount).toFixed(2)}`,
+        time: new Date(d.created_at),
+        data: d,
+      })),
+      ...pendingWithdrawals.map((w: any) => ({
+        id: `withdrawal-${w.id}`,
+        type: 'withdrawal',
+        title: 'Withdrawal Request',
+        message: `${w.user_email} requested $${parseFloat(w.amount).toFixed(2)}`,
+        time: new Date(w.created_at),
+        data: w,
+      })),
+    ];
+
+    newNotifications.sort((a, b) => b.time.getTime() - a.time.getTime());
+    setNotifications(newNotifications);
+  };
 
   const refetchData = async () => {
     try {
@@ -160,8 +202,109 @@ export default function AdminDashboard() {
         const data = await withdrawalsRes.json();
         setWithdrawals(data.withdrawals || []);
       }
+
+      updateNotifications(depositsRes, withdrawalsRes);
     } catch (err) {
       console.error("Error refetching data:", err);
+    }
+  };
+
+  // NEW: Balance Control Functions
+  const openBalanceModal = (userData: UserWithInvestments) => {
+    setSelectedUser(userData);
+    setShowBalanceModal(true);
+    setBalanceAmount('');
+    setBalanceDescription('');
+    setControlMessage(null);
+  };
+
+  const handleSetBalance = async () => {
+    if (!balanceAmount || !selectedUser) {
+      setControlMessage({ type: 'error', text: 'Please enter a valid amount' });
+      return;
+    }
+
+    setActionLoading(true);
+    setControlMessage(null);
+
+    try {
+      const endpoint = balanceAction === 'set' 
+        ? '/api/admin/balance/set'
+        : '/api/admin/balance/adjust';
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: selectedUser.id,
+          amount: parseFloat(balanceAmount),
+          description: balanceDescription || undefined,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setControlMessage({ type: 'success', text: data.message });
+        setTimeout(() => {
+          setShowBalanceModal(false);
+          refetchData();
+        }, 1500);
+      } else {
+        setControlMessage({ type: 'error', text: data.error || 'Failed to update balance' });
+      }
+    } catch (err) {
+      console.error('Balance update error:', err);
+      setControlMessage({ type: 'error', text: 'Failed to update balance' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // NEW: ROI Control Functions
+  const openROIModal = (investment: any, userData: UserWithInvestments) => {
+    setSelectedInvestment(investment);
+    setSelectedUser(userData);
+    setShowROIModal(true);
+    setRoiValue('');
+    setControlMessage(null);
+  };
+
+  const handleSetROI = async () => {
+    if (!roiValue || !selectedInvestment) {
+      setControlMessage({ type: 'error', text: 'Please enter a valid value' });
+      return;
+    }
+
+    setActionLoading(true);
+    setControlMessage(null);
+
+    try {
+      const res = await fetch('/api/admin/roi/set', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          investment_id: selectedInvestment.id,
+          new_value: parseFloat(roiValue),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setControlMessage({ type: 'success', text: data.message });
+        setTimeout(() => {
+          setShowROIModal(false);
+          refetchData();
+        }, 1500);
+      } else {
+        setControlMessage({ type: 'error', text: data.error || 'Failed to update ROI' });
+      }
+    } catch (err) {
+      console.error('ROI update error:', err);
+      setControlMessage({ type: 'error', text: 'Failed to update ROI' });
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -257,54 +400,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const openCreditModal = (investment: any, userData: UserWithInvestments) => {
-    setSelectedInvestment({ ...investment, user: userData });
-    setShowCreditModal(true);
-    setCreditAmount("");
-    setCreditDescription("");
-  };
-
-  const handleCreditROI = async () => {
-    if (!creditAmount || parseFloat(creditAmount) <= 0) {
-      alert("Please enter a valid amount greater than 0");
-      return;
-    }
-
-    if (!confirm(`Credit $${creditAmount} ROI to ${selectedInvestment.user.full_name || selectedInvestment.user.email}?\n\nThis will increase their account balance.`)) {
-      return;
-    }
-
-    setActionLoading(true);
-
-    try {
-      const res = await fetch("/api/admin/credit-roi", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: selectedInvestment.user.id,
-          investment_id: selectedInvestment.id,
-          amount: parseFloat(creditAmount),
-          description: creditDescription || undefined,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        alert(`✅ ${data.message}`);
-        setShowCreditModal(false);
-        await refetchData();
-      } else {
-        alert(`❌ ${data.error || "Failed to credit ROI"}`);
-      }
-    } catch (err) {
-      console.error("Error crediting ROI:", err);
-      alert("Failed to credit ROI");
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
   if (userLoading || loading) {
     return <LoadingScreen />;
   }
@@ -318,6 +413,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8F9FA] to-white dark:from-[#0A0A0A] dark:to-[#1A1A1A]">
+      {/* Enhanced Navbar with Notifications */}
       <nav className="border-b border-[#D4AF37]/20 bg-white/80 dark:bg-[#0A0A0A]/80 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -325,9 +421,68 @@ export default function AdminDashboard() {
               Nexachain Admin
             </span>
             <div className="flex items-center gap-4">
+              {/* Notification Bell */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="relative p-2 hover:bg-[#D4AF37]/10 rounded-lg transition-all"
+                >
+                  <Bell className="w-6 h-6 text-[#000000] dark:text-[#FFFFFF]" />
+                  {(pendingDeposits.length + pendingWithdrawals.length) > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                      {pendingDeposits.length + pendingWithdrawals.length > 9 
+                        ? '9+' 
+                        : pendingDeposits.length + pendingWithdrawals.length}
+                    </span>
+                  )}
+                </button>
+
+                {/* Notification Dropdown */}
+                {showNotifications && (
+                  <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-[#1A1A1A] border-2 border-[#D4AF37]/20 rounded-xl shadow-2xl max-h-96 overflow-y-auto">
+                    <div className="p-4 border-b border-[#D4AF37]/20">
+                      <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF]">
+                        Pending Actions ({notifications.length})
+                      </h3>
+                    </div>
+                    {notifications.length === 0 ? (
+                      <div className="p-8 text-center">
+                        <CheckCircle className="w-12 h-12 text-[#10B981] mx-auto mb-3" />
+                        <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
+                          All caught up!
+                        </p>
+                      </div>
+                    ) : (
+                      notifications.map((notif) => (
+                        <div key={notif.id} className="p-4 border-b border-[#D4AF37]/10 hover:bg-[#D4AF37]/5">
+                          <div className="flex items-start gap-3">
+                            <DollarSign className={`w-5 h-5 ${notif.type === 'deposit' ? 'text-[#10B981]' : 'text-[#3B82F6]'}`} />
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-[#000000] dark:text-[#FFFFFF] text-sm">
+                                {notif.title}
+                              </h4>
+                              <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">
+                                {notif.message}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+
               <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">
                 Admin: {user.email}
               </span>
+              <a
+                href="/admin/manage-admins"
+                className="flex items-center gap-2 px-4 py-2 border-2 border-[#D4AF37]/20 text-[#000000] dark:text-[#FFFFFF] rounded-lg hover:bg-[#D4AF37]/10 transition-all"
+              >
+                <Shield className="w-4 h-4" />
+                Manage Admins
+              </a>
               <a
                 href="/dashboard"
                 className="px-4 py-2 border-2 border-[#D4AF37]/20 text-[#000000] dark:text-[#FFFFFF] rounded-lg hover:bg-[#D4AF37]/10 transition-all"
@@ -867,6 +1022,121 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
+
+       {/* Balance Control Modal */}
+      <AnimatePresence>
+        {showBalanceModal && selectedUser && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+            onClick={() => !actionLoading && setShowBalanceModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              className="bg-white dark:bg-[#1A1A1A] rounded-2xl border-2 border-[#3B82F6] p-8 max-w-md w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Balance control modal content */}
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h3 className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF]">
+                    Control User Balance
+                  </h3>
+                  <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
+                    {selectedUser.full_name || selectedUser.email}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowBalanceModal(false)}
+                  disabled={actionLoading}
+                  className="p-2 hover:bg-[#3B82F6]/10 rounded-lg"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="block text-sm font-medium text-[#000000] dark:text-[#FFFFFF] mb-2">
+                    Action Type
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => setBalanceAction('set')}
+                      className={`px-4 py-2 rounded-lg font-semibold ${balanceAction === 'set' ? 'bg-[#3B82F6] text-white' : 'border-2 border-[#3B82F6]/20'}`}
+                    >
+                      Set To
+                    </button>
+                    <button
+                      onClick={() => setBalanceAction('adjust')}
+                      className={`px-4 py-2 rounded-lg font-semibold ${balanceAction === 'adjust' ? 'bg-[#3B82F6] text-white' : 'border-2 border-[#3B82F6]/20'}`}
+                    >
+                      Add/Subtract
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-[#000000] dark:text-[#FFFFFF] mb-2">
+                    Amount (USD) *
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={balanceAmount}
+                    onChange={(e) => setBalanceAmount(e.target.value)}
+                    placeholder={balanceAction === 'set' ? 'Enter new balance' : 'Enter amount'}
+                    className="w-full px-4 py-3 rounded-lg border-2 border-[#3B82F6]/20 bg-[#F8F9FA] dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#3B82F6] focus:outline-none"
+                  />
+                  <p className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] mt-1">
+                    Current: ${parseFloat(selectedUser.account_balance.toString()).toFixed(2)}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-[#000000] dark:text-[#FFFFFF] mb-2">
+                    Description (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={balanceDescription}
+                    onChange={(e) => setBalanceDescription(e.target.value)}
+                    placeholder="e.g., Bonus reward"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-[#3B82F6]/20 bg-[#F8F9FA] dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#3B82F6] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {controlMessage && (
+                <div className={`mb-4 p-3 rounded-lg ${controlMessage.type === 'success' ? 'bg-[#10B981]/10 text-[#10B981]' : 'bg-red-50 text-red-600'}`}>
+                  {controlMessage.text}
+                </div>
+              )}
+
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setShowBalanceModal(false)}
+                  disabled={actionLoading}
+                  className="flex-1 px-6 py-3 border-2 border-[#3B82F6]/20 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSetBalance}
+                  disabled={actionLoading || !balanceAmount}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white rounded-lg disabled:opacity-50"
+                >
+                  {actionLoading ? 'Processing...' : 'Update Balance'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
        {/* Image Modal */}
       <AnimatePresence>

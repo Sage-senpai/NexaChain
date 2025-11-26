@@ -59,7 +59,7 @@ export async function POST(
       return Response.json({ error: "Insufficient balance" }, { status: 400 });
     }
 
-    // Update withdrawal status to approved (admin has reviewed and will send funds)
+    // Update withdrawal status to approved
     const { error: updateError } = await supabase
       .from("withdrawals")
       .update({
@@ -71,9 +71,9 @@ export async function POST(
 
     if (updateError) throw updateError;
 
-    // Deduct from user balance only after approval
+    // FIXED: Use correct function name and parameters
     const { error: balanceError } = await supabase.rpc("process_withdrawal", {
-      user_id: withdrawal.user_id,
+      target_user_id: withdrawal.user_id,  // ← FIXED parameter name
       withdrawal_amount: parseFloat(withdrawal.amount),
     });
 
@@ -85,7 +85,9 @@ export async function POST(
         .update({ status: "pending" })
         .eq("id", withdrawalId);
       
-      return Response.json({ error: "Failed to process withdrawal" }, { status: 500 });
+      return Response.json({ 
+        error: "Failed to process withdrawal. Please check Supabase functions are properly set up." 
+      }, { status: 500 });
     }
 
     // Create transaction record
