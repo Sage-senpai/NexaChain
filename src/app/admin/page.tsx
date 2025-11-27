@@ -1,4 +1,4 @@
-// src/app/admin/page.tsx - ENHANCED VERSION WITH ALL CONTROLS
+// src/app/admin/page.tsx - COMPLETE VERSION WITH BALANCE & ROI CONTROLS
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -29,7 +29,7 @@ export default function AdminDashboard() {
   const { data: user, loading: userLoading } = useUser();
   
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [activeTab, setActiveTab] = useState<"deposits" | "withdrawals" | "users">("deposits");
+  const [activeTab, setActiveTab] = useState<"deposits" | "withdrawals" | "users" | "testdata">("deposits");
   const [users, setUsers] = useState<UserWithInvestments[]>([]);
   const [deposits, setDeposits] = useState<any[]>([]);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
@@ -41,18 +41,23 @@ export default function AdminDashboard() {
   const [userFilterType, setUserFilterType] = useState<string>("all");
   const [actionLoading, setActionLoading] = useState(false);
   
-  // NEW: Balance/ROI Control States
+  // Balance Control States
   const [showBalanceModal, setShowBalanceModal] = useState(false);
-  const [showROIModal, setShowROIModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserWithInvestments | null>(null);
-  const [selectedInvestment, setSelectedInvestment] = useState<any>(null);
   const [balanceAction, setBalanceAction] = useState<'set' | 'adjust'>('adjust');
   const [balanceAmount, setBalanceAmount] = useState('');
   const [balanceDescription, setBalanceDescription] = useState('');
-  const [roiValue, setRoiValue] = useState('');
+  
+  // ROI Control States
+  const [showCreditModal, setShowCreditModal] = useState(false);
+  const [selectedInvestment, setSelectedInvestment] = useState<any>(null);
+  const [creditAmount, setCreditAmount] = useState('');
+  const [creditDescription, setCreditDescription] = useState('');
+  
+  // Unified Control Message
   const [controlMessage, setControlMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
 
-  // NEW: Notifications
+  // Notifications
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
 
@@ -138,7 +143,6 @@ export default function AdminDashboard() {
           setWithdrawals(data.withdrawals || []);
         }
 
-        // Update notifications
         updateNotifications(depositsRes, withdrawalsRes);
       } catch (err) {
         console.error("Error fetching admin data:", err);
@@ -209,7 +213,9 @@ export default function AdminDashboard() {
     }
   };
 
-  // NEW: Balance Control Functions
+  // ============================================
+  // BALANCE CONTROL FUNCTIONS - START
+  // ============================================
   const openBalanceModal = (userData: UserWithInvestments) => {
     setSelectedUser(userData);
     setShowBalanceModal(true);
@@ -260,19 +266,25 @@ export default function AdminDashboard() {
       setActionLoading(false);
     }
   };
+  // ============================================
+  // BALANCE CONTROL FUNCTIONS - END
+  // ============================================
 
-  // NEW: ROI Control Functions
-  const openROIModal = (investment: any, userData: UserWithInvestments) => {
+  // ============================================
+  // ROI CONTROL FUNCTIONS - START
+  // ============================================
+  const openCreditModal = (investment: any, userData: UserWithInvestments) => {
     setSelectedInvestment(investment);
     setSelectedUser(userData);
-    setShowROIModal(true);
-    setRoiValue('');
+    setShowCreditModal(true);
+    setCreditAmount('');
+    setCreditDescription('');
     setControlMessage(null);
   };
 
-  const handleSetROI = async () => {
-    if (!roiValue || !selectedInvestment) {
-      setControlMessage({ type: 'error', text: 'Please enter a valid value' });
+  const handleCreditROI = async () => {
+    if (!creditAmount || !selectedInvestment) {
+      setControlMessage({ type: 'error', text: 'Please enter a valid amount' });
       return;
     }
 
@@ -280,12 +292,13 @@ export default function AdminDashboard() {
     setControlMessage(null);
 
     try {
-      const res = await fetch('/api/admin/roi/set', {
+      const res = await fetch('/api/admin/roi/credit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           investment_id: selectedInvestment.id,
-          new_value: parseFloat(roiValue),
+          amount: parseFloat(creditAmount),
+          description: creditDescription || undefined,
         }),
       });
 
@@ -294,19 +307,22 @@ export default function AdminDashboard() {
       if (res.ok) {
         setControlMessage({ type: 'success', text: data.message });
         setTimeout(() => {
-          setShowROIModal(false);
+          setShowCreditModal(false);
           refetchData();
         }, 1500);
       } else {
-        setControlMessage({ type: 'error', text: data.error || 'Failed to update ROI' });
+        setControlMessage({ type: 'error', text: data.error || 'Failed to credit ROI' });
       }
     } catch (err) {
-      console.error('ROI update error:', err);
-      setControlMessage({ type: 'error', text: 'Failed to update ROI' });
+      console.error('ROI credit error:', err);
+      setControlMessage({ type: 'error', text: 'Failed to credit ROI' });
     } finally {
       setActionLoading(false);
     }
   };
+  // ============================================
+  // ROI CONTROL FUNCTIONS - END
+  // ============================================
 
   const handleApproveDeposit = async (depositId: string) => {
     if (!confirm("Approve this deposit? User's investment will be activated.")) return;
@@ -413,7 +429,9 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8F9FA] to-white dark:from-[#0A0A0A] dark:to-[#1A1A1A]">
-      {/* Enhanced Navbar with Notifications */}
+      {/* ============================================ */}
+      {/* NAVBAR WITH NOTIFICATIONS - START */}
+      {/* ============================================ */}
       <nav className="border-b border-[#D4AF37]/20 bg-white/80 dark:bg-[#0A0A0A]/80 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -499,6 +517,9 @@ export default function AdminDashboard() {
           </div>
         </div>
       </nav>
+      {/* ============================================ */}
+      {/* NAVBAR WITH NOTIFICATIONS - END */}
+      {/* ============================================ */}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats */}
@@ -840,131 +861,262 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            {/* USERS TAB */}
-            {activeTab === "users" && (
-              <div className="space-y-6">
-                <div className="bg-[#FEF3C7] dark:bg-[#78350F]/20 border border-[#FCD34D] dark:border-[#78350F] p-4 rounded-lg mb-6">
-                  <h4 className="font-bold text-[#92400E] dark:text-[#FCD34D] mb-2">
-                    💡 ROI Management Guide
-                  </h4>
-                  <p className="text-sm text-[#92400E] dark:text-[#FCD34D]">
-                    Click "Credit ROI" on any active investment to manually increase user portfolio. 
-                    You control when users get paid their returns. Credit daily ROI consistently for best user experience.
-                  </p>
-                </div>
+            {/* ============================================ */}
+            {/* USERS TAB WITH BALANCE & ROI CONTROLS - START */}
+            {/* ============================================ */}
+           // Replace the USERS TAB section (around line 680) with this enhanced version
 
-                {filteredUsers.length === 0 ? (
-                  <p className="text-center py-8 text-[#4A4A4A] dark:text-[#B8B8B8]">
-                    No users found matching your search criteria
-                  </p>
-                ) : (
-                  filteredUsers.map((userData) => (
-                    <div key={userData.id} className="border-2 border-[#D4AF37]/20 rounded-xl p-6 hover:border-[#D4AF37]/50 transition-all">
-                      {/* User Header */}
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-4">
-                          <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#FFD700] flex items-center justify-center text-white text-2xl font-bold">
-                            {userData.full_name ? userData.full_name.charAt(0).toUpperCase() : userData.email.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-bold text-[#000000] dark:text-[#FFFFFF]">
-                              {userData.full_name || 'No name'}
-                            </h3>
-                            <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">{userData.email}</p>
-                            <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">
-                              {userData.city && userData.country ? `${userData.city}, ${userData.country}` : 'Location not set'}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-[#D4AF37] mb-1">
-                            ${parseFloat(userData.account_balance.toString()).toFixed(2)}
-                          </div>
-                          <div className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">Available Balance</div>
-                        </div>
-                      </div>
+{activeTab === "users" && (
+  <div className="space-y-6">
+    <div className="bg-[#FEF3C7] dark:bg-[#78350F]/20 border border-[#FCD34D] dark:border-[#78350F] p-4 rounded-lg mb-6">
+      <h4 className="font-bold text-[#92400E] dark:text-[#FCD34D] mb-2">
+        💡 User Management Guide
+      </h4>
+      <p className="text-sm text-[#92400E] dark:text-[#FCD34D]">
+        • <strong>💰 Control Balance:</strong> Set or adjust user account balance directly
+        <br />
+        • <strong>📈 Credit ROI:</strong> Manually increase investment value + user balance
+        <br />
+        Credit ROI daily for best user experience. You control when users get paid returns.
+      </p>
+    </div>
 
-                      {/* User Stats */}
-                      <div className="grid grid-cols-3 gap-4 mb-4 p-4 bg-[#F8F9FA] dark:bg-[#0A0A0A] rounded-lg">
-                        <div className="text-center">
-                          <div className="text-lg font-bold text-[#000000] dark:text-[#FFFFFF]">
-                            {userData.active_investments?.length || 0}
-                          </div>
-                          <div className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8]">Active Investments</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-lg font-bold text-[#10B981]">
-                            ${userData.active_investments?.reduce((sum, inv) => sum + parseFloat(inv.current_value), 0).toFixed(2) || '0.00'}
-                          </div>
-                          <div className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8]">Total Portfolio</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-lg font-bold text-[#3B82F6]">
-                            ${userData.active_investments?.reduce((sum, inv) => sum + parseFloat(inv.principal_amount), 0).toFixed(2) || '0.00'}
-                          </div>
-                          <div className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8]">Total Invested</div>
-                        </div>
-                      </div>
-
-                      {/* Active Investments */}
-                      {userData.active_investments && userData.active_investments.length > 0 ? (
-                        <div className="space-y-3">
-                          <h4 className="font-semibold text-[#000000] dark:text-[#FFFFFF] mb-2">Active Investments:</h4>
-                          {userData.active_investments.map((investment) => (
-                            <div key={investment.id} className="border border-[#D4AF37]/20 rounded-lg p-4 bg-white dark:bg-[#0A0A0A]">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-2xl">{investment.investment_plans?.emoji}</span>
-                                  <div>
-                                    <h5 className="font-semibold text-[#000000] dark:text-[#FFFFFF]">
-                                      {investment.investment_plans?.name}
-                                    </h5>
-                                    <p className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8]">
-                                      Started {new Date(investment.start_date).toLocaleDateString()}
-                                    </p>
-                                  </div>
-                                </div>
-                                <button
-                                  onClick={() => openCreditModal(investment, userData)}
-                                  className="px-4 py-2 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2"
-                                >
-                                  <Plus className="w-4 h-4" />
-                                  Credit ROI
-                                </button>
-                              </div>
-                              <div className="grid grid-cols-3 gap-4 text-sm">
-                                <div>
-                                  <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">Principal:</span>
-                                  <div className="font-semibold text-[#000000] dark:text-[#FFFFFF]">
-                                    ${parseFloat(investment.principal_amount).toFixed(2)}
-                                  </div>
-                                </div>
-                                <div>
-                                  <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">Current Value:</span>
-                                  <div className="font-semibold text-[#10B981]">
-                                    ${parseFloat(investment.current_value).toFixed(2)}
-                                  </div>
-                                </div>
-                                <div>
-                                  <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">Profit:</span>
-                                  <div className="font-semibold text-[#D4AF37]">
-                                    +${(parseFloat(investment.current_value) - parseFloat(investment.principal_amount)).toFixed(2)}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-4 text-[#4A4A4A] dark:text-[#B8B8B8] bg-[#F8F9FA] dark:bg-[#0A0A0A] rounded-lg">
-                          No active investments
-                        </div>
-                      )}
-                    </div>
-                  ))
-                )}
+    {filteredUsers.length === 0 ? (
+      <p className="text-center py-8 text-[#4A4A4A] dark:text-[#B8B8B8]">
+        No users found matching your search criteria
+      </p>
+    ) : (
+      filteredUsers.map((userData) => (
+        <div key={userData.id} className="border-2 border-[#D4AF37]/20 rounded-xl p-6 hover:border-[#D4AF37]/50 transition-all">
+          {/* User Header with Avatar & Basic Info */}
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#FFD700] flex items-center justify-center text-white text-2xl font-bold">
+                {userData.full_name ? userData.full_name.charAt(0).toUpperCase() : userData.email.charAt(0).toUpperCase()}
               </div>
-            )}
+              <div>
+                <h3 className="text-xl font-bold text-[#000000] dark:text-[#FFFFFF]">
+                  {userData.full_name || 'No name set'}
+                </h3>
+                <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">{userData.email}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                    userData.role === 'admin' 
+                      ? 'bg-[#D4AF37]/20 text-[#D4AF37]' 
+                      : 'bg-[#10B981]/10 text-[#10B981]'
+                  }`}>
+                    {userData.role.toUpperCase()}
+                  </span>
+                  <span className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8]">
+                    Joined {new Date(userData.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold text-[#D4AF37] mb-1">
+                ${parseFloat(userData.account_balance.toString()).toFixed(2)}
+              </div>
+              <div className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8] mb-3">Available Balance</div>
+              {/* BALANCE CONTROL BUTTON */}
+              <button
+                onClick={() => openBalanceModal(userData)}
+                className="px-4 py-2 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2"
+              >
+                <DollarSign className="w-4 h-4" />
+                💰 Control Balance
+              </button>
+            </div>
+          </div>
+
+          {/* Enhanced User Details Section */}
+          <div className="bg-[#F8F9FA] dark:bg-[#0A0A0A] rounded-lg p-4 mb-4">
+            <h4 className="font-semibold text-[#000000] dark:text-[#FFFFFF] mb-3 flex items-center gap-2">
+              <Users className="w-4 h-4 text-[#D4AF37]" />
+              User Details
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Contact Information */}
+              <div className="space-y-2">
+                <div className="flex items-start gap-2">
+                  <span className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] min-w-[80px]">📧 Email:</span>
+                  <span className="text-sm font-mono text-[#000000] dark:text-[#FFFFFF] break-all">
+                    {userData.email}
+                  </span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] min-w-[80px]">📱 Phone:</span>
+                  <span className="text-sm font-mono text-[#000000] dark:text-[#FFFFFF]">
+                    {userData.phone || <span className="text-[#4A4A4A] dark:text-[#B8B8B8] italic">Not provided</span>}
+                  </span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] min-w-[80px]">💳 Wallet:</span>
+                  <span className="text-sm font-mono text-[#000000] dark:text-[#FFFFFF] break-all">
+                    {userData.wallet_address ? (
+                      <span title={userData.wallet_address}>
+                        {userData.wallet_address.substring(0, 10)}...{userData.wallet_address.substring(userData.wallet_address.length - 8)}
+                      </span>
+                    ) : (
+                      <span className="text-[#4A4A4A] dark:text-[#B8B8B8] italic">Not set</span>
+                    )}
+                  </span>
+                </div>
+              </div>
+
+              {/* Location Information */}
+              <div className="space-y-2">
+                <div className="flex items-start gap-2">
+                  <span className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] min-w-[80px]">🏙️ City:</span>
+                  <span className="text-sm text-[#000000] dark:text-[#FFFFFF]">
+                    {userData.city || <span className="text-[#4A4A4A] dark:text-[#B8B8B8] italic">Not set</span>}
+                  </span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] min-w-[80px]">🗺️ State:</span>
+                  <span className="text-sm text-[#000000] dark:text-[#FFFFFF]">
+                    {userData.state || <span className="text-[#4A4A4A] dark:text-[#B8B8B8] italic">Not set</span>}
+                  </span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] min-w-[80px]">🌍 Country:</span>
+                  <span className="text-sm text-[#000000] dark:text-[#FFFFFF]">
+                    {userData.country || <span className="text-[#4A4A4A] dark:text-[#B8B8B8] italic">Not set</span>}
+                  </span>
+                </div>
+              </div>
+
+              {/* Referral Information */}
+              <div className="space-y-2">
+                <div className="flex items-start gap-2">
+                  <span className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] min-w-[80px]">🔗 Ref Code:</span>
+                  <span className="text-sm font-mono text-[#D4AF37] font-semibold">
+                    {userData.referral_code}
+                  </span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] min-w-[80px]">👤 Referred By:</span>
+                  <span className="text-sm text-[#000000] dark:text-[#FFFFFF]">
+                    {userData.referred_by || <span className="text-[#4A4A4A] dark:text-[#B8B8B8] italic">Direct signup</span>}
+                  </span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] min-w-[80px]">💰 Ref Bonus:</span>
+                  <span className="text-sm font-semibold text-[#10B981]">
+                    ${parseFloat(userData.total_referral_bonus.toString()).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Financial Summary */}
+              <div className="space-y-2">
+                <div className="flex items-start gap-2">
+                  <span className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] min-w-[80px]">📊 Invested:</span>
+                  <span className="text-sm font-semibold text-[#3B82F6]">
+                    ${parseFloat(userData.total_invested.toString()).toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] min-w-[80px]">💸 Withdrawn:</span>
+                  <span className="text-sm font-semibold text-[#EF4444]">
+                    ${parseFloat(userData.total_withdrawn.toString()).toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] min-w-[80px]">🆔 User ID:</span>
+                  <span className="text-xs font-mono text-[#4A4A4A] dark:text-[#B8B8B8]" title={userData.id}>
+                    {userData.id.substring(0, 8)}...
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* User Stats Cards */}
+          <div className="grid grid-cols-3 gap-4 mb-4 p-4 bg-[#F8F9FA] dark:bg-[#0A0A0A] rounded-lg">
+            <div className="text-center">
+              <div className="text-lg font-bold text-[#000000] dark:text-[#FFFFFF]">
+                {userData.active_investments?.length || 0}
+              </div>
+              <div className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8]">Active Investments</div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-bold text-[#10B981]">
+                ${userData.active_investments?.reduce((sum, inv) => sum + parseFloat(inv.current_value), 0).toFixed(2) || '0.00'}
+              </div>
+              <div className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8]">Total Portfolio</div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-bold text-[#3B82F6]">
+                ${userData.active_investments?.reduce((sum, inv) => sum + parseFloat(inv.principal_amount), 0).toFixed(2) || '0.00'}
+              </div>
+              <div className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8]">Total Invested</div>
+            </div>
+          </div>
+
+          {/* Active Investments */}
+          {userData.active_investments && userData.active_investments.length > 0 ? (
+            <div className="space-y-3">
+              <h4 className="font-semibold text-[#000000] dark:text-[#FFFFFF] mb-2">Active Investments:</h4>
+              {userData.active_investments.map((investment) => (
+                <div key={investment.id} className="border border-[#D4AF37]/20 rounded-lg p-4 bg-white dark:bg-[#0A0A0A]">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{investment.investment_plans?.emoji}</span>
+                      <div>
+                        <h5 className="font-semibold text-[#000000] dark:text-[#FFFFFF]">
+                          {investment.investment_plans?.name}
+                        </h5>
+                        <p className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8]">
+                          Started {new Date(investment.start_date).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    {/* ROI CREDIT BUTTON */}
+                    <button
+                      onClick={() => openCreditModal(investment, userData)}
+                      className="px-4 py-2 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Credit ROI
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">Principal:</span>
+                      <div className="font-semibold text-[#000000] dark:text-[#FFFFFF]">
+                        ${parseFloat(investment.principal_amount).toFixed(2)}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">Current Value:</span>
+                      <div className="font-semibold text-[#10B981]">
+                        ${parseFloat(investment.current_value).toFixed(2)}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">Profit:</span>
+                      <div className="font-semibold text-[#D4AF37]">
+                        +${(parseFloat(investment.current_value) - parseFloat(investment.principal_amount)).toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-4 text-[#4A4A4A] dark:text-[#B8B8B8] bg-[#F8F9FA] dark:bg-[#0A0A0A] rounded-lg">
+              No active investments
+            </div>
+          )}
+        </div>
+      ))
+    )}
+  </div>
+)}
+            {/* ============================================ */}
+            {/* USERS TAB WITH BALANCE & ROI CONTROLS - END */}
+            {/* ============================================ */}
 
             {/* TEST DATA TAB */}
             {activeTab === "testdata" && (
@@ -1023,7 +1175,9 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-       {/* Balance Control Modal */}
+      {/* ============================================ */}
+      {/* BALANCE CONTROL MODAL - START */}
+      {/* ============================================ */}
       <AnimatePresence>
         {showBalanceModal && selectedUser && (
           <motion.div
@@ -1037,25 +1191,24 @@ export default function AdminDashboard() {
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
-              className="bg-white dark:bg-[#1A1A1A] rounded-2xl border-2 border-[#3B82F6] p-8 max-w-md w-full"
+              className="bg-white dark:bg-[#1A1A1A] rounded-2xl border-2 border-[#3B82F6] p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Balance control modal content */}
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h3 className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF]">
-                    Control User Balance
+                  <h3 className="text-xl sm:text-2xl font-bold text-[#000000] dark:text-[#FFFFFF]">
+                    💰 Control User Balance
                   </h3>
-                  <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
+                  <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8] mt-1">
                     {selectedUser.full_name || selectedUser.email}
                   </p>
                 </div>
                 <button
-                  onClick={() => setShowBalanceModal(false)}
+                  onClick={() => !actionLoading && setShowBalanceModal(false)}
                   disabled={actionLoading}
-                  className="p-2 hover:bg-[#3B82F6]/10 rounded-lg"
+                  className="p-2 hover:bg-[#3B82F6]/10 rounded-lg transition-all disabled:opacity-50"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-6 h-6 text-[#000000] dark:text-[#FFFFFF]" />
                 </button>
               </div>
 
@@ -1067,17 +1220,32 @@ export default function AdminDashboard() {
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       onClick={() => setBalanceAction('set')}
-                      className={`px-4 py-2 rounded-lg font-semibold ${balanceAction === 'set' ? 'bg-[#3B82F6] text-white' : 'border-2 border-[#3B82F6]/20'}`}
+                      disabled={actionLoading}
+                      className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                        balanceAction === 'set' 
+                          ? 'bg-[#3B82F6] text-white' 
+                          : 'border-2 border-[#3B82F6]/20 text-[#000000] dark:text-[#FFFFFF] hover:bg-[#3B82F6]/10'
+                      }`}
                     >
                       Set To
                     </button>
                     <button
                       onClick={() => setBalanceAction('adjust')}
-                      className={`px-4 py-2 rounded-lg font-semibold ${balanceAction === 'adjust' ? 'bg-[#3B82F6] text-white' : 'border-2 border-[#3B82F6]/20'}`}
+                      disabled={actionLoading}
+                      className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                        balanceAction === 'adjust' 
+                          ? 'bg-[#3B82F6] text-white' 
+                          : 'border-2 border-[#3B82F6]/20 text-[#000000] dark:text-[#FFFFFF] hover:bg-[#3B82F6]/10'
+                      }`}
                     >
                       Add/Subtract
                     </button>
                   </div>
+                  <p className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] mt-2">
+                    {balanceAction === 'set' 
+                      ? '• Set exact balance (e.g., 1000 = set balance to $1,000)'
+                      : '• Add (+) or subtract (-) from current balance (e.g., 500 adds $500, -200 subtracts $200)'}
+                  </p>
                 </div>
 
                 <div>
@@ -1089,12 +1257,21 @@ export default function AdminDashboard() {
                     step="0.01"
                     value={balanceAmount}
                     onChange={(e) => setBalanceAmount(e.target.value)}
-                    placeholder={balanceAction === 'set' ? 'Enter new balance' : 'Enter amount'}
-                    className="w-full px-4 py-3 rounded-lg border-2 border-[#3B82F6]/20 bg-[#F8F9FA] dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#3B82F6] focus:outline-none"
+                    placeholder={balanceAction === 'set' ? 'Enter new balance' : 'Enter amount (+/-)'}
+                    disabled={actionLoading}
+                    className="w-full px-4 py-3 rounded-lg border-2 border-[#3B82F6]/20 bg-[#F8F9FA] dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#3B82F6] focus:outline-none disabled:opacity-50"
                   />
                   <p className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] mt-1">
-                    Current: ${parseFloat(selectedUser.account_balance.toString()).toFixed(2)}
+                    Current Balance: <span className="font-semibold text-[#3B82F6]">${parseFloat(selectedUser.account_balance.toString()).toFixed(2)}</span>
                   </p>
+                  {balanceAmount && (
+                    <p className="text-xs font-semibold text-[#10B981] mt-1">
+                      New Balance: ${balanceAction === 'set' 
+                        ? parseFloat(balanceAmount).toFixed(2)
+                        : (parseFloat(selectedUser.account_balance.toString()) + parseFloat(balanceAmount)).toFixed(2)
+                      }
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -1105,30 +1282,35 @@ export default function AdminDashboard() {
                     type="text"
                     value={balanceDescription}
                     onChange={(e) => setBalanceDescription(e.target.value)}
-                    placeholder="e.g., Bonus reward"
-                    className="w-full px-4 py-3 rounded-lg border-2 border-[#3B82F6]/20 bg-[#F8F9FA] dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#3B82F6] focus:outline-none"
+                    placeholder="e.g., Bonus reward, Refund, Correction"
+                    disabled={actionLoading}
+                    className="w-full px-4 py-3 rounded-lg border-2 border-[#3B82F6]/20 bg-[#F8F9FA] dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#3B82F6] focus:outline-none disabled:opacity-50"
                   />
                 </div>
               </div>
 
               {controlMessage && (
-                <div className={`mb-4 p-3 rounded-lg ${controlMessage.type === 'success' ? 'bg-[#10B981]/10 text-[#10B981]' : 'bg-red-50 text-red-600'}`}>
-                  {controlMessage.text}
+                <div className={`mb-4 p-3 rounded-lg ${
+                  controlMessage.type === 'success' 
+                    ? 'bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20' 
+                    : 'bg-red-50 dark:bg-red-900/20 text-red-600 border border-red-200 dark:border-red-800'
+                }`}>
+                  <p className="text-sm font-semibold">{controlMessage.text}</p>
                 </div>
               )}
 
-              <div className="flex gap-4">
+              <div className="flex gap-3">
                 <button
                   onClick={() => setShowBalanceModal(false)}
                   disabled={actionLoading}
-                  className="flex-1 px-6 py-3 border-2 border-[#3B82F6]/20 rounded-lg"
+                  className="flex-1 px-6 py-3 border-2 border-[#3B82F6]/20 text-[#000000] dark:text-[#FFFFFF] font-semibold rounded-lg hover:bg-[#3B82F6]/10 transition-all disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSetBalance}
-                  disabled={actionLoading || !balanceAmount}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white rounded-lg disabled:opacity-50"
+                  disabled={actionLoading || !balanceAmount || parseFloat(balanceAmount) === 0}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white font-semibold rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {actionLoading ? 'Processing...' : 'Update Balance'}
                 </button>
@@ -1137,43 +1319,15 @@ export default function AdminDashboard() {
           </motion.div>
         )}
       </AnimatePresence>
+      {/* ============================================ */}
+      {/* BALANCE CONTROL MODAL - END */}
+      {/* ============================================ */}
 
-       {/* Image Modal */}
+      {/* ============================================ */}
+      {/* ROI CREDIT MODAL - START */}
+      {/* ============================================ */}
       <AnimatePresence>
-        {selectedImage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
-            onClick={() => setSelectedImage(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              className="relative max-w-4xl max-h-[90vh] overflow-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setSelectedImage(null)}
-                className="absolute top-4 right-4 p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-all"
-              >
-                <X className="w-6 h-6 text-white" />
-              </button>
-              <img
-                src={selectedImage}
-                alt="Proof of payment"
-                className="w-full h-auto rounded-lg"
-              />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Credit ROI Modal */}
-      <AnimatePresence>
-        {showCreditModal && selectedInvestment && (
+        {showCreditModal && selectedInvestment && selectedUser && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -1185,27 +1339,28 @@ export default function AdminDashboard() {
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
-              className="bg-white dark:bg-[#1A1A1A] rounded-2xl border-2 border-[#D4AF37]/20 p-8 max-w-md w-full"
+              className="bg-white dark:bg-[#1A1A1A] rounded-2xl border-2 border-[#D4AF37]/20 p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h3 className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-1">
-                    Credit ROI
+                  <h3 className="text-xl sm:text-2xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-1">
+                    📈 Credit ROI
                   </h3>
-                  <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                    {selectedInvestment.user.full_name || selectedInvestment.user.email}
-                  </p>
                   <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">
-                    {selectedInvestment.investment_plans?.emoji} {selectedInvestment.investment_plans?.name}
+                    {selectedUser.full_name || selectedUser.email}
+                  </p>
+                  <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8] flex items-center gap-1 mt-1">
+                    <span className="text-lg">{selectedInvestment.investment_plans?.emoji}</span>
+                    {selectedInvestment.investment_plans?.name}
                   </p>
                 </div>
                 <button
                   onClick={() => !actionLoading && setShowCreditModal(false)}
                   disabled={actionLoading}
-                  className="p-2 hover:bg-[#D4AF37]/10 rounded-lg disabled:opacity-50"
+                  className="p-2 hover:bg-[#D4AF37]/10 rounded-lg transition-all disabled:opacity-50"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-6 h-6 text-[#000000] dark:text-[#FFFFFF]" />
                 </button>
               </div>
 
@@ -1220,13 +1375,19 @@ export default function AdminDashboard() {
                     min="0.01"
                     value={creditAmount}
                     onChange={(e) => setCreditAmount(e.target.value)}
-                    placeholder="Enter ROI amount"
+                    placeholder="Enter ROI amount to credit"
                     disabled={actionLoading}
                     className="w-full px-4 py-3 rounded-lg border-2 border-[#D4AF37]/20 bg-[#F8F9FA] dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#D4AF37] focus:outline-none disabled:opacity-50"
                   />
-                  <p className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] mt-1">
-                    Example daily ROI: ${(parseFloat(selectedInvestment.principal_amount) * ((selectedInvestment.investment_plans?.daily_roi || 5) / 100)).toFixed(2)}
-                  </p>
+                  {selectedInvestment.investment_plans?.daily_roi && (
+                    <p className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] mt-1">
+                      💡 Suggested Daily ROI: <span className="font-semibold text-[#D4AF37]">
+                        ${(parseFloat(selectedInvestment.principal_amount) * (selectedInvestment.investment_plans.daily_roi / 100)).toFixed(2)}
+                      </span>
+                      <br />
+                      Based on {selectedInvestment.investment_plans.daily_roi}% of ${parseFloat(selectedInvestment.principal_amount).toFixed(2)} principal
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -1237,24 +1398,47 @@ export default function AdminDashboard() {
                     type="text"
                     value={creditDescription}
                     onChange={(e) => setCreditDescription(e.target.value)}
-                    placeholder="e.g., Daily ROI - Day 1"
+                    placeholder="e.g., Daily ROI - Day 1, Weekly bonus"
                     disabled={actionLoading}
                     className="w-full px-4 py-3 rounded-lg border-2 border-[#D4AF37]/20 bg-[#F8F9FA] dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#D4AF37] focus:outline-none disabled:opacity-50"
                   />
                 </div>
 
                 <div className="p-4 rounded-lg bg-[#FEF3C7] dark:bg-[#78350F]/20 border border-[#FCD34D] dark:border-[#78350F]">
-                  <p className="text-sm text-[#92400E] dark:text-[#FCD34D]">
-                    <strong>Current Balance:</strong> ${parseFloat(selectedInvestment.user.account_balance).toFixed(2)}
-                    <br />
-                    <strong>New Balance:</strong> ${(parseFloat(selectedInvestment.user.account_balance) + parseFloat(creditAmount || "0")).toFixed(2)}
-                    <br />
-                    <strong>Investment Value:</strong> ${parseFloat(selectedInvestment.current_value).toFixed(2)} → ${(parseFloat(selectedInvestment.current_value) + parseFloat(creditAmount || "0")).toFixed(2)}
-                  </p>
+                  <h4 className="font-semibold text-[#92400E] dark:text-[#FCD34D] mb-2 text-sm">
+                    📊 Impact Preview
+                  </h4>
+                  <div className="space-y-1 text-xs text-[#92400E] dark:text-[#FCD34D]">
+                    <p>
+                      <strong>User Balance:</strong> ${parseFloat(selectedUser.account_balance.toString()).toFixed(2)} 
+                      → <span className="font-bold text-[#10B981]">
+                        ${(parseFloat(selectedUser.account_balance.toString()) + parseFloat(creditAmount || "0")).toFixed(2)}
+                      </span>
+                    </p>
+                    <p>
+                      <strong>Investment Value:</strong> ${parseFloat(selectedInvestment.current_value).toFixed(2)} 
+                      → <span className="font-bold text-[#10B981]">
+                        ${(parseFloat(selectedInvestment.current_value) + parseFloat(creditAmount || "0")).toFixed(2)}
+                      </span>
+                    </p>
+                    <p className="pt-2 border-t border-[#92400E]/20">
+                      <strong>Total Profit:</strong> +${(parseFloat(selectedInvestment.current_value) - parseFloat(selectedInvestment.principal_amount) + parseFloat(creditAmount || "0")).toFixed(2)}
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex gap-4">
+              {controlMessage && (
+                <div className={`mb-4 p-3 rounded-lg ${
+                  controlMessage.type === 'success' 
+                    ? 'bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20' 
+                    : 'bg-red-50 dark:bg-red-900/20 text-red-600 border border-red-200 dark:border-red-800'
+                }`}>
+                  <p className="text-sm font-semibold">{controlMessage.text}</p>
+                </div>
+              )}
+
+              <div className="flex gap-3">
                 <button
                   onClick={() => setShowCreditModal(false)}
                   disabled={actionLoading}
@@ -1274,8 +1458,47 @@ export default function AdminDashboard() {
           </motion.div>
         )}
       </AnimatePresence>
+      {/* ============================================ */}
+      {/* ROI CREDIT MODAL - END */}
+      {/* ============================================ */}
+
+      {/* ============================================ */}
+      {/* IMAGE PREVIEW MODAL - START */}
+      {/* ============================================ */}
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+            onClick={() => setSelectedImage(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              className="relative max-w-4xl max-h-[90vh] overflow-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="absolute top-4 right-4 p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-all z-10"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+              <img
+                src={selectedImage}
+                alt="Proof of payment"
+                className="w-full h-auto rounded-lg shadow-2xl"
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {/* ============================================ */}
+      {/* IMAGE PREVIEW MODAL - END */}
+      {/* ============================================ */}
     </div>
   );
 }
-
-    

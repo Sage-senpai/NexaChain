@@ -1,14 +1,20 @@
-// src/utils/useUser.ts
+// FILE 2: src/utils/useUser.ts (UPDATED - Better return type)
+// ============================================================
+
 "use client";
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
-interface UseUserReturn {
+export interface UseUserReturn {
   data: User | null;
   loading: boolean;
   error: Error | null;
+  // Add convenience properties for easier access
+  user: User | null;
+  id: string | null;
+  email: string | null;
 }
 
 export default function useUser(): UseUserReturn {
@@ -55,5 +61,13 @@ export default function useUser(): UseUserReturn {
     };
   }, []);
 
-  return { data, loading, error };
+  return { 
+    data, 
+    loading, 
+    error,
+    // Convenience properties
+    user: data,
+    id: data?.id ?? null,
+    email: data?.email ?? null
+  };
 }

@@ -1,6 +1,3 @@
-// ============================================
-// FILE 2: src/app/api/admin/balance/adjust/route.ts
-// ============================================
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest } from "next/server";
 

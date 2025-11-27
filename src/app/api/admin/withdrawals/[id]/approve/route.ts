@@ -1,4 +1,3 @@
-// src/app/api/admin/withdrawals/[id]/approve/route.ts
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest } from "next/server";
 

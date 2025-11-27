@@ -1,8 +1,11 @@
-// src/utils/useUpload.ts
+// FILE 3: src/utils/useUpload.ts (FIXED - Correct user access)
+// ============================================================
+
 "use client";
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import useUser from "./useUser";
 
 interface UploadOptions {
   file: File;
@@ -17,20 +20,17 @@ interface UploadResult {
 export default function useUpload(): [(options: UploadOptions) => Promise<UploadResult>, boolean] {
   const [loading, setLoading] = useState(false);
   const supabase = createClient();
+  const { data: user } = useUser(); // ✅ Destructure 'data' from useUser
 
   const upload = async ({ file, bucket = "proof-images" }: UploadOptions): Promise<UploadResult> => {
     setLoading(true);
 
     try {
-      // Validate file
-      if (!file) {
-        throw new Error("No file provided");
-      }
+      if (!file) throw new Error("No file provided");
+      if (!user?.id) throw new Error("User not authenticated"); // ✅ Now user is the User object
 
       // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        throw new Error("File size must be less than 5MB");
-      }
+      if (file.size > 5 * 1024 * 1024) throw new Error("File size must be less than 5MB");
 
       // Validate file type
       const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -41,9 +41,10 @@ export default function useUpload(): [(options: UploadOptions) => Promise<Upload
       // Generate unique filename
       const fileExt = file.name.split(".").pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `${fileName}`;
 
-      // Upload to Supabase Storage
+      // Upload to user folder
+      const filePath = `${user.id}/${fileName}`;
+
       const { data, error: uploadError } = await supabase.storage
         .from(bucket)
         .upload(filePath, file, {
@@ -51,21 +52,18 @@ export default function useUpload(): [(options: UploadOptions) => Promise<Upload
           upsert: false,
         });
 
-      if (uploadError) {
-        throw uploadError;
-      }
+      if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
+      // Get public URL (better than signed URL for proof images)
+      const { data: urlData } = supabase.storage
         .from(bucket)
         .getPublicUrl(filePath);
 
       setLoading(false);
-      return { url: publicUrl, error: null };
+      return { url: urlData.publicUrl, error: null };
     } catch (err) {
       setLoading(false);
-      const errorMessage = err instanceof Error ? err.message : "Upload failed";
-      return { url: null, error: errorMessage };
+      return { url: null, error: err instanceof Error ? err.message : "Upload failed" };
     }
   };
 

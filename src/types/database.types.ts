@@ -1,4 +1,5 @@
-// src/types/database.types.ts
+// FILE 1: src/types/database.types.ts (UPDATED - Remove duplicate)
+// ============================================================
 
 export interface Profile {
   id: string;
@@ -94,14 +95,36 @@ export interface Referral {
   updated_at: string;
 }
 
+// UNIFIED Transaction types (removed duplicate, kept enhanced version)
+export type TransactionStatus = 'pending' | 'completed' | 'failed' | 'cancelled';
+
+export type TransactionType = 
+  | 'deposit' 
+  | 'withdrawal' 
+  | 'roi' 
+  | 'roi_credit'
+  | 'investment' 
+  | 'referral_bonus' 
+  | 'admin_adjustment';
+
 export interface Transaction {
   id: string;
   user_id: string;
-  type: 'deposit' | 'withdrawal' | 'roi' | 'referral_bonus';
+  type: TransactionType;
   amount: number;
   description: string | null;
   reference_id: string | null;
+  status: TransactionStatus;
   created_at: string;
+}
+
+export interface CreateTransactionInput {
+  user_id: string;
+  type: TransactionType;
+  amount: number;
+  description?: string;
+  reference_id?: string;
+  status?: TransactionStatus;
 }
 
 export interface CryptoPrice {
@@ -211,4 +234,31 @@ export interface StatCardProps {
   icon: React.ComponentType<{ className?: string }>;
   prefix?: string;
   onClick?: () => void;
+}
+
+// Helper function to create transaction records
+export async function createTransaction(
+  supabase: any,
+  input: CreateTransactionInput
+): Promise<Transaction | null> {
+  try {
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert({
+        user_id: input.user_id,
+        type: input.type,
+        amount: input.amount,
+        description: input.description || null,
+        reference_id: input.reference_id || null,
+        status: input.status || 'completed'
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (err) {
+    console.error('Transaction creation error:', err);
+    return null;
+  }
 }
