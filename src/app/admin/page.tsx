@@ -864,7 +864,7 @@ export default function AdminDashboard() {
             {/* ============================================ */}
             {/* USERS TAB WITH BALANCE & ROI CONTROLS - START */}
             {/* ============================================ */}
-           // Replace the USERS TAB section (around line 680) with this enhanced version
+          
 
 {activeTab === "users" && (
   <div className="space-y-6">
