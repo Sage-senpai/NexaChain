@@ -30,7 +30,6 @@ export async function GET() {
       return Response.json({ error: "Failed to fetch deposits" }, { status: 500 });
     }
 
-    // Transform the data to match expected format
     const transformedDeposits = deposits?.map(deposit => ({
       ...deposit,
       plan_name: deposit.investment_plans?.name,
@@ -44,7 +43,7 @@ export async function GET() {
   }
 }
 
-// Create new deposit
+// Create new deposit with email notification
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -56,7 +55,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { plan_id, crypto_type, wallet_address, amount, proof_image_url } = body;
+    const { plan_id, crypto_type, wallet_address, amount, proof_image_base64 } = body;
 
     if (!plan_id || !crypto_type || !wallet_address || !amount) {
       return Response.json(
@@ -90,7 +89,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create deposit
+    // Get user profile for email
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name, email")
+      .eq("id", user.id)
+      .single();
+
+    // Create deposit (without proof_image_url)
     const { data: deposit, error: depositError } = await supabase
       .from("deposits")
       .insert({
@@ -99,7 +105,7 @@ export async function POST(request: NextRequest) {
         crypto_type: crypto_type,
         wallet_address: wallet_address,
         amount: numAmount,
-        proof_image_url: proof_image_url || null,
+        proof_image_url: proof_image_base64 ? "email_attached" : null,
         status: "pending",
       })
       .select()
@@ -108,6 +114,39 @@ export async function POST(request: NextRequest) {
     if (depositError) {
       console.error("Deposit creation error:", depositError);
       return Response.json({ error: "Failed to create deposit" }, { status: 500 });
+    }
+
+    // Get all admin emails
+    const { data: admins } = await supabase
+      .from("profiles")
+      .select("email, full_name")
+      .eq("role", "admin");
+
+    // Send email notification to all admins
+    if (admins && admins.length > 0 && proof_image_base64) {
+      try {
+        await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/send-deposit-email`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            admins: admins,
+            deposit: {
+              id: deposit.id,
+              amount: numAmount,
+              crypto_type: crypto_type,
+              plan_name: plan.name,
+              plan_emoji: plan.emoji,
+              user_name: profile?.full_name || profile?.email || "Unknown User",
+              user_email: profile?.email || user.email,
+              created_at: deposit.created_at,
+            },
+            proof_image: proof_image_base64,
+          }),
+        });
+      } catch (emailError) {
+        console.error("Email notification error:", emailError);
+        // Don't fail the deposit if email fails
+      }
     }
 
     return Response.json({ deposit });

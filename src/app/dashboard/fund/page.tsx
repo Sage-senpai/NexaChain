@@ -5,7 +5,6 @@ import { useState, useEffect, ChangeEvent } from "react";
 import useUser from "@/utils/useUser";
 import LoadingScreen from "@/components/LoadingScreen";
 import { ArrowLeft, Check, Upload, Copy } from "lucide-react";
-import useUpload from "@/utils/useUpload";
 import { InvestmentPlan } from "@/types/database.types";
 import { motion, AnimatePresence } from "framer-motion";
 import QRCode from "react-qr-code";
@@ -27,11 +26,11 @@ export default function FundPage() {
   const [amount, setAmount] = useState<string>("");
   const [cryptoType, setCryptoType] = useState<CryptoType>("BTC");
   const [proofImage, setProofImage] = useState<string | null>(null);
+  const [proofImageFile, setProofImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
-  const [upload] = useUpload();
 
   const wallets: WalletAddresses = {
     BTC: "1N3BavTnSRLiDiq5yWP4SLPJyPajBsFKR3",
@@ -55,20 +54,48 @@ export default function FundPage() {
     fetchPlans();
   }, []);
 
+  // Convert image file to base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          resolve(reader.result);
+        } else {
+          reject(new Error('Failed to convert file to base64'));
+        }
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       try {
         setLoading(true);
-        const result = await upload({ file });
-        if (result.url) {
-          setProofImage(result.url);
-        } else if (result.error) {
-          setError(result.error);
+        setError("");
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          throw new Error("File size must be less than 5MB");
         }
+
+        // Validate file type
+        const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+        if (!allowedTypes.includes(file.type)) {
+          throw new Error("Only JPG, PNG, and WebP images are allowed");
+        }
+
+        // Convert to base64
+        const base64String = await fileToBase64(file);
+        
+        setProofImage(base64String);
+        setProofImageFile(file);
       } catch (err) {
-        console.error("Error uploading file:", err);
-        setError("Failed to upload proof of payment");
+        console.error("Error processing file:", err);
+        setError(err instanceof Error ? err.message : "Failed to process proof of payment");
       } finally {
         setLoading(false);
       }
@@ -104,7 +131,7 @@ export default function FundPage() {
           crypto_type: cryptoType,
           wallet_address: wallets[cryptoType],
           amount: numAmount,
-          proof_image_url: proofImage,
+          proof_image_base64: proofImage, // Send base64 image
         }),
       });
 
@@ -157,8 +184,8 @@ export default function FundPage() {
             Deposit Submitted!
           </h2>
           <p className="text-[#4A4A4A] dark:text-[#B8B8B8] mb-6">
-            Your deposit is pending admin approval. You'll be notified once
-            confirmed.
+            Your deposit has been submitted and admins have been notified via email.
+            You'll be notified once it's confirmed.
           </p>
           <a
             href="/dashboard"
@@ -441,7 +468,8 @@ export default function FundPage() {
                   Upload Proof of Payment
                 </h2>
                 <p className="text-[#4A4A4A] dark:text-[#B8B8B8] mb-6">
-                  Please upload a screenshot of your transaction confirmation
+                  Please upload a screenshot of your transaction confirmation.
+                  All admins will be notified via email with your proof.
                 </p>
 
                 <div className="mb-6">
@@ -457,12 +485,18 @@ export default function FundPage() {
                           alt="Proof"
                           className="mt-4 max-h-32 mx-auto rounded-lg"
                         />
+                        <p className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] mt-2">
+                          {proofImageFile?.name}
+                        </p>
                       </div>
                     ) : (
                       <div className="text-center">
                         <Upload className="w-12 h-12 text-[#D4AF37] mx-auto mb-2" />
                         <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                          Click to upload proof
+                          Click to upload proof (Max 5MB)
+                        </p>
+                        <p className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] mt-2">
+                          JPG, PNG, or WebP
                         </p>
                       </div>
                     )}
@@ -471,6 +505,7 @@ export default function FundPage() {
                       accept="image/*"
                       onChange={handleFileChange}
                       className="hidden"
+                      disabled={loading}
                     />
                   </label>
                 </div>
@@ -480,6 +515,12 @@ export default function FundPage() {
                     {error}
                   </div>
                 )}
+
+                <div className="p-4 rounded-lg bg-[#FEF3C7] dark:bg-[#78350F]/20 border border-[#FCD34D] dark:border-[#78350F] mb-6">
+                  <p className="text-sm text-[#92400E] dark:text-[#FCD34D]">
+                    ℹ️ <strong>Note:</strong> Your proof will be sent directly to admin emails for faster processing. No storage upload required!
+                  </p>
+                </div>
 
                 <div className="flex gap-4">
                   <button
