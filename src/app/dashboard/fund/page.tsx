@@ -101,62 +101,72 @@ export default function FundPage() {
       }
     }
   };
+const handleSubmit = async () => {
+  if (!selectedPlan || !amount || !proofImage) {
+    setError("Please complete all fields");
+    return;
+  }
 
-  const handleSubmit = async () => {
-    if (!selectedPlan || !amount || !proofImage) {
-      setError("Please complete all fields");
-      return;
-    }
+  const numAmount = parseFloat(amount);
+  if (
+    numAmount < selectedPlan.min_amount ||
+    (selectedPlan.max_amount && numAmount > selectedPlan.max_amount)
+  ) {
+    setError(
+      `Amount must be between $${selectedPlan.min_amount} and $${selectedPlan.max_amount || "unlimited"}`
+    );
+    return;
+  }
 
-    const numAmount = parseFloat(amount);
-    if (
-      numAmount < selectedPlan.min_amount ||
-      (selectedPlan.max_amount && numAmount > selectedPlan.max_amount)
-    ) {
-      setError(
-        `Amount must be between $${selectedPlan.min_amount} and $${selectedPlan.max_amount || "unlimited"}`
-      );
-      return;
-    }
+  try {
+    setLoading(true);
+    setError("");
 
+    const res = await fetch("/api/deposits", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        plan_id: selectedPlan.id,
+        crypto_type: cryptoType,
+        wallet_address: wallets[cryptoType],
+        amount: numAmount,
+        proof_image_base64: proofImage,
+      }),
+    });
+
+    // Get response text first for better error debugging
+    const text = await res.text();
+    let data;
     try {
-      setLoading(true);
-      setError("");
-
-      const res = await fetch("/api/deposits", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          plan_id: selectedPlan.id,
-          crypto_type: cryptoType,
-          wallet_address: wallets[cryptoType],
-          amount: numAmount,
-          proof_image_base64: proofImage, // Send base64 image
-        }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to submit deposit");
-      }
-
-      setSuccess(true);
-      setTimeout(() => {
-        window.location.href = "/dashboard";
-      }, 3000);
-    } catch (err: any) {
-      console.error("Error submitting deposit:", err);
-      setError(err.message || "Failed to submit deposit. Please try again.");
-    } finally {
-      setLoading(false);
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error("Response parsing error:", text);
+      throw new Error(`Server returned invalid response: ${text.substring(0, 100)}`);
     }
-  };
+
+    if (!res.ok) {
+      throw new Error(data.error || `Server error: ${res.status}`);
+    }
+
+    setSuccess(true);
+    setTimeout(() => {
+      window.location.href = "/dashboard";
+    }, 3000);
+  } catch (err: any) {
+    console.error("Error submitting deposit:", err);
+    setError(err.message || "Failed to submit deposit. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const copyWalletAddress = () => {
     navigator.clipboard.writeText(wallets[cryptoType]);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  
 
   if (userLoading) {
     return <LoadingScreen />;
