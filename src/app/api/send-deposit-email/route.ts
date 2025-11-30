@@ -1,4 +1,5 @@
 // src/app/api/send-deposit-email/route.ts
+// FIXED VERSION - Ready for production
 import { NextRequest } from "next/server";
 import { Resend } from 'resend';
 
@@ -152,7 +153,7 @@ export async function POST(request: NextRequest) {
               </p>
               
               <div class="amount">
-                ${deposit.plan_emoji} ${parseFloat(deposit.amount).toFixed(2)}
+                ${deposit.plan_emoji} $${parseFloat(deposit.amount).toFixed(2)}
               </div>
               
               <div class="info-box">
@@ -170,7 +171,7 @@ export async function POST(request: NextRequest) {
                 </div>
                 <div class="info-row">
                   <span class="label">💰 Amount:</span>
-                  <span class="value">${parseFloat(deposit.amount).toFixed(2)}</span>
+                  <span class="value">$${parseFloat(deposit.amount).toFixed(2)}</span>
                 </div>
                 <div class="info-row">
                   <span class="label">🪙 Crypto:</span>
@@ -192,7 +193,7 @@ export async function POST(request: NextRequest) {
               ${proof_image ? `<img src="${proof_image}" alt="Payment Proof" class="proof-image" />` : '<p style="color: #EF4444; background-color: #FEE2E2; padding: 15px; border-radius: 8px; border: 2px solid #EF4444;">⚠️ No proof image provided</p>'}
               
               <div style="text-align: center; margin-top: 35px;">
-                <a href="${process.env.NEXT_PUBLIC_APP_URL}/admin" class="button">
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin" class="button">
                   Review Deposit in Admin Panel →
                 </a>
               </div>
@@ -220,9 +221,9 @@ export async function POST(request: NextRequest) {
       // Send email using Resend
       try {
         const { data, error } = await resend.emails.send({
-          from: 'Nexachain Admin <nexachain-eight.vercel.app>', // Use your verified domain in production
+          from: 'Nexachain Admin <onboarding@resend.dev>', // ✅ FIXED - Valid email format
           to: admin.email,
-          subject: `🔔 New Deposit: ${parseFloat(deposit.amount).toFixed(2)} from ${deposit.user_name}`,
+          subject: `🔔 New Deposit: $${parseFloat(deposit.amount).toFixed(2)} from ${deposit.user_name}`,
           html: emailHTML,
         });
 

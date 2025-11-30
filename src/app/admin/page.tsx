@@ -721,16 +721,22 @@ export default function AdminDashboard() {
                           </td>
                           <td className="py-3 px-4">
                             {deposit.proof_image_url ? (
-                              <button
-                                onClick={() => setSelectedImage(deposit.proof_image_url!)}
-                                className="flex items-center gap-2 text-[#D4AF37] hover:underline"
-                              >
-                                <Eye className="w-4 h-4" />
-                                View
-                              </button>
-                            ) : (
-                              <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">No proof</span>
-                            )}
+  deposit.proof_image_url === "email_attached" ? (
+    <span className="text-[#10B981] text-sm font-semibold">
+      📧 Sent via Email
+    </span>
+  ) : (
+    <button
+      onClick={() => setSelectedImage(deposit.proof_image_url!)}
+      className="flex items-center gap-2 text-[#D4AF37] hover:underline"
+    >
+      <Eye className="w-4 h-4" />
+      View
+    </button>
+  )
+) : (
+  <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">No proof</span>
+)}
                           </td>
                           <td className="py-3 px-4">
                             <span
