@@ -181,6 +181,12 @@ export default function LandingPage() {
                 About
               </button>
               <button
+                onClick={() => scrollToSection("services")}
+                className="text-[#000000] dark:text-[#FFFFFF] hover:text-[#D4AF37] transition-colors"
+              >
+                Services
+              </button>
+              <button
                 onClick={() => scrollToSection("contact")}
                 className="text-[#000000] dark:text-[#FFFFFF] hover:text-[#D4AF37] transition-colors"
               >
@@ -194,7 +200,7 @@ export default function LandingPage() {
               </a>
               <a
                 href="/account/signup"
-                className="px-6 py-2 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white rounded-lg hover:shadow-lg transition-all"
+                className="px-6 py-2 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white rounded-lg hover:shadow-lg hover:shadow-[#D4AF37]/30 transition-all"
               >
                 Get Started
               </a>
@@ -206,6 +212,16 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-[#F8F9FA] dark:from-[#0A0A0A] dark:to-[#1A1A1A]">
         <div className="max-w-7xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="inline-block mb-4 px-4 py-2 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-full"
+          >
+            <span className="text-[#D4AF37] font-semibold text-sm">
+              SAFE INVESTMENT • GET LIFETIME INCOME
+            </span>
+          </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -218,10 +234,17 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xl md:text-2xl text-[#4A4A4A] dark:text-[#B8B8B8] mb-12 max-w-3xl mx-auto"
+            className="text-xl md:text-2xl text-[#4A4A4A] dark:text-[#B8B8B8] mb-8 max-w-3xl mx-auto"
           >
-            Secure cryptocurrency investments with daily returns. Join thousands
-            of investors building wealth together.
+            The leading financial establishment providing high-quality international investment services. Join thousands of investors earning daily returns through our automated trading systems.
+          </motion.p>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="text-lg text-[#6B7280] dark:text-[#B8B8B8] mb-12 max-w-2xl mx-auto"
+          >
+            We are always ready to partner with you by offering full financial support with stable and automated investment strategies.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -231,15 +254,15 @@ export default function LandingPage() {
           >
             <a
               href="/account/signup"
-              className="px-8 py-4 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white text-lg font-semibold rounded-lg hover:shadow-2xl transition-all inline-flex items-center justify-center"
+              className="px-8 py-4 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white text-lg font-semibold rounded-lg hover:shadow-2xl hover:shadow-[#D4AF37]/50 transition-all inline-flex items-center justify-center"
             >
-              Start Investing <ArrowRight className="ml-2" />
+              Open Deposit <ArrowRight className="ml-2" />
             </a>
             <button
               onClick={() => scrollToSection("plans")}
               className="px-8 py-4 border-2 border-[#D4AF37] text-[#000000] dark:text-[#FFFFFF] text-lg font-semibold rounded-lg hover:bg-[#D4AF37]/10 transition-all"
             >
-              View Plans
+              View Investment Plans
             </button>
           </motion.div>
         </div>
@@ -322,11 +345,17 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
-              Investment Plans
+              Investment Proposals
             </h2>
             <p className="text-xl text-[#4A4A4A] dark:text-[#B8B8B8]">
-              Choose a plan that fits your investment goals
+              Nexachain employees ensure that every investor can earn money with our automated systems
             </p>
+            <div className="mt-6 inline-block px-6 py-3 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-lg">
+              <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">
+                <span className="font-bold text-[#D4AF37]">No account opening fees</span> • 
+                <span className="ml-2 font-bold text-[#D4AF37]">No deposit commissions</span>
+              </p>
+            </div>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {plans.map((plan, index) => (
@@ -336,8 +365,8 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ scale: 1.05 }}
-                className="bg-white dark:bg-[#0A0A0A] p-8 rounded-2xl border-2 border-[#D4AF37]/20 hover:border-[#D4AF37] hover:shadow-2xl transition-all"
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="bg-white dark:bg-[#0A0A0A] p-8 rounded-2xl border-2 border-[#D4AF37]/20 hover:border-[#D4AF37] hover:shadow-2xl hover:shadow-[#D4AF37]/20 transition-all"
               >
                 <div className="text-5xl mb-4">{plan.emoji}</div>
                 <h3 className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
@@ -346,13 +375,13 @@ export default function LandingPage() {
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-[#4A4A4A] dark:text-[#B8B8B8]">
                     <span>Daily ROI:</span>
-                    <span className="text-[#D4AF37] font-bold">
+                    <span className="text-[#D4AF37] font-bold text-xl">
                       {plan.dailyROI}%
                     </span>
                   </div>
                   <div className="flex justify-between text-[#4A4A4A] dark:text-[#B8B8B8]">
                     <span>Total ROI:</span>
-                    <span className="text-[#D4AF37] font-bold">
+                    <span className="text-[#10B981] font-bold text-xl">
                       {plan.totalROI}%
                     </span>
                   </div>
@@ -362,22 +391,43 @@ export default function LandingPage() {
                       {plan.duration} {plan.duration === 1 ? "day" : "days"}
                     </span>
                   </div>
-                  <div className="flex justify-between text-[#4A4A4A] dark:text-[#B8B8B8]">
-                    <span>Min Amount:</span>
-                    <span className="font-semibold">${plan.minAmount}</span>
-                  </div>
-                  {plan.maxAmount && (
-                    <div className="flex justify-between text-[#4A4A4A] dark:text-[#B8B8B8]">
-                      <span>Max Amount:</span>
-                      <span className="font-semibold">${plan.maxAmount}</span>
+                  <div className="pt-3 border-t border-[#D4AF37]/20">
+                    <div className="flex justify-between text-[#4A4A4A] dark:text-[#B8B8B8] mb-2">
+                      <span>Investment Range:</span>
                     </div>
-                  )}
+                    <div className="text-center">
+                      <span className="font-bold text-[#000000] dark:text-[#FFFFFF]">
+                        ${plan.minAmount.toLocaleString()}
+                      </span>
+                      {plan.maxAmount && (
+                        <>
+                          <span className="mx-2 text-[#D4AF37]">—</span>
+                          <span className="font-bold text-[#000000] dark:text-[#FFFFFF]">
+                            ${plan.maxAmount.toLocaleString()}
+                          </span>
+                        </>
+                      )}
+                      {!plan.maxAmount && (
+                        <>
+                          <span className="mx-2 text-[#D4AF37]">—</span>
+                          <span className="font-bold text-[#D4AF37]">Unlimited</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-[#4A4A4A] dark:text-[#B8B8B8] pt-2">
+                    <span>Referral Bonus:</span>
+                    <span className="text-[#D4AF37] font-semibold">
+                      {plan.referralBonus}%
+                    </span>
+                  </div>
                 </div>
                 <a
                   href="/account/signup"
-                  className="w-full py-3 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white font-semibold rounded-lg hover:shadow-lg transition-all flex items-center justify-center"
+                  className="w-full py-3 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white font-semibold rounded-lg hover:shadow-xl hover:shadow-[#D4AF37]/50 transition-all flex items-center justify-center group"
                 >
-                  Invest Now <ArrowRight className="ml-2 w-5 h-5" />
+                  Invest Now 
+                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </a>
               </motion.div>
             ))}
@@ -392,48 +442,169 @@ export default function LandingPage() {
             <h2 className="text-4xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
               Why Choose Nexachain?
             </h2>
+            <p className="text-xl text-[#4A4A4A] dark:text-[#B8B8B8] max-w-3xl mx-auto">
+              Our team of experts does everything for you with automated trading systems
+            </p>
           </div>
           <div className="grid md:grid-cols-3 gap-12">
-            <div className="text-center">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
               <div className="w-16 h-16 bg-gradient-to-br from-[#D4AF37] to-[#FFD700] rounded-full flex items-center justify-center mx-auto mb-6">
                 <Shield className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
-                Secure
+                Unique Trading Bot
               </h3>
               <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                Bank-level security with multi-layer encryption to protect your
-                investments
+                Our team of professionals has created a unique trading bot that trades with efficiency and escapes market dip, ensuring capitals return safely with accurate investment returns
               </p>
-            </div>
-            <div className="text-center">
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="text-center"
+            >
               <div className="w-16 h-16 bg-gradient-to-br from-[#D4AF37] to-[#FFD700] rounded-full flex items-center justify-center mx-auto mb-6">
                 <TrendingUp className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
-                Transparent
+                Stable & Automated
               </h3>
               <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                Real-time tracking of all your investments and returns
+                The robot is not human-related, making all investments reliable and completely safe. Its efficiency increases daily achieving 99.9% trade accuracy
               </p>
-            </div>
-            <div className="text-center">
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="text-center"
+            >
               <div className="w-16 h-16 bg-gradient-to-br from-[#D4AF37] to-[#FFD700] rounded-full flex items-center justify-center mx-auto mb-6">
-                <DollarSign className="w-8 h-8 text-white" />
+                <Users className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
-                Profitable
+                Expert Team 24/7
               </h3>
               <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                Consistent daily returns with flexible investment options
+                The highly professional Nexachain team controls all trading robot processes around the clock. After investing, observe your capital growth in real-time
               </p>
+            </motion.div>
+          </div>
+
+          {/* How It Works Section */}
+          <div className="mt-20">
+            <div className="text-center mb-12">
+              <h3 className="text-3xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
+                Get Started in 4 Simple Steps
+              </h3>
+            </div>
+            <div className="grid md:grid-cols-4 gap-8">
+              {[
+                { step: 1, title: "Create Account", desc: "Sign up and verify your email address" },
+                { step: 2, title: "Verify Email", desc: "Confirm your email to activate your account" },
+                { step: 3, title: "Log In", desc: "Access your secure dashboard" },
+                { step: 4, title: "Activate Plan", desc: "Choose a plan and start earning" }
+              ].map((item, index) => (
+                <motion.div
+                  key={item.step}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="text-center p-6 bg-[#F8F9FA] dark:bg-[#1A1A1A] rounded-xl border-2 border-[#D4AF37]/20"
+                >
+                  <div className="w-12 h-12 bg-gradient-to-br from-[#D4AF37] to-[#FFD700] rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl">
+                    {item.step}
+                  </div>
+                  <h4 className="text-lg font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">
+                    {item.title}
+                  </h4>
+                  <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">
+                    {item.desc}
+                  </p>
+                </motion.div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
+      {/* Our Services Section */}
+      <section id="services" className="py-20 bg-[#F8F9FA] dark:bg-[#1A1A1A] scroll-mt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
+              Our Investment Services
+            </h2>
+            <p className="text-xl text-[#4A4A4A] dark:text-[#B8B8B8]">
+              Diversified portfolio across multiple high-yield sectors
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              { 
+                icon: "₿", 
+                title: "Cryptocurrency Trading", 
+                desc: "Advanced automated trading in Bitcoin, Ethereum, and 30+ digital assets with real-time market analysis" 
+              },
+              { 
+                icon: "📊", 
+                title: "Forex Trading", 
+                desc: "Professional currency trading with high-frequency algorithms across major and exotic pairs" 
+              },
+              { 
+                icon: "🏢", 
+                title: "Real Estate Investment", 
+                desc: "Strategic property investments in premium locations with guaranteed rental yields" 
+              },
+              { 
+                icon: "🛢️", 
+                title: "Oil & Gas Investment", 
+                desc: "Energy sector investments in established wells and exploration projects worldwide" 
+              },
+              { 
+                icon: "📈", 
+                title: "Stocks & Shares", 
+                desc: "Blue-chip and growth stock portfolios managed by experienced financial analysts" 
+              },
+              { 
+                icon: "🌾", 
+                title: "Agriculture & Textiles", 
+                desc: "Sustainable commodity investments in agriculture and textile manufacturing" 
+              }
+            ].map((service, index) => (
+              <motion.div
+                key={service.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ y: -5 }}
+                className="p-6 bg-white dark:bg-[#0A0A0A] rounded-xl border-2 border-[#D4AF37]/20 hover:border-[#D4AF37] transition-all"
+              >
+                <div className="text-4xl mb-4">{service.icon}</div>
+                <h3 className="text-xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-3">
+                  {service.title}
+                </h3>
+                <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
+                  {service.desc}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Contact Section */}
-      <section id="contact" className="py-20 bg-[#F8F9FA] dark:bg-[#1A1A1A] scroll-mt-16">
+      <section id="contact" className="py-20 bg-white dark:bg-[#0A0A0A] scroll-mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
@@ -444,21 +615,21 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="text-center p-6 bg-white dark:bg-[#0A0A0A] rounded-xl border-2 border-[#D4AF37]/20">
+            <div className="text-center p-6 bg-[#F8F9FA] dark:bg-[#1A1A1A] rounded-xl border-2 border-[#D4AF37]/20">
               <Mail className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
               <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">Email</h3>
               <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
                 support@nexachain.com
               </p>
             </div>
-            <div className="text-center p-6 bg-white dark:bg-[#0A0A0A] rounded-xl border-2 border-[#D4AF37]/20">
+            <div className="text-center p-6 bg-[#F8F9FA] dark:bg-[#1A1A1A] rounded-xl border-2 border-[#D4AF37]/20">
               <Phone className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
               <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">Phone</h3>
               <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
                 +44 7853383650
               </p>
             </div>
-            <div className="text-center p-6 bg-white dark:bg-[#0A0A0A] rounded-xl border-2 border-[#D4AF37]/20">
+            <div className="text-center p-6 bg-[#F8F9FA] dark:bg-[#1A1A1A] rounded-xl border-2 border-[#D4AF37]/20">
               <MapPin className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
               <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">Location</h3>
               <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
@@ -468,8 +639,7 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
+ {/* Footer */}
       <footer className="bg-[#1A1A1A] dark:bg-[#0A0A0A] border-t border-[#D4AF37]/20 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8">
@@ -502,6 +672,14 @@ export default function LandingPage() {
                 </li>
                 <li>
                   <button
+                    onClick={() => scrollToSection("services")}
+                    className="text-[#B8B8B8] hover:text-[#D4AF37] transition-colors"
+                  >
+                    Services
+                  </button>
+                </li>
+                <li>
+                  <button
                     onClick={() => scrollToSection("contact")}
                     className="text-[#B8B8B8] hover:text-[#D4AF37] transition-colors"
                   >
@@ -514,16 +692,16 @@ export default function LandingPage() {
               <h4 className="font-bold text-white mb-4">Legal</h4>
               <ul className="space-y-2">
                 <li>
-                  <a
-                    href="/legal"
+                  
+                    <a href="/legal"
                     className="text-[#B8B8B8] hover:text-[#D4AF37] transition-colors"
                   >
                     Terms of Service
                   </a>
                 </li>
                 <li>
-                  <a
-                    href="/legal"
+                  
+                   <a href="/legal"
                     className="text-[#B8B8B8] hover:text-[#D4AF37] transition-colors"
                   >
                     Privacy Policy
@@ -535,8 +713,8 @@ export default function LandingPage() {
               <h4 className="font-bold text-white mb-4">Support</h4>
               <ul className="space-y-2">
                 <li>
-                  <a
-                    href="/faq"
+                  
+                   <a href="/faq"
                     className="text-[#B8B8B8] hover:text-[#D4AF37] transition-colors"
                   >
                     FAQ
