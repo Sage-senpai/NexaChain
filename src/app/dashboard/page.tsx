@@ -1,11 +1,13 @@
-// src/app/dashboard/page.tsx
+// FILE: src/app/dashboard/page.tsx
 "use client";
 import { useState, useEffect } from "react";
 import useUser from "@/utils/useUser";
 import useAdmin from "@/utils/useAdmin";
 import LoadingScreen from "@/components/LoadingScreen";
 import AnimatedCounter from "@/components/AnimatedCounter";
-import LiveCryptoGraph from "@/components/LiveCryptoGraph"; // ← Import the new component
+import LiveCryptoFeed from "@/components/LiveCryptoFeed";
+import LiveCryptoGraph from "@/components/LiveCryptoGraph"; 
+import UserMessagePanel from "@/components/messaging/UserMessagePanel";
 import { createClient } from "@/lib/supabase/client";
 import {
   Wallet,
@@ -21,13 +23,6 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-interface CryptoPrice {
-  symbol: string;
-  name: string;
-  price: number;
-  change: number;
-}
-
 export default function DashboardPage() {
   const { data: user, loading: userLoading } = useUser();
   const { isAdmin } = useAdmin();
@@ -35,39 +30,8 @@ export default function DashboardPage() {
   const [investments, setInvestments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [showCryptoFeed, setShowCryptoFeed] = useState(true);
-  const [cryptoPrices, setCryptoPrices] = useState<CryptoPrice[]>([]);
+  const [showCryptoFeed, setShowCryptoFeed] = useState(true); // ✅ ADD THIS STATE
   const supabase = createClient();
-
-  // Initialize crypto prices
-  useEffect(() => {
-    const initialPrices = [
-      { symbol: "BTC", name: "Bitcoin", price: 45230.5, change: 2.4 },
-      { symbol: "ETH", name: "Ethereum", price: 2850.75, change: 3.1 },
-      { symbol: "USDT", name: "Tether", price: 1.0, change: 0.01 },
-      { symbol: "BNB", name: "Binance Coin", price: 312.45, change: 1.8 },
-      { symbol: "SOL", name: "Solana", price: 125.3, change: 5.2 },
-      { symbol: "XRP", name: "Ripple", price: 0.62, change: -0.8 },
-      { symbol: "ADA", name: "Cardano", price: 0.58, change: 1.2 },
-      { symbol: "DOGE", name: "Dogecoin", price: 0.08, change: 4.5 },
-    ];
-    setCryptoPrices(initialPrices);
-  }, []);
-
-  // Simulate price updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCryptoPrices((prev) =>
-        prev.map((crypto) => ({
-          ...crypto,
-          price: crypto.price * (1 + (Math.random() - 0.5) * 0.002),
-          change: (Math.random() - 0.5) * 10,
-        }))
-      );
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -213,60 +177,11 @@ export default function DashboardPage() {
               transition={{ duration: 0.3 }}
               className="overflow-hidden"
             >
-              <div className="py-4 overflow-hidden">
-                <div className="relative">
-                  <div className="flex animate-scroll whitespace-nowrap hover:pause-animation">
-                    {[...cryptoPrices, ...cryptoPrices].map((crypto, index) => (
-                      <div
-                        key={`${crypto.symbol}-${index}`}
-                        className="inline-flex items-center space-x-2 px-6 py-2"
-                      >
-                        <span className="text-[#D4AF37] font-bold">
-                          {crypto.symbol}
-                        </span>
-                        <span className="text-white font-mono">
-                          $
-                          {crypto.price.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: crypto.price < 1 ? 4 : 2,
-                          })}
-                        </span>
-                        <span
-                          className={`text-sm ${
-                            crypto.change >= 0
-                              ? "text-[#10B981]"
-                              : "text-[#EF4444]"
-                          }`}
-                        >
-                          {crypto.change >= 0 ? "+" : ""}
-                          {crypto.change.toFixed(2)}%
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <LiveCryptoFeed />
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-
-      <style jsx>{`
-        @keyframes scroll {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
-        }
-        .animate-scroll {
-          animation: scroll 60s linear infinite;
-        }
-        .animate-scroll:hover {
-          animation-play-state: paused;
-        }
-      `}</style>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Grid */}
@@ -296,7 +211,7 @@ export default function DashboardPage() {
           })}
         </div>
 
-        {/* LIVE CRYPTO GRAPH - NEW ADDITION */}
+        {/* LIVE CRYPTO GRAPH */}
         <div className="mb-8">
           <LiveCryptoGraph />
         </div>
@@ -431,6 +346,7 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+      <UserMessagePanel />
     </div>
   );
 }

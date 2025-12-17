@@ -173,3 +173,4 @@ if (failCount === 0 && warnCount === 0) {
 }
 
 process.exit(failCount > 0 ? 1 : 0);
+

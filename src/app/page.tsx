@@ -1,7 +1,7 @@
-// src/app/page.tsx
+// FILE: src/app/page.tsx
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react"; // ✅ Keep only what's needed
 import {
   ArrowRight,
   TrendingUp,
@@ -10,20 +10,15 @@ import {
   DollarSign,
   Award,
   ChevronDown,
+  ChevronUp, // ✅ ADD THIS
   Mail,
   Phone,
   MapPin,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion"; // ✅ ADD AnimatePresence
 import AnimatedCounter from "@/components/AnimatedCounter";
+import LiveCryptoFeed from "@/components/LiveCryptoFeed";
 import TestimonialsModal from "@/components/TestimonialsModal";
-
-interface CryptoPrice {
-  symbol: string;
-  name: string;
-  price: number;
-  change: number;
-}
 
 interface InvestmentPlan {
   name: string;
@@ -38,40 +33,7 @@ interface InvestmentPlan {
 
 export default function LandingPage() {
   const [showTestimonials, setShowTestimonials] = useState(false);
-  
-  // 30+ crypto assets with simulated real-time prices
-  const [cryptoPrices, setCryptoPrices] = useState<CryptoPrice[]>([
-    { symbol: "BTC", name: "Bitcoin", price: 45230.5, change: 2.4 },
-    { symbol: "ETH", name: "Ethereum", price: 2850.75, change: 3.1 },
-    { symbol: "USDT", name: "Tether", price: 1.0, change: 0.01 },
-    { symbol: "BNB", name: "Binance Coin", price: 312.45, change: 1.8 },
-    { symbol: "SOL", name: "Solana", price: 125.3, change: 5.2 },
-    { symbol: "XRP", name: "Ripple", price: 0.62, change: -0.8 },
-    { symbol: "ADA", name: "Cardano", price: 0.58, change: 1.2 },
-    { symbol: "DOGE", name: "Dogecoin", price: 0.08, change: 4.5 },
-    { symbol: "AVAX", name: "Avalanche", price: 42.15, change: 2.9 },
-    { symbol: "MATIC", name: "Polygon", price: 0.89, change: 3.4 },
-    { symbol: "DOT", name: "Polkadot", price: 7.23, change: -1.2 },
-    { symbol: "LINK", name: "Chainlink", price: 16.78, change: 2.1 },
-    { symbol: "UNI", name: "Uniswap", price: 6.45, change: 1.9 },
-    { symbol: "LTC", name: "Litecoin", price: 98.32, change: 0.7 },
-    { symbol: "ATOM", name: "Cosmos", price: 11.24, change: 3.6 },
-    { symbol: "ETC", name: "Ethereum Classic", price: 26.89, change: -0.5 },
-    { symbol: "XLM", name: "Stellar", price: 0.13, change: 2.3 },
-    { symbol: "ALGO", name: "Algorand", price: 0.21, change: 4.1 },
-    { symbol: "VET", name: "VeChain", price: 0.03, change: 1.5 },
-    { symbol: "FIL", name: "Filecoin", price: 5.67, change: -2.1 },
-    { symbol: "HBAR", name: "Hedera", price: 0.08, change: 3.8 },
-    { symbol: "APT", name: "Aptos", price: 12.45, change: 5.7 },
-    { symbol: "ARB", name: "Arbitrum", price: 1.89, change: 2.6 },
-    { symbol: "OP", name: "Optimism", price: 2.34, change: 3.2 },
-    { symbol: "INJ", name: "Injective", price: 34.56, change: 6.1 },
-    { symbol: "SUI", name: "Sui", price: 1.45, change: 4.3 },
-    { symbol: "TIA", name: "Celestia", price: 8.92, change: 7.2 },
-    { symbol: "SEI", name: "Sei", price: 0.67, change: 5.4 },
-    { symbol: "RUNE", name: "THORChain", price: 6.78, change: 2.8 },
-    { symbol: "FTM", name: "Fantom", price: 0.52, change: 3.9 },
-  ]);
+  const [showCryptoFeed, setShowCryptoFeed] = useState(true); // ✅ ADD THIS STATE
 
   const plans: InvestmentPlan[] = [
     {
@@ -127,26 +89,11 @@ export default function LandingPage() {
   ];
 
   const stats = [
-    { label: "Active Users", value: 50000, icon: Users },
+    { label: "Active Users", value: 5076, icon: Users },
     { label: "Total Investments", value: 10000000, icon: TrendingUp, prefix: "$" },
-    { label: "Countries", value: 120, icon: Award, suffix: "+" },
+    { label: "Countries", value: 48, icon: Award, suffix: "+" },
     { label: "ROI Paid Out", value: 2500000, icon: DollarSign, prefix: "$" },
   ];
-
-  // Simulate price updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCryptoPrices((prev) =>
-        prev.map((crypto) => ({
-          ...crypto,
-          price: crypto.price * (1 + (Math.random() - 0.5) * 0.002),
-          change: (Math.random() - 0.5) * 10,
-        }))
-      );
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   // Smooth scroll function
   const scrollToSection = (sectionId: string) => {
@@ -268,44 +215,36 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Live Crypto Ticker - Auto-scrolling */}
-      <section className="py-4 bg-[#1A1A1A] dark:bg-[#0A0A0A] border-y border-[#D4AF37]/20 overflow-hidden">
-        <div className="relative">
-          <div className="flex animate-scroll whitespace-nowrap">
-            {[...cryptoPrices, ...cryptoPrices].map((crypto, index) => (
-              <div
-                key={`${crypto.symbol}-${index}`}
-                className="inline-flex items-center space-x-2 px-6 py-2"
-              >
-                <span className="text-[#D4AF37] font-bold">{crypto.symbol}</span>
-                <span className="text-white font-mono">
-                  ${crypto.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
-                <span
-                  className={`text-sm ${crypto.change >= 0 ? "text-[#10B981]" : "text-[#EF4444]"}`}
-                >
-                  {crypto.change >= 0 ? "+" : ""}
-                  {crypto.change.toFixed(2)}%
-                </span>
-              </div>
-            ))}
-          </div>
+      {/* Live Crypto Feed - Collapsible Ticker */}
+      <div className="border-b border-[#D4AF37]/20 bg-[#1A1A1A] dark:bg-[#0A0A0A]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <button
+            onClick={() => setShowCryptoFeed(!showCryptoFeed)}
+            className="w-full py-2 flex items-center justify-between text-[#D4AF37] hover:text-[#FFD700] transition-colors"
+          >
+            <span className="text-sm font-semibold">Live Market Ticker</span>
+            {showCryptoFeed ? (
+              <ChevronUp className="w-5 h-5" />
+            ) : (
+              <ChevronDown className="w-5 h-5" />
+            )}
+          </button>
         </div>
-      </section>
 
-      <style jsx>{`
-        @keyframes scroll {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
-        }
-        .animate-scroll {
-          animation: scroll 60s linear infinite;
-        }
-      `}</style>
+        <AnimatePresence>
+          {showCryptoFeed && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden"
+            >
+              <LiveCryptoFeed />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* Stats Section - Clickable Cards */}
       <section className="py-20 bg-white dark:bg-[#0A0A0A]">
@@ -624,9 +563,13 @@ export default function LandingPage() {
             </div>
             <div className="text-center p-6 bg-[#F8F9FA] dark:bg-[#1A1A1A] rounded-xl border-2 border-[#D4AF37]/20">
               <Phone className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
-              <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">Phone</h3>
+              <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">Phone: United Kingdom</h3>
               <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
                 +44 7853383650
+              </p>
+              <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">Phone: South Africa</h3>
+              <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
+                +27 78 720 8949
               </p>
             </div>
             <div className="text-center p-6 bg-[#F8F9FA] dark:bg-[#1A1A1A] rounded-xl border-2 border-[#D4AF37]/20">

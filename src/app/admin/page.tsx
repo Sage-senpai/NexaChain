@@ -17,8 +17,10 @@ import {
   TrendingUp,
   Shield,
   Settings,
+  MessageCircle,
   Bell
 } from "lucide-react";
+import AdminInbox from "@/components/messaging/AdminInbox";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface UserWithInvestments extends Profile {
@@ -29,7 +31,7 @@ export default function AdminDashboard() {
   const { data: user, loading: userLoading } = useUser();
   
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [activeTab, setActiveTab] = useState<"deposits" | "withdrawals" | "users" | "testdata">("deposits");
+  const [activeTab, setActiveTab] = useState<"deposits" | "withdrawals" | "users" | "messages" | "testdata">("deposits");
   const [users, setUsers] = useState<UserWithInvestments[]>([]);
   const [deposits, setDeposits] = useState<any[]>([]);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
@@ -59,7 +61,17 @@ export default function AdminDashboard() {
 
   // Notifications
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState<any[]>([]);
+const [notifications, setNotifications] = useState<any[]>([]); // ✅ ARRAY, not object
+
+const formatTimeAgo = (time: Date) => {
+  const now = new Date();
+  const diff = Math.floor((now.getTime() - time.getTime()) / 1000);
+
+  if (diff < 60) return 'Just now';
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+};
 
   const pendingDeposits = useMemo(() => deposits.filter((d) => d.status === "pending"), [deposits]);
   const pendingWithdrawals = useMemo(() => withdrawals.filter((w) => w.status === "pending"), [withdrawals]);
@@ -143,7 +155,7 @@ export default function AdminDashboard() {
           setWithdrawals(data.withdrawals || []);
         }
 
-        updateNotifications(depositsRes, withdrawalsRes);
+        updateNotifications();
       } catch (err) {
         console.error("Error fetching admin data:", err);
       } finally {
@@ -156,35 +168,107 @@ export default function AdminDashboard() {
     }
   }, [user]);
 
-  const updateNotifications = async (depositsRes: any, withdrawalsRes: any) => {
-    const deposits = depositsRes.ok ? (await depositsRes.json()).deposits || [] : [];
-    const withdrawals = withdrawalsRes.ok ? (await withdrawalsRes.json()).withdrawals || [] : [];
+const updateNotifications = async () => {
+  try {
+    const [depositsRes, withdrawalsRes, messagesRes, usersRes] = await Promise.all([
+      fetch('/api/admin/deposits?status=pending'),
+      fetch('/api/admin/withdrawals?status=pending'),
+      fetch('/api/messages/conversations'),
+      fetch('/api/admin/users')
+    ]);
 
-    const pendingDeposits = deposits.filter((d: any) => d.status === 'pending');
-    const pendingWithdrawals = withdrawals.filter((w: any) => w.status === 'pending');
+    const notificationsList: any[] = [];
 
-    const newNotifications = [
-      ...pendingDeposits.map((d: any) => ({
-        id: `deposit-${d.id}`,
-        type: 'deposit',
-        title: 'New Deposit',
-        message: `${d.user_email} deposited $${parseFloat(d.amount).toFixed(2)}`,
-        time: new Date(d.created_at),
-        data: d,
-      })),
-      ...pendingWithdrawals.map((w: any) => ({
-        id: `withdrawal-${w.id}`,
-        type: 'withdrawal',
-        title: 'Withdrawal Request',
-        message: `${w.user_email} requested $${parseFloat(w.amount).toFixed(2)}`,
-        time: new Date(w.created_at),
-        data: w,
-      })),
-    ];
+    // Pending Deposits
+    if (depositsRes.ok) {
+      const depositsData = await depositsRes.json();
+      const pendingDeposits = (depositsData.deposits || []).filter((d: any) => d.status === 'pending');
+      
+      pendingDeposits.forEach((deposit: any) => {
+        notificationsList.push({
+          id: `deposit-${deposit.id}`,
+          type: 'deposit',
+          title: 'New Deposit',
+          message: `${deposit.user_email} deposited $${parseFloat(deposit.amount).toFixed(2)}`,
+          time: new Date(deposit.created_at),
+          data: deposit,
+        });
+      });
+    }
 
-    newNotifications.sort((a, b) => b.time.getTime() - a.time.getTime());
-    setNotifications(newNotifications);
-  };
+    // Pending Withdrawals
+    if (withdrawalsRes.ok) {
+      const withdrawalsData = await withdrawalsRes.json();
+      const pendingWithdrawals = (withdrawalsData.withdrawals || []).filter((w: any) => w.status === 'pending');
+      
+      pendingWithdrawals.forEach((withdrawal: any) => {
+        notificationsList.push({
+          id: `withdrawal-${withdrawal.id}`,
+          type: 'withdrawal',
+          title: 'Withdrawal Request',
+          message: `${withdrawal.user_email} requested $${parseFloat(withdrawal.amount).toFixed(2)}`,
+          time: new Date(withdrawal.created_at),
+          data: withdrawal,
+        });
+      });
+    }
+
+    // Open Messages
+    if (messagesRes.ok) {
+      const messagesData = await messagesRes.json();
+      const openConversations = (messagesData.conversations || []).filter((c: any) => c.status === 'open');
+      
+      openConversations.forEach((conversation: any) => {
+        notificationsList.push({
+          id: `message-${conversation.id}`,
+          type: 'message',
+          title: 'Unread Message',
+          message: `${conversation.user_name}: ${conversation.subject || 'Support Request'}`,
+          time: new Date(conversation.last_message_at || conversation.created_at),
+          data: conversation,
+        });
+      });
+    }
+
+    // New Users (last 7 days)
+    if (usersRes.ok) {
+      const usersData = await usersRes.json();
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const newUsers = (usersData.users || []).filter((u: any) => 
+        new Date(u.created_at) > sevenDaysAgo
+      );
+      
+      newUsers.forEach((user: any) => {
+        notificationsList.push({
+          id: `user-${user.id}`,
+          type: 'user',
+          title: 'New User Signup',
+          message: `${user.full_name || user.email} joined the platform`,
+          time: new Date(user.created_at),
+          data: user,
+        });
+      });
+    }
+
+    // Sort by time (newest first)
+    notificationsList.sort((a, b) => b.time.getTime() - a.time.getTime());
+
+    setNotifications(notificationsList);
+  } catch (error) {
+    console.error('Failed to update notifications:', error);
+  }
+};
+
+// Make sure your useEffect is correct:
+useEffect(() => {
+  if (user) {
+    updateNotifications();
+    
+    // Poll every 30 seconds
+    const interval = setInterval(updateNotifications, 30000);
+    return () => clearInterval(interval);
+  }
+}, [user]);
 
   const refetchData = async () => {
     try {
@@ -207,7 +291,7 @@ export default function AdminDashboard() {
         setWithdrawals(data.withdrawals || []);
       }
 
-      updateNotifications(depositsRes, withdrawalsRes);
+      updateNotifications();
     } catch (err) {
       console.error("Error refetching data:", err);
     }
@@ -441,55 +525,116 @@ export default function AdminDashboard() {
             <div className="flex items-center gap-4">
               {/* Notification Bell */}
               <div className="relative">
-                <button
-                  onClick={() => setShowNotifications(!showNotifications)}
-                  className="relative p-2 hover:bg-[#D4AF37]/10 rounded-lg transition-all"
-                >
-                  <Bell className="w-6 h-6 text-[#000000] dark:text-[#FFFFFF]" />
-                  {(pendingDeposits.length + pendingWithdrawals.length) > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                      {pendingDeposits.length + pendingWithdrawals.length > 9 
-                        ? '9+' 
-                        : pendingDeposits.length + pendingWithdrawals.length}
-                    </span>
-                  )}
-                </button>
+  <button
+    onClick={() => setShowNotifications(!showNotifications)}
+    className="relative p-2 hover:bg-[#D4AF37]/10 rounded-lg transition-all"
+  >
+    <Bell className="w-6 h-6 text-[#000000] dark:text-[#FFFFFF]" />
+    {notifications.length > 0 && (
+      <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+        {notifications.length > 9 ? '9+' : notifications.length}
+      </span>
+    )}
+  </button>
 
-                {/* Notification Dropdown */}
-                {showNotifications && (
-                  <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-[#1A1A1A] border-2 border-[#D4AF37]/20 rounded-xl shadow-2xl max-h-96 overflow-y-auto">
-                    <div className="p-4 border-b border-[#D4AF37]/20">
-                      <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF]">
-                        Pending Actions ({notifications.length})
-                      </h3>
-                    </div>
-                    {notifications.length === 0 ? (
-                      <div className="p-8 text-center">
-                        <CheckCircle className="w-12 h-12 text-[#10B981] mx-auto mb-3" />
-                        <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                          All caught up!
-                        </p>
-                      </div>
-                    ) : (
-                      notifications.map((notif) => (
-                        <div key={notif.id} className="p-4 border-b border-[#D4AF37]/10 hover:bg-[#D4AF37]/5">
-                          <div className="flex items-start gap-3">
-                            <DollarSign className={`w-5 h-5 ${notif.type === 'deposit' ? 'text-[#10B981]' : 'text-[#3B82F6]'}`} />
-                            <div className="flex-1">
-                              <h4 className="font-semibold text-[#000000] dark:text-[#FFFFFF] text-sm">
-                                {notif.title}
-                              </h4>
-                              <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">
-                                {notif.message}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                )}
+  {/* Notification Dropdown */}
+  {showNotifications && (
+    <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-[#1A1A1A] border-2 border-[#D4AF37]/20 rounded-xl shadow-2xl max-h-96 overflow-y-auto z-50">
+      <div className="p-4 border-b border-[#D4AF37]/20 sticky top-0 bg-white dark:bg-[#1A1A1A]">
+        <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF]">
+          Pending Actions
+        </h3>
+        <p className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8]">
+          {notifications.length} items need attention
+        </p>
+      </div>
+
+      {notifications.length === 0 ? (
+        <div className="p-8 text-center">
+          <CheckCircle className="w-12 h-12 text-[#10B981] mx-auto mb-3" />
+          <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
+            All caught up! No pending actions.
+          </p>
+        </div>
+      ) : (
+        notifications.map((notif) => (
+          <div
+            key={notif.id}
+            className="p-4 border-b border-[#D4AF37]/10 hover:bg-[#D4AF37]/5 transition-all"
+          >
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-[#F8F9FA] dark:bg-[#0A0A0A]">
+                {notif.type === 'deposit' && <DollarSign className="w-5 h-5 text-[#10B981]" />}
+                {notif.type === 'withdrawal' && <DollarSign className="w-5 h-5 text-[#3B82F6]" />}
+                {notif.type === 'message' && <MessageCircle className="w-5 h-5 text-[#F59E0B]" />}
+                {notif.type === 'user' && <Users className="w-5 h-5 text-[#D4AF37]" />}
               </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between mb-1">
+                  <h4 className="font-semibold text-[#000000] dark:text-[#FFFFFF] text-sm">
+                    {notif.title}
+                  </h4>
+                  <span className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] whitespace-nowrap ml-2">
+                    {formatTimeAgo(notif.time)}
+                  </span>
+                </div>
+                <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8] mb-3">
+                  {notif.message}
+                </p>
+                <div className="flex gap-2">
+                  {notif.type === 'deposit' && (
+                    <button
+                      onClick={() => {
+                        setActiveTab('deposits');
+                        setShowNotifications(false);
+                      }}
+                      className="px-3 py-1 text-xs bg-[#10B981] text-white rounded-lg hover:bg-[#059669] transition-all"
+                    >
+                      Review Deposit
+                    </button>
+                  )}
+                  {notif.type === 'withdrawal' && (
+                    <button
+                      onClick={() => {
+                        setActiveTab('withdrawals');
+                        setShowNotifications(false);
+                      }}
+                      className="px-3 py-1 text-xs bg-[#3B82F6] text-white rounded-lg hover:bg-[#2563EB] transition-all"
+                    >
+                      Review Withdrawal
+                    </button>
+                  )}
+                  {notif.type === 'message' && (
+                    <button
+                      onClick={() => {
+                        setActiveTab('messages');
+                        setShowNotifications(false);
+                      }}
+                      className="px-3 py-1 text-xs bg-[#F59E0B] text-white rounded-lg hover:bg-[#D97706] transition-all"
+                    >
+                      View Message
+                    </button>
+                  )}
+                  {notif.type === 'user' && (
+                    <button
+                      onClick={() => {
+                        setActiveTab('users');
+                        setShowNotifications(false);
+                      }}
+                      className="px-3 py-1 text-xs bg-[#D4AF37] text-white rounded-lg hover:bg-[#B8860B] transition-all"
+                    >
+                      View User
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  )}
+</div>
 
               <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">
                 Admin: {user.email}
@@ -663,6 +808,19 @@ export default function AdminDashboard() {
               Users & ROI
             </button>
             <button
+      onClick={() => setActiveTab("messages")}
+      className={`flex-1 px-6 py-4 font-semibold transition-all ${
+        activeTab === "messages" 
+          ? "bg-[#D4AF37] text-white" 
+          : "text-[#4A4A4A] dark:text-[#B8B8B8] hover:bg-[#D4AF37]/10"
+      }`}
+    >
+      <span className="flex items-center justify-center gap-2">
+        <MessageCircle className="w-4 h-4" />
+        Messages
+      </span>
+    </button>
+           {/* <button
               onClick={() => setActiveTab("testdata")}
               className={`flex-1 px-6 py-4 font-semibold transition-all ${
                 activeTab === "testdata" 
@@ -671,7 +829,7 @@ export default function AdminDashboard() {
               }`}
             >
               🧪 Test Data
-            </button>
+            </button> */}
           </div>
 
           <div className="p-6">
@@ -1120,6 +1278,11 @@ export default function AdminDashboard() {
     )}
   </div>
 )}
+             {activeTab === "messages" && (
+  <div className="min-h-[700px]">
+    <AdminInbox />
+  </div>
+)}
             {/* ============================================ */}
             {/* USERS TAB WITH BALANCE & ROI CONTROLS - END */}
             {/* ============================================ */}
@@ -1505,6 +1668,7 @@ export default function AdminDashboard() {
       {/* ============================================ */}
       {/* IMAGE PREVIEW MODAL - END */}
       {/* ============================================ */}
+    
     </div>
-  );
+      );
 }
