@@ -300,7 +300,7 @@ export default function AdminInbox() {
   return (
     <div className="space-y-6">
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="admin-stats-grid">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -346,7 +346,7 @@ export default function AdminInbox() {
       <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border-2 border-[#D4AF37]/20 overflow-hidden">
         <div className="flex flex-col lg:flex-row h-[700px]">
           {/* Conversation List */}
-          <div className="w-full lg:w-96 border-b lg:border-b-0 lg:border-r border-[#D4AF37]/20 flex flex-col">
+          <div className="message-conversations-list border-b lg:border-b-0 lg:border-r border-[#D4AF37]/20 flex flex-col">
             {/* Search & Filters */}
             <div className="p-4 border-b border-[#D4AF37]/20 space-y-3">
               <div className="relative">

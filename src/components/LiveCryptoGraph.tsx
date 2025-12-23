@@ -277,7 +277,7 @@ export default function LiveCryptoGraph() {
       {/* Selected Crypto Info */}
       <div className="bg-[#F8F9FA] dark:bg-[#0A0A0A] rounded-xl p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
+          <div className="chart-controls">
             <img 
               src={selectedCrypto.image} 
               alt={selectedCrypto.name}
@@ -337,7 +337,7 @@ export default function LiveCryptoGraph() {
       </div>
 
       {/* Chart */}
-      <div className="h-96 relative">
+      <div className="chart-container relative">
         {chartLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-[#1A1A1A]/50 backdrop-blur-sm z-10 rounded-lg">
             <RefreshCw className="w-8 h-8 text-[#D4AF37] animate-spin" />
@@ -417,7 +417,7 @@ export default function LiveCryptoGraph() {
       {/* Disclaimer */}
       <div className="mt-4 p-3 rounded-lg bg-[#FEF3C7] dark:bg-[#78350F]/20 border border-[#FCD34D] dark:border-[#78350F]">
         <p className="text-xs text-[#92400E] dark:text-[#FCD34D]">
-          ℹ️ Live data powered by CoinGecko API. Prices update every 60 seconds automatically.
+          ℹ️ Live data powered by Nexachain. Prices update every 60 seconds automatically.
         </p>
       </div>
     </div>

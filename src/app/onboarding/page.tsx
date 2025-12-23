@@ -118,8 +118,8 @@ export default function OnboardingPage() {
     <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-[#F8F9FA] to-white dark:from-[#0A0A0A] dark:to-[#1A1A1A] p-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-2xl rounded-2xl bg-white dark:bg-[#1A1A1A] p-8 shadow-2xl border-2 border-[#D4AF37]/20"
-      >
+       className="onboarding-form rounded-2xl bg-white dark:bg-[#1A1A1A]">
+
         <div className="text-center mb-8">
           <h1 className="text-4xl font-extrabold bg-gradient-to-r from-[#D4AF37] to-[#FFD700] bg-clip-text text-transparent mb-2">
             Complete Your Profile
@@ -130,7 +130,7 @@ export default function OnboardingPage() {
         </div>
 
         <div className="space-y-5">
-          <div className="grid md:grid-cols-2 gap-5">
+          <div className="onboarding-grid">
             <div className="space-y-2">
               <label className="block text-sm font-medium text-[#000000] dark:text-[#FFFFFF]">
                 Phone Number
@@ -160,7 +160,7 @@ export default function OnboardingPage() {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-5">
+          <div className="onboarding-grid">
             <div className="space-y-2">
               <label className="block text-sm font-medium text-[#000000] dark:text-[#FFFFFF]">
                 State

@@ -63,7 +63,7 @@ export default function LiveCryptoFeed() {
 
   if (loading) {
     return (
-      <div className="py-4 bg-[#1A1A1A] dark:bg-[#0A0A0A]">
+      <div className="crypto-ticker py-4 bg-[#1A1A1A] dark:bg-[#0A0A0A]">
         <div className="flex items-center justify-center gap-2">
           <RefreshCw className="w-5 h-5 text-[#D4AF37] animate-spin" />
           <span className="text-[#D4AF37] text-sm font-medium">
@@ -97,8 +97,8 @@ export default function LiveCryptoFeed() {
       )}
 
       {/* Scrolling Ticker */}
-      <div className="py-4 bg-[#1A1A1A] dark:bg-[#0A0A0A]">
-        <div className="flex animate-scroll whitespace-nowrap hover:pause-animation">
+      <div className="crypto-ticker py-4 bg-[#1A1A1A] dark:bg-[#0A0A0A]">
+        <div className="crypto-ticker-items hover:pause-animation">
           {/* Duplicate array for seamless infinite loop */}
           {[...prices, ...prices].map((crypto, index) => (
             <div

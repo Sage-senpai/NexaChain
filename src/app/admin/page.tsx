@@ -570,7 +570,7 @@ useEffect(() => {
                 {notif.type === 'user' && <Users className="w-5 h-5 text-[#D4AF37]" />}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between mb-1">
+                <div className="user-card-header">
                   <h4 className="font-semibold text-[#000000] dark:text-[#FFFFFF] text-sm">
                     {notif.title}
                   </h4>
@@ -633,8 +633,8 @@ useEffect(() => {
         ))
       )}
     </div>
-  )}
-</div>
+      )}
+       </div>
 
               <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">
                 Admin: {user.email}
@@ -668,7 +668,7 @@ useEffect(() => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
+        <div className="admin-stats-grid mb-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -788,38 +788,34 @@ useEffect(() => {
 
        {/* Tabs */}
         <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border-2 border-[#D4AF37]/20 overflow-hidden">
-          <div className="flex border-b border-[#D4AF37]/20">
-            <button
+          <div className="admin-tabs">
+            <button  //className="admin-tab-button"
               onClick={() => setActiveTab("deposits")}
-              className={`flex-1 px-6 py-4 font-semibold transition-all ${activeTab === "deposits" ? "bg-[#D4AF37] text-white" : "text-[#4A4A4A] dark:text-[#B8B8B8] hover:bg-[#D4AF37]/10"}`}
+              className={`admin-tab-button font-semibold transition-all ${activeTab === "deposits" ? "bg-[#D4AF37] text-white" : "text-[#4A4A4A] dark:text-[#B8B8B8] hover:bg-[#D4AF37]/10"}`}
             >
               Deposits ({pendingDeposits.length} pending)
             </button>
-            <button
+            <button  //className="admin-tab-button"
               onClick={() => setActiveTab("withdrawals")}
-              className={`flex-1 px-6 py-4 font-semibold transition-all ${activeTab === "withdrawals" ? "bg-[#D4AF37] text-white" : "text-[#4A4A4A] dark:text-[#B8B8B8] hover:bg-[#D4AF37]/10"}`}
+              className={`admin-tab-button font-semibold transition-all ${activeTab === "withdrawals" ? "bg-[#D4AF37] text-white" : "text-[#4A4A4A] dark:text-[#B8B8B8] hover:bg-[#D4AF37]/10"}`}
             >
               Withdrawals ({pendingWithdrawals.length} pending)
             </button>
-            <button
+            <button  //className="admin-tab-button"
               onClick={() => setActiveTab("users")}
-              className={`flex-1 px-6 py-4 font-semibold transition-all ${activeTab === "users" ? "bg-[#D4AF37] text-white" : "text-[#4A4A4A] dark:text-[#B8B8B8] hover:bg-[#D4AF37]/10"}`}
+              className={`admin-tab-button font-semibold transition-all ${activeTab === "users" ? "bg-[#D4AF37] text-white" : "text-[#4A4A4A] dark:text-[#B8B8B8] hover:bg-[#D4AF37]/10"}`}
             >
               Users & ROI
             </button>
-            <button
-      onClick={() => setActiveTab("messages")}
-      className={`flex-1 px-6 py-4 font-semibold transition-all ${
-        activeTab === "messages" 
-          ? "bg-[#D4AF37] text-white" 
-          : "text-[#4A4A4A] dark:text-[#B8B8B8] hover:bg-[#D4AF37]/10"
-      }`}
-    >
-      <span className="flex items-center justify-center gap-2">
-        <MessageCircle className="w-4 h-4" />
-        Messages
-      </span>
-    </button>
+            <button  //className="admin-tab-button"
+            onClick={() => setActiveTab("messages")}
+            className={`admin-tab-button font-semibold transition-all ${activeTab === "messages" ? "bg-[#D4AF37] text-white" : "text-[#4A4A4A] dark:text-[#B8B8B8] hover:bg-[#D4AF37]/10"}`}
+            >
+           <span className="flex items-center justify-center gap-2">
+             <MessageCircle className="w-4 h-4" />
+           Messages
+          </span>
+            </button>
            {/* <button
               onClick={() => setActiveTab("testdata")}
               className={`flex-1 px-6 py-4 font-semibold transition-all ${
@@ -835,13 +831,13 @@ useEffect(() => {
           <div className="p-6">
             {/* DEPOSITS TAB */}
             {activeTab === "deposits" && (
-              <div className="overflow-x-auto">
+             <div className="admin-table-container custom-scrollbar"> 
                 {filteredDeposits.length === 0 ? (
                   <p className="text-center py-8 text-[#4A4A4A] dark:text-[#B8B8B8]">
                     No deposits found
                   </p>
                 ) : (
-                  <table className="w-full">
+                    <table className="admin-table">
                     <thead>
                       <tr className="border-b border-[#D4AF37]/20">
                         <th className="text-left py-3 px-4 font-semibold text-[#4A4A4A] dark:text-[#B8B8B8]">User</th>
@@ -879,22 +875,22 @@ useEffect(() => {
                           </td>
                           <td className="py-3 px-4">
                             {deposit.proof_image_url ? (
-  deposit.proof_image_url === "email_attached" ? (
-    <span className="text-[#10B981] text-sm font-semibold">
-      📧 Sent via Email
-    </span>
-  ) : (
-    <button
-      onClick={() => setSelectedImage(deposit.proof_image_url!)}
-      className="flex items-center gap-2 text-[#D4AF37] hover:underline"
-    >
-      <Eye className="w-4 h-4" />
-      View
-    </button>
-  )
-) : (
-  <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">No proof</span>
-)}
+                deposit.proof_image_url === "email_attached" ? (
+                   <span className="text-[#10B981] text-sm font-semibold">
+                   📧 Sent via Email
+                     </span>
+                  ) : (
+                         <button
+                          onClick={() => setSelectedImage(deposit.proof_image_url!)}
+                     className="flex items-center gap-2 text-[#D4AF37] hover:underline"
+                 >
+                    <Eye className="w-4 h-4" />
+                     View
+                         </button>
+                          )
+                    )  : (
+                      <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">No proof</span>
+                         )}
                           </td>
                           <td className="py-3 px-4">
                             <span
@@ -941,13 +937,13 @@ useEffect(() => {
 
             {/* WITHDRAWALS TAB */}
             {activeTab === "withdrawals" && (
-              <div className="overflow-x-auto">
+              <div className="admin-table-container custom-scrollbar">
                 {filteredWithdrawals.length === 0 ? (
                   <p className="text-center py-8 text-[#4A4A4A] dark:text-[#B8B8B8]">
                     No withdrawals found
                   </p>
                 ) : (
-                  <table className="w-full">
+                   <table className="admin-table">
                     <thead>
                       <tr className="border-b border-[#D4AF37]/20">
                         <th className="text-left py-3 px-4 font-semibold text-[#4A4A4A] dark:text-[#B8B8B8]">User</th>
@@ -1024,7 +1020,7 @@ useEffect(() => {
                 )}
               </div>
             )}
-
+          </div>
             {/* ============================================ */}
             {/* USERS TAB WITH BALANCE & ROI CONTROLS - START */}
             {/* ============================================ */}
@@ -1053,7 +1049,7 @@ useEffect(() => {
       filteredUsers.map((userData) => (
         <div key={userData.id} className="border-2 border-[#D4AF37]/20 rounded-xl p-6 hover:border-[#D4AF37]/50 transition-all">
           {/* User Header with Avatar & Basic Info */}
-          <div className="flex items-start justify-between mb-4">
+          <div className="user-card-header">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#FFD700] flex items-center justify-center text-white text-2xl font-bold">
                 {userData.full_name ? userData.full_name.charAt(0).toUpperCase() : userData.email.charAt(0).toUpperCase()}
@@ -1197,7 +1193,7 @@ useEffect(() => {
           </div>
 
           {/* User Stats Cards */}
-          <div className="grid grid-cols-3 gap-4 mb-4 p-4 bg-[#F8F9FA] dark:bg-[#0A0A0A] rounded-lg">
+          <div className="user-card-details mb-4 p-4 bg-[#F8F9FA] dark:bg-[#0A0A0A] rounded-lg">
             <div className="text-center">
               <div className="text-lg font-bold text-[#000000] dark:text-[#FFFFFF]">
                 {userData.active_investments?.length || 0}
@@ -1245,7 +1241,7 @@ useEffect(() => {
                       Credit ROI
                     </button>
                   </div>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div className="user-card-details text-sm">
                     <div>
                       <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">Principal:</span>
                       <div className="font-semibold text-[#000000] dark:text-[#FFFFFF]">
@@ -1278,17 +1274,19 @@ useEffect(() => {
     )}
   </div>
 )}
-             {activeTab === "messages" && (
-  <div className="min-h-[700px]">
-    <AdminInbox />
-  </div>
-)}
+           {activeTab === "messages" && (
+              <div className="min-h-[700px]">
+                <AdminInbox />
+              </div>
+            )}
+          </div>
+        
             {/* ============================================ */}
             {/* USERS TAB WITH BALANCE & ROI CONTROLS - END */}
             {/* ============================================ */}
 
             {/* TEST DATA TAB */}
-            {activeTab === "testdata" && (
+           {/* {activeTab === "testdata" && (
               <div className="bg-white dark:bg-[#1A1A1A] rounded-xl p-6">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-3 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#FFD700]">
@@ -1315,14 +1313,14 @@ useEffect(() => {
                   </ol>
                   <div className="mt-3 p-3 bg-[#000000] rounded-lg overflow-x-auto">
                     <code className="text-[#10B981] text-xs font-mono block whitespace-pre">
-{`fetch('/api/admin/test-data', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    email: 'testbot001@test.com',
-    scenario: 'active_investor'
-  })
-}).then(r => r.json()).then(console.log);`}
+                     {`fetch('/api/admin/test-data', {
+                       method: 'POST',
+                       headers: { 'Content-Type': 'application/json' },
+                       body: JSON.stringify({
+                       email: 'testbot001@test.com',
+                       scenario: 'active_investor'
+                         })
+                       }).then(r => r.json()).then(console.log);`}
                     </code>
                   </div>
                   <p className="text-xs text-[#92400E] dark:text-[#FCD34D] mt-3 mb-3">
@@ -1339,12 +1337,12 @@ useEffect(() => {
                   </p>
                 </div>
               </div>
-            )}
-          </div>
-        </div>
-      </div>
+               )}
+              </div>
+             </div>*/} 
+      </div>     
 
-      {/* ============================================ */}
+      
       {/* BALANCE CONTROL MODAL - START */}
       {/* ============================================ */}
       <AnimatePresence>

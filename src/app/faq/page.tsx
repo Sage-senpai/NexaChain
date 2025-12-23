@@ -156,14 +156,14 @@ export default function FAQPage() {
         </motion.div>
 
         {/* Category Filter */}
-        <div className="flex flex-wrap gap-2 justify-center mb-12">
+        <div className="faq-categories mb-12">
           {categories.map((category) => (
             <motion.button
               key={category}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setActiveCategory(category)}
-              className={`px-6 py-2 rounded-full font-semibold transition-all ${
+              className={`faq-category-button rounded-full font-semibold transition-all ${
                 activeCategory === category
                   ? "bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white"
                   : "bg-white dark:bg-[#1A1A1A] text-[#000000] dark:text-[#FFFFFF] border-2 border-[#D4AF37]/20 hover:border-[#D4AF37]"

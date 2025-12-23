@@ -121,16 +121,16 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8F9FA] to-white dark:from-[#0A0A0A] dark:to-[#1A1A1A]">
       {/* Header */}
-      <nav className="border-b border-[#D4AF37]/20 bg-white/80 dark:bg-[#0A0A0A]/80 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+      <nav className="navbar-container border-b border-[#D4AF37]/20 bg-white dark:bg-[#1A1A1A]">
+        <div className="responsive-container">
+          <div className="navbar-content">
             <span className="text-2xl font-bold bg-gradient-to-r from-[#D4AF37] to-[#FFD700] bg-clip-text text-transparent">
               Nexachain
             </span>
             <div className="flex items-center gap-4">
-              <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                Welcome, {profile?.full_name || user.email?.split("@")[0]}
-              </span>
+              <span className="text-responsive-sm text-[#4A4A4A] dark:text-[#B8B8B8] hide-mobile">
+  Welcome, {profile?.full_name || user.email?.split("@")[0]}
+               </span>
               {isAdmin && (
                 <a
                   href="/admin"
@@ -185,7 +185,7 @@ export default function DashboardPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="dashboard-grid mb-8">
           {stats.map((stat, index) => {
             const Icon = stat.icon;
             return (
@@ -217,7 +217,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="quick-actions-grid mb-8">
           <a
             href="/dashboard/fund"
             className="bg-gradient-to-r from-[#D4AF37] to-[#FFD700] p-6 rounded-2xl text-white hover:shadow-2xl transition-all"

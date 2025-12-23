@@ -151,8 +151,8 @@ export default function AdminBalanceControl({ user, investment, onSuccess }: Adm
 
       {/* Balance Control Modal */}
       {showBalanceModal && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border-2 border-[#3B82F6] p-8 max-w-md w-full">
+        <div className="modal-overlay">
+  <div className="modal-content rounded-2xl">
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h3 className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-1">
@@ -291,8 +291,8 @@ export default function AdminBalanceControl({ user, investment, onSuccess }: Adm
 
       {/* ROI Control Modal */}
       {showROIModal && investment && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border-2 border-[#10B981] p-8 max-w-md w-full">
+       <div className="modal-overlay">
+  <div className="modal-content rounded-2xl">
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h3 className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-1">

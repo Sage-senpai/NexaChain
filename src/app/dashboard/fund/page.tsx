@@ -227,7 +227,7 @@ const handleSubmit = async () => {
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="responsive-container py-12">
         {/* Progress Steps */}
         <div className="flex items-center justify-center mb-12">
           {[1, 2, 3, 4].map((num) => (
@@ -425,10 +425,8 @@ const handleSubmit = async () => {
                   </h3>
                   
                   {/* QR Code */}
-                  <div className="flex justify-center mb-4">
-                    <div className="p-4 bg-white rounded-lg">
-                      <QRCode value={wallets[cryptoType]} size={200} />
-                    </div>
+                  <div className="qr-code-container">
+                   <QRCode value={wallets[cryptoType]} />
                   </div>
 
                   <div className="p-4 bg-white dark:bg-[#1A1A1A] rounded-lg border border-[#D4AF37]/20 break-all font-mono text-sm text-[#000000] dark:text-[#FFFFFF] mb-4">

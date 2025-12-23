@@ -253,8 +253,8 @@ export default function ManageAdminsPage() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
+            <div className="admin-table-container custom-scrollbar">
+               <table className="admin-table">
                 <thead>
                   <tr className="border-b border-[#D4AF37]/20 bg-[#F8F9FA] dark:bg-[#0A0A0A]">
                     <th className="text-left py-4 px-6 font-semibold text-[#4A4A4A] dark:text-[#B8B8B8]">

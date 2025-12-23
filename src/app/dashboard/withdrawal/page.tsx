@@ -116,7 +116,7 @@ export default function WithdrawPage() {
         </div>
       </nav>
 
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="responsive-container py-12" style={{ maxWidth: '48rem' }}>
         <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border-2 border-[#D4AF37]/20 p-8">
           <div className="flex items-center gap-4 mb-8">
             <div className="w-16 h-16 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] rounded-full flex items-center justify-center">
@@ -153,7 +153,7 @@ export default function WithdrawPage() {
               <label className="block text-[#4A4A4A] dark:text-[#B8B8B8] mb-2">
                 Cryptocurrency
               </label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="crypto-selector-grid">
                 {["BTC", "ETH", "USDT", "SOL"].map((crypto) => (
                   <div
                     key={crypto}

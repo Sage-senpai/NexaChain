@@ -44,7 +44,7 @@ export default function LegalPage() {
         </motion.div>
 
         {/* Tabs */}
-        <div className="flex gap-4 mb-8">
+        <div className="legal-tabs mb-8">
           <button
             onClick={() => setActiveTab("terms")}
             className={`flex-1 py-4 rounded-xl font-bold transition-all ${
@@ -79,8 +79,8 @@ export default function LegalPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="bg-white dark:bg-[#1A1A1A] rounded-2xl border-2 border-[#D4AF37]/20 p-8"
-        >
+          className="legal-content bg-white dark:bg-[#1A1A1A] rounded-2xl border-2 border-[#D4AF37]/20">
+          
           {activeTab === "terms" ? (
             <div className="prose dark:prose-invert max-w-none">
               <h2 className="text-3xl font-bold text-[#D4AF37] mb-6">Terms of Service</h2>

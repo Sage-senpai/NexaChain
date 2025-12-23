@@ -70,7 +70,7 @@ export default function MobileNav({ links, ctaText, ctaHref }: MobileNavProps) {
               </div>
 
               {/* Links */}
-              <div className="p-4 space-y-2">
+              <div className="p-4 space-y- bg-white dark:bg-[#0A0A0A]">
                 {links.map((link, index) => (
                   link.href ? (
                     <a

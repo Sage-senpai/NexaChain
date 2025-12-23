@@ -243,7 +243,7 @@ export default function UserMessagePanel() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: "100%", opacity: 0 }}
               transition={{ type: "spring", damping: 25 }}
-              className="fixed bottom-0 right-0 md:bottom-6 md:right-6 w-full md:w-96 h-full md:h-[600px] bg-white dark:bg-[#1A1A1A] border-2 border-[#D4AF37]/20 md:rounded-2xl shadow-2xl z-50 flex flex-col"
+              className="message-panel bg-white dark:bg-[#1A1A1A] border-2 border-[#D4AF37]/20 md:rounded-2xl shadow-2xl z-50 flex flex-col"
             >
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-[#D4AF37]/20">
@@ -399,7 +399,7 @@ export default function UserMessagePanel() {
               {/* Input Area */}
               {(view === "conversation" || view === "new") && (
                 <div className="p-4 border-t border-[#D4AF37]/20">
-                  <div className="flex gap-2">
+                  <div className="message-input-container">
                     <textarea
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
@@ -412,7 +412,7 @@ export default function UserMessagePanel() {
                       placeholder="Type your message..."
                       rows={3}
                       disabled={sending}
-                      className="flex-1 px-4 py-2 rounded-lg border-2 border-[#D4AF37]/20 bg-[#F8F9FA] dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#D4AF37] focus:outline-none resize-none disabled:opacity-50"
+                      className="flex-1 rounded-lg border-2 border-[#D4AF37]/20 bg-[#F8F9FA] dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-[#D4AF37] focus:outline-none resize-none disabled:opacity-50"
                     />
                     <button
                       onClick={view === "new" ? handleCreateConversation : handleSendMessage}

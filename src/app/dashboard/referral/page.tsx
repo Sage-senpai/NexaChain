@@ -100,7 +100,7 @@ export default function ReferralsPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header Stats */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="referral-stats-grid mb-8">
           <div className="bg-white dark:bg-[#1A1A1A] p-6 rounded-2xl border-2 border-[#D4AF37]/20">
             <div className="flex items-center justify-between mb-4">
               <Users className="w-8 h-8 text-[#D4AF37]" />
@@ -146,12 +146,12 @@ export default function ReferralsPage() {
           <p className="text-white/90 mb-6">
             Earn 5% commission on every deposit made by your referrals!
           </p>
-          <div className="flex gap-2">
+          <div className="referral-link-container">
             <input
               type="text"
               value={`${typeof window !== "undefined" ? window.location.origin : ""}/account/signup?ref=${profile?.referral_code || ""}`}
               readOnly
-              className="flex-1 px-4 py-3 rounded-lg bg-white/20 backdrop-blur-sm border-2 border-white/30 text-white placeholder-white/60 font-mono text-sm"
+              className="flex-1 rounded-lg bg-white/20 backdrop-blur-sm border-2 border-white/30 text-white placeholder-white/60 font-mono text-sm"
             />
             <button
               onClick={copyReferralLink}
@@ -225,8 +225,8 @@ export default function ReferralsPage() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
+            <div className="admin-table-container custom-scrollbar">
+              <table className="admin-table">
                 <thead>
                   <tr className="border-b border-[#D4AF37]/20">
                     <th className="text-left py-3 px-4 font-semibold text-[#4A4A4A] dark:text-[#B8B8B8]">

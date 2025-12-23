@@ -154,7 +154,7 @@ export default function AdminNotifications() {
                       {getIcon(notification.type)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between mb-1">
+                      <div className="user-card-header">
                         <h4 className="font-semibold text-[#000000] dark:text-[#FFFFFF] text-sm">
                           {notification.title}
                         </h4>

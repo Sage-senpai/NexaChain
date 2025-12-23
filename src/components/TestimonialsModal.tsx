@@ -123,7 +123,7 @@ export default function TestimonialsModal({ isOpen, onClose }: TestimonialsModal
               </button>
             </div>
             
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="testimonials-grid">
               {testimonials.map((t, i) => (
                 <motion.div
                   key={i}
