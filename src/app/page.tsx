@@ -319,7 +319,7 @@ export default function LandingPage() {
             <div className="text-center p-6 bg-[#F8F9FA] dark:bg-[#1A1A1A] rounded-xl border-2 border-[#D4AF37]/20">
               <Phone className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
               <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">Phone</h3>
-              <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">UK: +44 7853383650<br/>SA: +27 78 720 8949</p>
+              <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">UK: +44 7878345807<br/>SA: +27 78 720 8949</p>
             </div>
             <div className="text-center p-6 bg-[#F8F9FA] dark:bg-[#1A1A1A] rounded-xl border-2 border-[#D4AF37]/20">
               <MapPin className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
@@ -371,7 +371,7 @@ export default function LandingPage() {
      {/* Floating Contact Buttons */}
       <div className="floating-contact-buttons">
         <a
-          href="https://wa.me/+447898287539?text=Hello%2C%20I%27m%20interested%20in%20Nexachain%20investments"
+          href="https://wa.me/+447878345807?text=Hello%2C%20I%27m%20interested%20in%20Nexachain%20investments"
           target="_blank"
           rel="noopener noreferrer"
           className="floating-btn floating-whatsapp"
