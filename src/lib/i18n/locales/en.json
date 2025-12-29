@@ -1,0 +1,225 @@
+{
+  "nav": {
+    "home": "Home",
+    "plans": "Plans",
+    "about": "About",
+    "services": "Services",
+    "contact": "Contact",
+    "signin": "Sign In",
+    "signup": "Get Started",
+    "dashboard": "Dashboard",
+    "admin": "Admin Panel",
+    "logout": "Logout",
+    "backToDashboard": "Back to Dashboard"
+  },
+  "hero": {
+    "badge": "SAFE INVESTMENT • GET LIFETIME INCOME",
+    "title": "Climb to Your Financial Summit",
+    "subtitle": "The leading financial establishment providing high-quality international investment services. Join thousands of investors earning daily returns through our automated trading systems.",
+    "description": "We are always ready to partner with you by offering full financial support with stable and automated investment strategies.",
+    "openDeposit": "Open Deposit",
+    "viewPlans": "View Investment Plans"
+  },
+  "stats": {
+    "activeUsers": "Active Users",
+    "totalInvestments": "Total Investments",
+    "countries": "Countries",
+    "roiPaid": "ROI Paid Out"
+  },
+  "plans": {
+    "title": "Investment Proposals",
+    "subtitle": "Nexachain employees ensure that every investor can earn money with our automated systems",
+    "noFees": "No account opening fees • No deposit commissions",
+    "dailyROI": "Daily ROI",
+    "totalROI": "Total ROI",
+    "duration": "Duration",
+    "investNow": "Invest Now",
+    "day": "day",
+    "days": "days"
+  },
+  "about": {
+    "title": "Why Choose Nexachain?",
+    "subtitle": "Our team of experts does everything for you with automated trading systems",
+    "tradingBot": {
+      "title": "Unique Trading Bot",
+      "desc": "Our team of professionals has created a unique trading bot that trades with efficiency and escapes market dip, ensuring capitals return safely with accurate investment returns"
+    },
+    "automated": {
+      "title": "Stable & Automated",
+      "desc": "The robot is not human-related, making all investments reliable and completely safe. Its efficiency increases daily achieving 99.9% trade accuracy"
+    },
+    "support": {
+      "title": "Expert Team 24/7",
+      "desc": "The highly professional Nexachain team controls all trading robot processes around the clock. After investing, observe your capital growth in real-time"
+    },
+    "howItWorks": "Get Started in 4 Simple Steps",
+    "step1": {
+      "title": "Create Account",
+      "desc": "Sign up and verify your email address"
+    },
+    "step2": {
+      "title": "Verify Email",
+      "desc": "Confirm your email to activate your account"
+    },
+    "step3": {
+      "title": "Log In",
+      "desc": "Access your secure dashboard"
+    },
+    "step4": {
+      "title": "Activate Plan",
+      "desc": "Choose a plan and start earning"
+    }
+  },
+  "contact": {
+    "title": "Get In Touch",
+    "email": "Email",
+    "phone": "Phone",
+    "location": "Location"
+  },
+  "footer": {
+    "tagline": "Your trusted investment platform",
+    "quickLinks": "Quick Links",
+    "legal": "Legal",
+    "support": "Support",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "faq": "FAQ",
+    "helpCenter": "Help Center",
+    "copyright": "All rights reserved"
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "accountBalance": "Account Balance",
+    "totalInvested": "Total Invested",
+    "totalWithdrawn": "Total Withdrawn",
+    "referralBonus": "Referral Bonus",
+    "makeDeposit": {
+      "title": "Make Deposit",
+      "desc": "Fund your account and start investing"
+    },
+    "withdrawFunds": {
+      "title": "Withdraw Funds",
+      "desc": "Request a payout to your wallet"
+    },
+    "referrals": {
+      "title": "Referrals",
+      "desc": "Earn bonuses by referring friends"
+    },
+    "yourReferralLink": "Your Referral Link",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "activeInvestments": "Active Investments",
+    "noInvestments": "No active investments yet",
+    "makeFirstDeposit": "Make Your First Deposit",
+    "principal": "Principal",
+    "currentValue": "Current Value",
+    "expectedReturn": "Expected Return"
+  },
+  "auth": {
+    "welcomeBack": "Welcome Back",
+    "signInTagline": "Sign in to your Nexachain account",
+    "joinNexachain": "Join Nexachain",
+    "signUpTagline": "Start your investment journey today",
+    "email": "Email",
+    "password": "Password",
+    "fullName": "Full Name",
+    "phoneNumber": "Phone Number",
+    "forgotPassword": "Forgot password?",
+    "dontHaveAccount": "Don't have an account?",
+    "alreadyHaveAccount": "Already have an account?",
+    "signingIn": "Signing in...",
+    "creatingAccount": "Creating Account...",
+    "enterEmail": "Enter your email",
+    "enterPassword": "Enter your password",
+    "enterFullName": "Enter your full name",
+    "enterPhoneNumber": "Enter your phone number",
+    "createPassword": "Create a strong password (min. 6 characters)",
+    "referredBy": "Referred by"
+  },
+  "withdrawal": {
+    "title": "Withdraw Funds",
+    "tagline": "Request a payout to your crypto wallet",
+    "amount": "Withdrawal Amount (USD)",
+    "crypto": "Cryptocurrency",
+    "walletAddress": "Your {crypto} Wallet Address",
+    "enterWallet": "Enter your {crypto} wallet address",
+    "notice": "Important Notice",
+    "processing": "Withdrawals are processed within 24-48 hours",
+    "minimum": "Minimum withdrawal amount: $10",
+    "doubleCheck": "Double-check your wallet address before submitting",
+    "networkFees": "Network fees may apply",
+    "submit": "Submit Withdrawal Request",
+    "submitting": "Processing...",
+    "success": "Withdrawal Requested!",
+    "successDesc": "Your withdrawal is pending approval. Funds will be sent to your wallet within 24-48 hours."
+  },
+  "fund": {
+    "choosePlan": "Choose Investment Plan",
+    "enterAmount": "Enter Investment Amount",
+    "choosePayment": "Choose Payment Method",
+    "uploadProof": "Upload Proof of Payment",
+    "continue": "Continue",
+    "back": "Back",
+    "sendTo": "Send ${amount} worth of {crypto} to:",
+    "copyAddress": "Copy Address",
+    "sentPayment": "I've Sent the Payment",
+    "uploadProofDesc": "Please upload a screenshot of your transaction confirmation. All admins will be notified via email with your proof.",
+    "clickToUpload": "Click to upload proof (Max 5MB)",
+    "proofUploaded": "Proof Uploaded",
+    "note": "Note: Your proof will be sent directly to admin emails for faster processing. No storage upload required!",
+    "submitting": "Submitting...",
+    "submitDeposit": "Submit Deposit",
+    "depositSuccess": "Deposit Submitted!",
+    "depositSuccessDesc": "Your deposit has been submitted and admins have been notified via email. You'll be notified once it's confirmed.",
+    "expectedDailyReturn": "Expected Daily Return",
+    "totalReturnAfter": "Total Return After {days} Days"
+  },
+  "referral": {
+    "totalReferrals": "Total Referrals",
+    "totalEarned": "Total Earned",
+    "activeReferrals": "Active Referrals",
+    "shareLink": "Share Your Referral Link",
+    "earnCommission": "Earn 5% commission on every deposit made by your referrals!",
+    "howItWorks": "How It Works",
+    "step1": {
+      "title": "Share Your Link",
+      "desc": "Copy and share your unique referral link with friends"
+    },
+    "step2": {
+      "title": "They Sign Up",
+      "desc": "Your friends register using your referral link"
+    },
+    "step3": {
+      "title": "Earn Commission",
+      "desc": "Get 5% of their first deposit instantly"
+    },
+    "yourReferrals": "Your Referrals",
+    "noReferrals": "No referrals yet",
+    "shareToEarn": "Share your link to start earning!",
+    "date": "Date",
+    "bonusAmount": "Bonus Amount",
+    "status": "Status"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "backToHome": "Back to Home",
+    "learnMore": "Learn More",
+    "getStarted": "Get Started",
+    "tryAgain": "Try Again",
+    "required": "Required",
+    "optional": "Optional",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "close": "Close",
+    "confirm": "Confirm",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "completed": "Completed"
+  }
+}

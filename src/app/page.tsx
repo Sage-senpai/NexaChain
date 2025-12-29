@@ -11,6 +11,7 @@ import LiveCryptoFeed from "@/components/LiveCryptoFeed";
 import MobileNav from "@/components/MobileNav";
 import TestimonialsModal from "@/components/TestimonialsModal";
 
+
 interface InvestmentPlan {
   name: string;
   emoji: string;

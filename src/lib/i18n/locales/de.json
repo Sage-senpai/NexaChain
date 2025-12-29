@@ -1,0 +1,225 @@
+{
+  "nav": {
+    "home": "Startseite",
+    "plans": "Pläne",
+    "about": "Über Uns",
+    "services": "Dienstleistungen",
+    "contact": "Kontakt",
+    "signin": "Anmelden",
+    "signup": "Jetzt Starten",
+    "dashboard": "Dashboard",
+    "admin": "Admin-Bereich",
+    "logout": "Abmelden",
+    "backToDashboard": "Zurück zum Dashboard"
+  },
+  "hero": {
+    "badge": "SICHERE INVESTITION • LEBENSLANGES EINKOMMEN",
+    "title": "Erreichen Sie Ihren Finanziellen Gipfel",
+    "subtitle": "Die führende Finanzinstitution, die hochwertige internationale Investitionsdienstleistungen anbietet. Schließen Sie sich Tausenden von Investoren an, die tägliche Renditen durch unsere automatisierten Handelssysteme erzielen.",
+    "description": "Wir sind stets bereit, mit Ihnen zusammenzuarbeiten, indem wir volle finanzielle Unterstützung mit stabilen und automatisierten Investitionsstrategien bieten.",
+    "openDeposit": "Einzahlung Öffnen",
+    "viewPlans": "Investitionspläne Ansehen"
+  },
+  "stats": {
+    "activeUsers": "Aktive Nutzer",
+    "totalInvestments": "Gesamtinvestitionen",
+    "countries": "Länder",
+    "roiPaid": "ROI Ausgezahlt"
+  },
+  "plans": {
+    "title": "Investitionsvorschläge",
+    "subtitle": "Nexachain-Mitarbeiter stellen sicher, dass jeder Investor mit unseren automatisierten Systemen Geld verdienen kann",
+    "noFees": "Keine Kontoeröffnungsgebühren • Keine Einzahlungsprovisionen",
+    "dailyROI": "Täglicher ROI",
+    "totalROI": "Gesamt-ROI",
+    "duration": "Laufzeit",
+    "investNow": "Jetzt Investieren",
+    "day": "Tag",
+    "days": "Tage"
+  },
+  "about": {
+    "title": "Warum Nexachain Wählen?",
+    "subtitle": "Unser Expertenteam erledigt alles für Sie mit automatisierten Handelssystemen",
+    "tradingBot": {
+      "title": "Einzigartiger Trading-Bot",
+      "desc": "Unser Team von Profis hat einen einzigartigen Trading-Bot entwickelt, der effizient handelt und Marktrückgänge vermeidet, wodurch die Rückkehr der Kapitale sicher mit präzisen Investitionsrenditen gewährleistet wird"
+    },
+    "automated": {
+      "title": "Stabil und Automatisiert",
+      "desc": "Der Roboter ist nicht menschenbezogen, wodurch alle Investitionen zuverlässig und völlig sicher sind. Seine Effizienz steigt täglich und erreicht eine Handelsgenauigkeit von 99,9%"
+    },
+    "support": {
+      "title": "Expertenteam 24/7",
+      "desc": "Das hochprofessionelle Nexachain-Team kontrolliert rund um die Uhr alle Trading-Bot-Prozesse. Beobachten Sie nach der Investition das Wachstum Ihres Kapitals in Echtzeit"
+    },
+    "howItWorks": "Starten Sie in 4 Einfachen Schritten",
+    "step1": {
+      "title": "Konto Erstellen",
+      "desc": "Registrieren Sie sich und verifizieren Sie Ihre E-Mail-Adresse"
+    },
+    "step2": {
+      "title": "E-Mail Verifizieren",
+      "desc": "Bestätigen Sie Ihre E-Mail, um Ihr Konto zu aktivieren"
+    },
+    "step3": {
+      "title": "Anmelden",
+      "desc": "Greifen Sie auf Ihr sicheres Dashboard zu"
+    },
+    "step4": {
+      "title": "Plan Aktivieren",
+      "desc": "Wählen Sie einen Plan und beginnen Sie zu verdienen"
+    }
+  },
+  "contact": {
+    "title": "Kontaktieren Sie Uns",
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "location": "Standort"
+  },
+  "footer": {
+    "tagline": "Ihre vertrauenswürdige Investitionsplattform",
+    "quickLinks": "Schnelllinks",
+    "legal": "Rechtliches",
+    "support": "Unterstützung",
+    "terms": "Nutzungsbedingungen",
+    "privacy": "Datenschutzrichtlinie",
+    "faq": "FAQ",
+    "helpCenter": "Hilfecenter",
+    "copyright": "Alle Rechte vorbehalten"
+  },
+  "dashboard": {
+    "welcome": "Willkommen",
+    "accountBalance": "Kontostand",
+    "totalInvested": "Gesamt Investiert",
+    "totalWithdrawn": "Gesamt Abgehoben",
+    "referralBonus": "Empfehlungsbonus",
+    "makeDeposit": {
+      "title": "Einzahlung Tätigen",
+      "desc": "Finanzieren Sie Ihr Konto und beginnen Sie zu investieren"
+    },
+    "withdrawFunds": {
+      "title": "Geld Abheben",
+      "desc": "Fordern Sie eine Auszahlung an Ihre Wallet an"
+    },
+    "referrals": {
+      "title": "Empfehlungen",
+      "desc": "Verdienen Sie Boni durch Freundesempfehlungen"
+    },
+    "yourReferralLink": "Ihr Empfehlungslink",
+    "copy": "Kopieren",
+    "copied": "Kopiert!",
+    "activeInvestments": "Aktive Investitionen",
+    "noInvestments": "Noch keine aktiven Investitionen",
+    "makeFirstDeposit": "Tätigen Sie Ihre Erste Einzahlung",
+    "principal": "Kapital",
+    "currentValue": "Aktueller Wert",
+    "expectedReturn": "Erwartete Rendite"
+  },
+  "auth": {
+    "welcomeBack": "Willkommen Zurück",
+    "signInTagline": "Melden Sie sich bei Ihrem Nexachain-Konto an",
+    "joinNexachain": "Treten Sie Nexachain Bei",
+    "signUpTagline": "Beginnen Sie heute Ihre Investitionsreise",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "fullName": "Vollständiger Name",
+    "phoneNumber": "Telefonnummer",
+    "forgotPassword": "Passwort vergessen?",
+    "dontHaveAccount": "Sie haben noch kein Konto?",
+    "alreadyHaveAccount": "Sie haben bereits ein Konto?",
+    "signingIn": "Anmeldung läuft...",
+    "creatingAccount": "Konto wird erstellt...",
+    "enterEmail": "Geben Sie Ihre E-Mail ein",
+    "enterPassword": "Geben Sie Ihr Passwort ein",
+    "enterFullName": "Geben Sie Ihren vollständigen Namen ein",
+    "enterPhoneNumber": "Geben Sie Ihre Telefonnummer ein",
+    "createPassword": "Erstellen Sie ein starkes Passwort (mind. 6 Zeichen)",
+    "referredBy": "Empfohlen von"
+  },
+  "withdrawal": {
+    "title": "Geld Abheben",
+    "tagline": "Fordern Sie eine Auszahlung an Ihre Krypto-Wallet an",
+    "amount": "Abhebungsbetrag (USD)",
+    "crypto": "Kryptowährung",
+    "walletAddress": "Ihre {crypto} Wallet-Adresse",
+    "enterWallet": "Geben Sie Ihre {crypto} Wallet-Adresse ein",
+    "notice": "Wichtiger Hinweis",
+    "processing": "Abhebungen werden innerhalb von 24-48 Stunden bearbeitet",
+    "minimum": "Mindestabhebungsbetrag: 10 $",
+    "doubleCheck": "Überprüfen Sie Ihre Wallet-Adresse zweimal, bevor Sie absenden",
+    "networkFees": "Netzwerkgebühren können anfallen",
+    "submit": "Abhebungsantrag Einreichen",
+    "submitting": "Wird bearbeitet...",
+    "success": "Abhebung Angefordert!",
+    "successDesc": "Ihre Abhebung wartet auf Genehmigung. Die Gelder werden innerhalb von 24-48 Stunden an Ihre Wallet gesendet."
+  },
+  "fund": {
+    "choosePlan": "Investitionsplan Wählen",
+    "enterAmount": "Investitionsbetrag Eingeben",
+    "choosePayment": "Zahlungsmethode Wählen",
+    "uploadProof": "Zahlungsnachweis Hochladen",
+    "continue": "Weiter",
+    "back": "Zurück",
+    "sendTo": "Senden Sie {amount} $ in {crypto} an:",
+    "copyAddress": "Adresse Kopieren",
+    "sentPayment": "Ich Habe Bezahlt",
+    "uploadProofDesc": "Bitte laden Sie einen Screenshot Ihrer Transaktionsbestätigung hoch. Alle Administratoren werden per E-Mail mit Ihrem Nachweis benachrichtigt.",
+    "clickToUpload": "Klicken Sie, um den Nachweis hochzuladen (Max 5MB)",
+    "proofUploaded": "Nachweis Hochgeladen",
+    "note": "Hinweis: Ihr Nachweis wird direkt an die Admin-E-Mails gesendet für eine schnellere Bearbeitung. Kein Speicher-Upload erforderlich!",
+    "submitting": "Wird übermittelt...",
+    "submitDeposit": "Einzahlung Absenden",
+    "depositSuccess": "Einzahlung Eingereicht!",
+    "depositSuccessDesc": "Ihre Einzahlung wurde eingereicht und die Administratoren wurden per E-Mail benachrichtigt. Sie werden benachrichtigt, sobald sie bestätigt ist.",
+    "expectedDailyReturn": "Erwartete Tägliche Rendite",
+    "totalReturnAfter": "Gesamtrendite Nach {days} Tagen"
+  },
+  "referral": {
+    "totalReferrals": "Gesamt-Empfehlungen",
+    "totalEarned": "Gesamt Verdient",
+    "activeReferrals": "Aktive Empfehlungen",
+    "shareLink": "Teilen Sie Ihren Empfehlungslink",
+    "earnCommission": "Verdienen Sie 5% Provision auf jede Einzahlung Ihrer Empfehlungen!",
+    "howItWorks": "Wie Es Funktioniert",
+    "step1": {
+      "title": "Teilen Sie Ihren Link",
+      "desc": "Kopieren und teilen Sie Ihren einzigartigen Empfehlungslink mit Freunden"
+    },
+    "step2": {
+      "title": "Sie Melden Sich An",
+      "desc": "Ihre Freunde registrieren sich über Ihren Empfehlungslink"
+    },
+    "step3": {
+      "title": "Verdienen Sie Provision",
+      "desc": "Erhalten Sie 5% ihrer ersten Einzahlung sofort"
+    },
+    "yourReferrals": "Ihre Empfehlungen",
+    "noReferrals": "Noch keine Empfehlungen",
+    "shareToEarn": "Teilen Sie Ihren Link, um zu verdienen!",
+    "date": "Datum",
+    "bonusAmount": "Bonusbetrag",
+    "status": "Status"
+  },
+  "common": {
+    "loading": "Lädt...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "backToHome": "Zurück zur Startseite",
+    "learnMore": "Mehr Erfahren",
+    "getStarted": "Jetzt Starten",
+    "tryAgain": "Erneut Versuchen",
+    "required": "Erforderlich",
+    "optional": "Optional",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "view": "Ansehen",
+    "close": "Schließen",
+    "confirm": "Bestätigen",
+    "pending": "Ausstehend",
+    "approved": "Genehmigt",
+    "rejected": "Abgelehnt",
+    "completed": "Abgeschlossen"
+  }
+}

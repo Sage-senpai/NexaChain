@@ -1,0 +1,225 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "plans": "Planes",
+    "about": "Acerca de",
+    "services": "Servicios",
+    "contact": "Contacto",
+    "signin": "Iniciar Sesión",
+    "signup": "Comenzar",
+    "dashboard": "Panel de Control",
+    "admin": "Panel Admin",
+    "logout": "Cerrar Sesión",
+    "backToDashboard": "Volver al Panel"
+  },
+  "hero": {
+    "badge": "INVERSIÓN SEGURA • OBTENGA INGRESOS DE POR VIDA",
+    "title": "Escale a Su Cumbre Financiera",
+    "subtitle": "El establecimiento financiero líder que brinda servicios de inversión internacional de alta calidad. Únase a miles de inversores que obtienen rendimientos diarios a través de nuestros sistemas de comercio automatizados.",
+    "description": "Siempre estamos listos para asociarnos con usted ofreciendo apoyo financiero completo con estrategias de inversión estables y automatizadas.",
+    "openDeposit": "Abrir Depósito",
+    "viewPlans": "Ver Planes de Inversión"
+  },
+  "stats": {
+    "activeUsers": "Usuarios Activos",
+    "totalInvestments": "Inversiones Totales",
+    "countries": "Países",
+    "roiPaid": "ROI Pagado"
+  },
+  "plans": {
+    "title": "Propuestas de Inversión",
+    "subtitle": "Los empleados de Nexachain aseguran que cada inversor pueda ganar dinero con nuestros sistemas automatizados",
+    "noFees": "Sin tarifas de apertura de cuenta • Sin comisiones de depósito",
+    "dailyROI": "ROI Diario",
+    "totalROI": "ROI Total",
+    "duration": "Duración",
+    "investNow": "Invertir Ahora",
+    "day": "día",
+    "days": "días"
+  },
+  "about": {
+    "title": "¿Por Qué Elegir Nexachain?",
+    "subtitle": "Nuestro equipo de expertos hace todo por usted con sistemas de comercio automatizados",
+    "tradingBot": {
+      "title": "Bot de Comercio Único",
+      "desc": "Nuestro equipo de profesionales ha creado un bot de comercio único que opera con eficiencia y escapa de las caídas del mercado, asegurando que los capitales regresen de manera segura con rendimientos de inversión precisos"
+    },
+    "automated": {
+      "title": "Estable y Automatizado",
+      "desc": "El robot no está relacionado con humanos, lo que hace que todas las inversiones sean confiables y completamente seguras. Su eficiencia aumenta diariamente logrando una precisión comercial del 99.9%"
+    },
+    "support": {
+      "title": "Equipo Experto 24/7",
+      "desc": "El equipo altamente profesional de Nexachain controla todos los procesos del robot de comercio las 24 horas. Después de invertir, observe el crecimiento de su capital en tiempo real"
+    },
+    "howItWorks": "Comience en 4 Simples Pasos",
+    "step1": {
+      "title": "Crear Cuenta",
+      "desc": "Regístrese y verifique su dirección de correo electrónico"
+    },
+    "step2": {
+      "title": "Verificar Correo",
+      "desc": "Confirme su correo electrónico para activar su cuenta"
+    },
+    "step3": {
+      "title": "Iniciar Sesión",
+      "desc": "Acceda a su panel seguro"
+    },
+    "step4": {
+      "title": "Activar Plan",
+      "desc": "Elija un plan y comience a ganar"
+    }
+  },
+  "contact": {
+    "title": "Póngase en Contacto",
+    "email": "Correo Electrónico",
+    "phone": "Teléfono",
+    "location": "Ubicación"
+  },
+  "footer": {
+    "tagline": "Su plataforma de inversión confiable",
+    "quickLinks": "Enlaces Rápidos",
+    "legal": "Legal",
+    "support": "Soporte",
+    "terms": "Términos de Servicio",
+    "privacy": "Política de Privacidad",
+    "faq": "Preguntas Frecuentes",
+    "helpCenter": "Centro de Ayuda",
+    "copyright": "Todos los derechos reservados"
+  },
+  "dashboard": {
+    "welcome": "Bienvenido",
+    "accountBalance": "Saldo de Cuenta",
+    "totalInvested": "Total Invertido",
+    "totalWithdrawn": "Total Retirado",
+    "referralBonus": "Bono de Referido",
+    "makeDeposit": {
+      "title": "Hacer Depósito",
+      "desc": "Financie su cuenta y comience a invertir"
+    },
+    "withdrawFunds": {
+      "title": "Retirar Fondos",
+      "desc": "Solicite un pago a su billetera"
+    },
+    "referrals": {
+      "title": "Referencias",
+      "desc": "Gane bonos al referir amigos"
+    },
+    "yourReferralLink": "Su Enlace de Referido",
+    "copy": "Copiar",
+    "copied": "¡Copiado!",
+    "activeInvestments": "Inversiones Activas",
+    "noInvestments": "Aún no hay inversiones activas",
+    "makeFirstDeposit": "Haga Su Primer Depósito",
+    "principal": "Principal",
+    "currentValue": "Valor Actual",
+    "expectedReturn": "Retorno Esperado"
+  },
+  "auth": {
+    "welcomeBack": "Bienvenido de Nuevo",
+    "signInTagline": "Inicie sesión en su cuenta de Nexachain",
+    "joinNexachain": "Únase a Nexachain",
+    "signUpTagline": "Comience su viaje de inversión hoy",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "fullName": "Nombre Completo",
+    "phoneNumber": "Número de Teléfono",
+    "forgotPassword": "¿Olvidó su contraseña?",
+    "dontHaveAccount": "¿No tiene una cuenta?",
+    "alreadyHaveAccount": "¿Ya tiene una cuenta?",
+    "signingIn": "Iniciando sesión...",
+    "creatingAccount": "Creando Cuenta...",
+    "enterEmail": "Ingrese su correo electrónico",
+    "enterPassword": "Ingrese su contraseña",
+    "enterFullName": "Ingrese su nombre completo",
+    "enterPhoneNumber": "Ingrese su número de teléfono",
+    "createPassword": "Cree una contraseña segura (mín. 6 caracteres)",
+    "referredBy": "Referido por"
+  },
+  "withdrawal": {
+    "title": "Retirar Fondos",
+    "tagline": "Solicite un pago a su billetera cripto",
+    "amount": "Monto de Retiro (USD)",
+    "crypto": "Criptomoneda",
+    "walletAddress": "Su Dirección de Billetera {crypto}",
+    "enterWallet": "Ingrese su dirección de billetera {crypto}",
+    "notice": "Aviso Importante",
+    "processing": "Los retiros se procesan dentro de 24-48 horas",
+    "minimum": "Monto mínimo de retiro: $10",
+    "doubleCheck": "Verifique dos veces su dirección de billetera antes de enviar",
+    "networkFees": "Pueden aplicarse tarifas de red",
+    "submit": "Enviar Solicitud de Retiro",
+    "submitting": "Procesando...",
+    "success": "¡Retiro Solicitado!",
+    "successDesc": "Su retiro está pendiente de aprobación. Los fondos se enviarán a su billetera dentro de 24-48 horas."
+  },
+  "fund": {
+    "choosePlan": "Elegir Plan de Inversión",
+    "enterAmount": "Ingresar Monto de Inversión",
+    "choosePayment": "Elegir Método de Pago",
+    "uploadProof": "Subir Comprobante de Pago",
+    "continue": "Continuar",
+    "back": "Atrás",
+    "sendTo": "Enviar ${amount} en {crypto} a:",
+    "copyAddress": "Copiar Dirección",
+    "sentPayment": "Ya Envié el Pago",
+    "uploadProofDesc": "Por favor suba una captura de pantalla de su confirmación de transacción. Todos los administradores serán notificados por correo electrónico con su comprobante.",
+    "clickToUpload": "Haga clic para subir comprobante (Máx 5MB)",
+    "proofUploaded": "Comprobante Subido",
+    "note": "Nota: Su comprobante se enviará directamente a los correos electrónicos de los administradores para un procesamiento más rápido. ¡No se requiere carga de almacenamiento!",
+    "submitting": "Enviando...",
+    "submitDeposit": "Enviar Depósito",
+    "depositSuccess": "¡Depósito Enviado!",
+    "depositSuccessDesc": "Su depósito ha sido enviado y los administradores han sido notificados por correo electrónico. Será notificado una vez que se confirme.",
+    "expectedDailyReturn": "Retorno Diario Esperado",
+    "totalReturnAfter": "Retorno Total Después de {days} Días"
+  },
+  "referral": {
+    "totalReferrals": "Total de Referencias",
+    "totalEarned": "Total Ganado",
+    "activeReferrals": "Referencias Activas",
+    "shareLink": "Comparta Su Enlace de Referido",
+    "earnCommission": "¡Gane una comisión del 5% en cada depósito realizado por sus referidos!",
+    "howItWorks": "Cómo Funciona",
+    "step1": {
+      "title": "Comparta Su Enlace",
+      "desc": "Copie y comparta su enlace único de referido con amigos"
+    },
+    "step2": {
+      "title": "Ellos Se Registran",
+      "desc": "Sus amigos se registran usando su enlace de referido"
+    },
+    "step3": {
+      "title": "Gane Comisión",
+      "desc": "Obtenga el 5% de su primer depósito al instante"
+    },
+    "yourReferrals": "Sus Referencias",
+    "noReferrals": "Aún no hay referencias",
+    "shareToEarn": "¡Comparta su enlace para comenzar a ganar!",
+    "date": "Fecha",
+    "bonusAmount": "Monto del Bono",
+    "status": "Estado"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "backToHome": "Volver al Inicio",
+    "learnMore": "Aprende Más",
+    "getStarted": "Comenzar",
+    "tryAgain": "Intentar de Nuevo",
+    "required": "Requerido",
+    "optional": "Opcional",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "view": "Ver",
+    "close": "Cerrar",
+    "confirm": "Confirmar",
+    "pending": "Pendiente",
+    "approved": "Aprobado",
+    "rejected": "Rechazado",
+    "completed": "Completado"
+  }
+}

@@ -1,0 +1,225 @@
+{
+  "nav": {
+    "home": "Início",
+    "plans": "Planos",
+    "about": "Sobre",
+    "services": "Serviços",
+    "contact": "Contato",
+    "signin": "Entrar",
+    "signup": "Começar",
+    "dashboard": "Painel",
+    "admin": "Painel Admin",
+    "logout": "Sair",
+    "backToDashboard": "Voltar ao Painel"
+  },
+  "hero": {
+    "badge": "INVESTIMENTO SEGURO • RENDA VITALÍCIA",
+    "title": "Alcance Seu Ápice Financeiro",
+    "subtitle": "A principal instituição financeira que oferece serviços de investimento internacional de alta qualidade. Junte-se a milhares de investidores que ganham retornos diários através dos nossos sistemas de negociação automatizados.",
+    "description": "Estamos sempre prontos para fazer parceria com você, oferecendo suporte financeiro completo com estratégias de investimento estáveis e automatizadas.",
+    "openDeposit": "Abrir Depósito",
+    "viewPlans": "Ver Planos de Investimento"
+  },
+  "stats": {
+    "activeUsers": "Usuários Ativos",
+    "totalInvestments": "Investimentos Totais",
+    "countries": "Países",
+    "roiPaid": "ROI Pago"
+  },
+  "plans": {
+    "title": "Propostas de Investimento",
+    "subtitle": "Os funcionários da Nexachain garantem que cada investidor possa ganhar dinheiro com nossos sistemas automatizados",
+    "noFees": "Sem taxas de abertura de conta • Sem comissões de depósito",
+    "dailyROI": "ROI Diário",
+    "totalROI": "ROI Total",
+    "duration": "Duração",
+    "investNow": "Investir Agora",
+    "day": "dia",
+    "days": "dias"
+  },
+  "about": {
+    "title": "Por Que Escolher a Nexachain?",
+    "subtitle": "Nossa equipe de especialistas faz tudo para você com sistemas de negociação automatizados",
+    "tradingBot": {
+      "title": "Robô de Negociação Único",
+      "desc": "Nossa equipe de profissionais criou um robô de negociação único que negocia com eficiência e evita quedas do mercado, garantindo que os capitais retornem com segurança com retornos de investimento precisos"
+    },
+    "automated": {
+      "title": "Estável e Automatizado",
+      "desc": "O robô não está relacionado ao ser humano, tornando todos os investimentos confiáveis e completamente seguros. Sua eficiência aumenta diariamente alcançando 99,9% de precisão nas negociações"
+    },
+    "support": {
+      "title": "Equipe de Especialistas 24/7",
+      "desc": "A equipe altamente profissional da Nexachain controla todos os processos do robô de negociação 24 horas por dia. Após investir, observe o crescimento do seu capital em tempo real"
+    },
+    "howItWorks": "Comece em 4 Passos Simples",
+    "step1": {
+      "title": "Criar Conta",
+      "desc": "Cadastre-se e verifique seu endereço de e-mail"
+    },
+    "step2": {
+      "title": "Verificar E-mail",
+      "desc": "Confirme seu e-mail para ativar sua conta"
+    },
+    "step3": {
+      "title": "Fazer Login",
+      "desc": "Acesse seu painel seguro"
+    },
+    "step4": {
+      "title": "Ativar Plano",
+      "desc": "Escolha um plano e comece a ganhar"
+    }
+  },
+  "contact": {
+    "title": "Entre em Contato",
+    "email": "E-mail",
+    "phone": "Telefone",
+    "location": "Localização"
+  },
+  "footer": {
+    "tagline": "Sua plataforma de investimento confiável",
+    "quickLinks": "Links Rápidos",
+    "legal": "Legal",
+    "support": "Suporte",
+    "terms": "Termos de Serviço",
+    "privacy": "Política de Privacidade",
+    "faq": "Perguntas Frequentes",
+    "helpCenter": "Centro de Ajuda",
+    "copyright": "Todos os direitos reservados"
+  },
+  "dashboard": {
+    "welcome": "Bem-vindo",
+    "accountBalance": "Saldo da Conta",
+    "totalInvested": "Total Investido",
+    "totalWithdrawn": "Total Retirado",
+    "referralBonus": "Bônus de Indicação",
+    "makeDeposit": {
+      "title": "Fazer Depósito",
+      "desc": "Financie sua conta e comece a investir"
+    },
+    "withdrawFunds": {
+      "title": "Sacar Fundos",
+      "desc": "Solicite um pagamento para sua carteira"
+    },
+    "referrals": {
+      "title": "Indicações",
+      "desc": "Ganhe bônus indicando amigos"
+    },
+    "yourReferralLink": "Seu Link de Indicação",
+    "copy": "Copiar",
+    "copied": "Copiado!",
+    "activeInvestments": "Investimentos Ativos",
+    "noInvestments": "Nenhum investimento ativo ainda",
+    "makeFirstDeposit": "Faça Seu Primeiro Depósito",
+    "principal": "Principal",
+    "currentValue": "Valor Atual",
+    "expectedReturn": "Retorno Esperado"
+  },
+  "auth": {
+    "welcomeBack": "Bem-vindo de Volta",
+    "signInTagline": "Entre na sua conta Nexachain",
+    "joinNexachain": "Junte-se à Nexachain",
+    "signUpTagline": "Comece sua jornada de investimento hoje",
+    "email": "E-mail",
+    "password": "Senha",
+    "fullName": "Nome Completo",
+    "phoneNumber": "Número de Telefone",
+    "forgotPassword": "Esqueceu a senha?",
+    "dontHaveAccount": "Não tem uma conta?",
+    "alreadyHaveAccount": "Já tem uma conta?",
+    "signingIn": "Entrando...",
+    "creatingAccount": "Criando Conta...",
+    "enterEmail": "Digite seu e-mail",
+    "enterPassword": "Digite sua senha",
+    "enterFullName": "Digite seu nome completo",
+    "enterPhoneNumber": "Digite seu número de telefone",
+    "createPassword": "Crie uma senha forte (mín. 6 caracteres)",
+    "referredBy": "Indicado por"
+  },
+  "withdrawal": {
+    "title": "Sacar Fundos",
+    "tagline": "Solicite um pagamento para sua carteira cripto",
+    "amount": "Valor do Saque (USD)",
+    "crypto": "Criptomoeda",
+    "walletAddress": "Seu Endereço de Carteira {crypto}",
+    "enterWallet": "Digite seu endereço de carteira {crypto}",
+    "notice": "Aviso Importante",
+    "processing": "Os saques são processados em 24 a 48 horas",
+    "minimum": "Valor mínimo de saque: $10",
+    "doubleCheck": "Verifique duas vezes seu endereço de carteira antes de enviar",
+    "networkFees": "Taxas de rede podem ser aplicadas",
+    "submit": "Enviar Solicitação de Saque",
+    "submitting": "Processando...",
+    "success": "Saque Solicitado!",
+    "successDesc": "Seu saque está aguardando aprovação. Os fundos serão enviados para sua carteira em 24 a 48 horas."
+  },
+  "fund": {
+    "choosePlan": "Escolher Plano de Investimento",
+    "enterAmount": "Inserir Valor do Investimento",
+    "choosePayment": "Escolher Método de Pagamento",
+    "uploadProof": "Enviar Comprovante de Pagamento",
+    "continue": "Continuar",
+    "back": "Voltar",
+    "sendTo": "Envie ${amount} em {crypto} para:",
+    "copyAddress": "Copiar Endereço",
+    "sentPayment": "Enviei o Pagamento",
+    "uploadProofDesc": "Por favor, envie uma captura de tela da confirmação da sua transação. Todos os administradores serão notificados por e-mail com seu comprovante.",
+    "clickToUpload": "Clique para enviar o comprovante (Máx 5MB)",
+    "proofUploaded": "Comprovante Enviado",
+    "note": "Nota: Seu comprovante será enviado diretamente para os e-mails dos administradores para processamento mais rápido. Nenhum upload de armazenamento necessário!",
+    "submitting": "Enviando...",
+    "submitDeposit": "Enviar Depósito",
+    "depositSuccess": "Depósito Enviado!",
+    "depositSuccessDesc": "Seu depósito foi enviado e os administradores foram notificados por e-mail. Você será notificado assim que for confirmado.",
+    "expectedDailyReturn": "Retorno Diário Esperado",
+    "totalReturnAfter": "Retorno Total Após {days} Dias"
+  },
+  "referral": {
+    "totalReferrals": "Total de Indicações",
+    "totalEarned": "Total Ganho",
+    "activeReferrals": "Indicações Ativas",
+    "shareLink": "Compartilhe Seu Link de Indicação",
+    "earnCommission": "Ganhe 5% de comissão em cada depósito feito pelas suas indicações!",
+    "howItWorks": "Como Funciona",
+    "step1": {
+      "title": "Compartilhe Seu Link",
+      "desc": "Copie e compartilhe seu link de indicação único com amigos"
+    },
+    "step2": {
+      "title": "Eles Se Cadastram",
+      "desc": "Seus amigos se registram usando seu link de indicação"
+    },
+    "step3": {
+      "title": "Ganhe Comissão",
+      "desc": "Receba 5% do primeiro depósito deles instantaneamente"
+    },
+    "yourReferrals": "Suas Indicações",
+    "noReferrals": "Nenhuma indicação ainda",
+    "shareToEarn": "Compartilhe seu link para começar a ganhar!",
+    "date": "Data",
+    "bonusAmount": "Valor do Bônus",
+    "status": "Status"
+  },
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "backToHome": "Voltar ao Início",
+    "learnMore": "Saiba Mais",
+    "getStarted": "Começar",
+    "tryAgain": "Tentar Novamente",
+    "required": "Obrigatório",
+    "optional": "Opcional",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "view": "Ver",
+    "close": "Fechar",
+    "confirm": "Confirmar",
+    "pending": "Pendente",
+    "approved": "Aprovado",
+    "rejected": "Rejeitado",
+    "completed": "Concluído"
+  }
+}

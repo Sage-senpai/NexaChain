@@ -1,0 +1,225 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "plans": "Plans",
+    "about": "À Propos",
+    "services": "Services",
+    "contact": "Contact",
+    "signin": "Se Connecter",
+    "signup": "Commencer",
+    "dashboard": "Tableau de Bord",
+    "admin": "Panneau Admin",
+    "logout": "Déconnexion",
+    "backToDashboard": "Retour au Tableau de Bord"
+  },
+  "hero": {
+    "badge": "INVESTISSEMENT SÛR • REVENUS À VIE",
+    "title": "Atteignez Votre Sommet Financier",
+    "subtitle": "L'établissement financier de premier plan offrant des services d'investissement internationaux de haute qualité. Rejoignez des milliers d'investisseurs qui gagnent des rendements quotidiens grâce à nos systèmes de trading automatisés.",
+    "description": "Nous sommes toujours prêts à nous associer avec vous en offrant un soutien financier complet avec des stratégies d'investissement stables et automatisées.",
+    "openDeposit": "Ouvrir un Dépôt",
+    "viewPlans": "Voir les Plans d'Investissement"
+  },
+  "stats": {
+    "activeUsers": "Utilisateurs Actifs",
+    "totalInvestments": "Investissements Totaux",
+    "countries": "Pays",
+    "roiPaid": "ROI Versé"
+  },
+  "plans": {
+    "title": "Propositions d'Investissement",
+    "subtitle": "Les employés de Nexachain garantissent que chaque investisseur peut gagner de l'argent avec nos systèmes automatisés",
+    "noFees": "Pas de frais d'ouverture de compte • Pas de commissions de dépôt",
+    "dailyROI": "ROI Quotidien",
+    "totalROI": "ROI Total",
+    "duration": "Durée",
+    "investNow": "Investir Maintenant",
+    "day": "jour",
+    "days": "jours"
+  },
+  "about": {
+    "title": "Pourquoi Choisir Nexachain ?",
+    "subtitle": "Notre équipe d'experts fait tout pour vous avec des systèmes de trading automatisés",
+    "tradingBot": {
+      "title": "Robot de Trading Unique",
+      "desc": "Notre équipe de professionnels a créé un robot de trading unique qui trade avec efficacité et évite les baisses du marché, garantissant le retour des capitaux en toute sécurité avec des rendements d'investissement précis"
+    },
+    "automated": {
+      "title": "Stable et Automatisé",
+      "desc": "Le robot n'est pas lié à l'humain, rendant tous les investissements fiables et totalement sûrs. Son efficacité augmente quotidiennement atteignant 99,9% de précision de trading"
+    },
+    "support": {
+      "title": "Équipe d'Experts 24/7",
+      "desc": "L'équipe Nexachain hautement professionnelle contrôle tous les processus du robot de trading 24h/24. Après avoir investi, observez la croissance de votre capital en temps réel"
+    },
+    "howItWorks": "Commencez en 4 Étapes Simples",
+    "step1": {
+      "title": "Créer un Compte",
+      "desc": "Inscrivez-vous et vérifiez votre adresse e-mail"
+    },
+    "step2": {
+      "title": "Vérifier l'E-mail",
+      "desc": "Confirmez votre e-mail pour activer votre compte"
+    },
+    "step3": {
+      "title": "Se Connecter",
+      "desc": "Accédez à votre tableau de bord sécurisé"
+    },
+    "step4": {
+      "title": "Activer le Plan",
+      "desc": "Choisissez un plan et commencez à gagner"
+    }
+  },
+  "contact": {
+    "title": "Contactez-Nous",
+    "email": "E-mail",
+    "phone": "Téléphone",
+    "location": "Localisation"
+  },
+  "footer": {
+    "tagline": "Votre plateforme d'investissement de confiance",
+    "quickLinks": "Liens Rapides",
+    "legal": "Légal",
+    "support": "Support",
+    "terms": "Conditions d'Utilisation",
+    "privacy": "Politique de Confidentialité",
+    "faq": "FAQ",
+    "helpCenter": "Centre d'Aide",
+    "copyright": "Tous droits réservés"
+  },
+  "dashboard": {
+    "welcome": "Bienvenue",
+    "accountBalance": "Solde du Compte",
+    "totalInvested": "Total Investi",
+    "totalWithdrawn": "Total Retiré",
+    "referralBonus": "Bonus de Parrainage",
+    "makeDeposit": {
+      "title": "Faire un Dépôt",
+      "desc": "Financez votre compte et commencez à investir"
+    },
+    "withdrawFunds": {
+      "title": "Retirer des Fonds",
+      "desc": "Demandez un paiement vers votre portefeuille"
+    },
+    "referrals": {
+      "title": "Parrainages",
+      "desc": "Gagnez des bonus en parrainant des amis"
+    },
+    "yourReferralLink": "Votre Lien de Parrainage",
+    "copy": "Copier",
+    "copied": "Copié !",
+    "activeInvestments": "Investissements Actifs",
+    "noInvestments": "Aucun investissement actif pour le moment",
+    "makeFirstDeposit": "Faites Votre Premier Dépôt",
+    "principal": "Capital",
+    "currentValue": "Valeur Actuelle",
+    "expectedReturn": "Rendement Attendu"
+  },
+  "auth": {
+    "welcomeBack": "Bon Retour",
+    "signInTagline": "Connectez-vous à votre compte Nexachain",
+    "joinNexachain": "Rejoignez Nexachain",
+    "signUpTagline": "Commencez votre parcours d'investissement aujourd'hui",
+    "email": "E-mail",
+    "password": "Mot de Passe",
+    "fullName": "Nom Complet",
+    "phoneNumber": "Numéro de Téléphone",
+    "forgotPassword": "Mot de passe oublié ?",
+    "dontHaveAccount": "Vous n'avez pas de compte ?",
+    "alreadyHaveAccount": "Vous avez déjà un compte ?",
+    "signingIn": "Connexion en cours...",
+    "creatingAccount": "Création du Compte...",
+    "enterEmail": "Entrez votre e-mail",
+    "enterPassword": "Entrez votre mot de passe",
+    "enterFullName": "Entrez votre nom complet",
+    "enterPhoneNumber": "Entrez votre numéro de téléphone",
+    "createPassword": "Créez un mot de passe fort (min. 6 caractères)",
+    "referredBy": "Parrainé par"
+  },
+  "withdrawal": {
+    "title": "Retirer des Fonds",
+    "tagline": "Demandez un paiement vers votre portefeuille crypto",
+    "amount": "Montant du Retrait (USD)",
+    "crypto": "Cryptomonnaie",
+    "walletAddress": "Votre Adresse de Portefeuille {crypto}",
+    "enterWallet": "Entrez votre adresse de portefeuille {crypto}",
+    "notice": "Avis Important",
+    "processing": "Les retraits sont traités sous 24 à 48 heures",
+    "minimum": "Montant minimum de retrait : 10 $",
+    "doubleCheck": "Vérifiez deux fois votre adresse de portefeuille avant de soumettre",
+    "networkFees": "Des frais de réseau peuvent s'appliquer",
+    "submit": "Soumettre la Demande de Retrait",
+    "submitting": "Traitement en cours...",
+    "success": "Retrait Demandé !",
+    "successDesc": "Votre retrait est en attente d'approbation. Les fonds seront envoyés vers votre portefeuille sous 24 à 48 heures."
+  },
+  "fund": {
+    "choosePlan": "Choisir le Plan d'Investissement",
+    "enterAmount": "Entrer le Montant d'Investissement",
+    "choosePayment": "Choisir le Mode de Paiement",
+    "uploadProof": "Télécharger la Preuve de Paiement",
+    "continue": "Continuer",
+    "back": "Retour",
+    "sendTo": "Envoyez {amount} $ en {crypto} à :",
+    "copyAddress": "Copier l'Adresse",
+    "sentPayment": "J'ai Envoyé le Paiement",
+    "uploadProofDesc": "Veuillez télécharger une capture d'écran de votre confirmation de transaction. Tous les administrateurs seront notifiés par e-mail avec votre preuve.",
+    "clickToUpload": "Cliquez pour télécharger la preuve (Max 5 Mo)",
+    "proofUploaded": "Preuve Téléchargée",
+    "note": "Remarque : Votre preuve sera envoyée directement aux e-mails des administrateurs pour un traitement plus rapide. Aucun téléchargement de stockage requis !",
+    "submitting": "Soumission en cours...",
+    "submitDeposit": "Soumettre le Dépôt",
+    "depositSuccess": "Dépôt Soumis !",
+    "depositSuccessDesc": "Votre dépôt a été soumis et les administrateurs ont été notifiés par e-mail. Vous serez informé une fois qu'il sera confirmé.",
+    "expectedDailyReturn": "Rendement Quotidien Attendu",
+    "totalReturnAfter": "Rendement Total Après {days} Jours"
+  },
+  "referral": {
+    "totalReferrals": "Total des Parrainages",
+    "totalEarned": "Total Gagné",
+    "activeReferrals": "Parrainages Actifs",
+    "shareLink": "Partagez Votre Lien de Parrainage",
+    "earnCommission": "Gagnez une commission de 5 % sur chaque dépôt effectué par vos parrainages !",
+    "howItWorks": "Comment Ça Marche",
+    "step1": {
+      "title": "Partagez Votre Lien",
+      "desc": "Copiez et partagez votre lien de parrainage unique avec des amis"
+    },
+    "step2": {
+      "title": "Ils S'inscrivent",
+      "desc": "Vos amis s'inscrivent en utilisant votre lien de parrainage"
+    },
+    "step3": {
+      "title": "Gagnez une Commission",
+      "desc": "Obtenez 5 % de leur premier dépôt instantanément"
+    },
+    "yourReferrals": "Vos Parrainages",
+    "noReferrals": "Aucun parrainage pour le moment",
+    "shareToEarn": "Partagez votre lien pour commencer à gagner !",
+    "date": "Date",
+    "bonusAmount": "Montant du Bonus",
+    "status": "Statut"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "backToHome": "Retour à l'Accueil",
+    "learnMore": "En Savoir Plus",
+    "getStarted": "Commencer",
+    "tryAgain": "Réessayer",
+    "required": "Obligatoire",
+    "optional": "Facultatif",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "view": "Voir",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "pending": "En Attente",
+    "approved": "Approuvé",
+    "rejected": "Rejeté",
+    "completed": "Terminé"
+  }
+}
