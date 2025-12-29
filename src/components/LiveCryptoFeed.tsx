@@ -9,7 +9,7 @@ interface CryptoPrice {
   symbol: string;
   name: string;
   current_price: number;
-  price_change_percentage_24h: number;
+  price_change_percentage_24h: number | null;
   image: string;
 }
 
@@ -134,20 +134,26 @@ export default function LiveCryptoFeed() {
               
               {/* 24h Change */}
               <span
-                className={`text-xs font-semibold flex items-center gap-1 ${
-                  crypto.price_change_percentage_24h >= 0 
-                    ? "text-[#10B981]" 
-                    : "text-[#EF4444]"
-                }`}
-              >
-                {crypto.price_change_percentage_24h >= 0 ? (
-                  <TrendingUp className="w-3 h-3" />
-                ) : (
-                  <TrendingDown className="w-3 h-3" />
-                )}
-                {crypto.price_change_percentage_24h >= 0 ? "+" : ""}
-                {crypto.price_change_percentage_24h.toFixed(2)}%
-              </span>
+  className={`text-xs font-semibold flex items-center gap-1 ${
+    crypto.price_change_percentage_24h !== null &&
+    crypto.price_change_percentage_24h >= 0
+      ? "text-[#10B981]"
+      : "text-[#EF4444]"
+  }`}
+>
+  {crypto.price_change_percentage_24h !== null ? (
+    crypto.price_change_percentage_24h >= 0 ? (
+      <TrendingUp className="w-3 h-3" />
+    ) : (
+      <TrendingDown className="w-3 h-3" />
+    )
+  ) : null}
+
+  {crypto.price_change_percentage_24h !== null
+    ? `${crypto.price_change_percentage_24h >= 0 ? "+" : ""}${crypto.price_change_percentage_24h.toFixed(2)}%`
+    : "N/A"}
+</span>
+
             </div>
           ))}
         </div>
