@@ -8,6 +8,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import LiveCryptoFeed from "@/components/LiveCryptoFeed";
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useTranslation } from "react-i18next";
 import MobileNav from "@/components/MobileNav";
 import TestimonialsModal from "@/components/TestimonialsModal";
 
@@ -26,6 +28,7 @@ interface InvestmentPlan {
 export default function LandingPage() {
   const [showTestimonials, setShowTestimonials] = useState(false);
   const [showCryptoFeed, setShowCryptoFeed] = useState(true);
+  const { t } = useTranslation();
 
   const plans: InvestmentPlan[] = [
     { name: "Beginner Plan", emoji: "🔰", dailyROI: 5, totalROI: 5, duration: 1, minAmount: 50, maxAmount: 499, referralBonus: 5 },
@@ -36,10 +39,10 @@ export default function LandingPage() {
   ];
 
   const stats = [
-    { label: "Active Users", value: 5076, icon: Users },
-    { label: "Total Investments", value: 10000000, icon: TrendingUp, prefix: "$" },
-    { label: "Countries", value: 48, icon: Award, suffix: "+" },
-    { label: "ROI Paid Out", value: 2500000, icon: DollarSign, prefix: "$" },
+    { label: t('stats.activeUsers'), value: 5076, icon: Users },
+    { label: t('stats.totalInvestments'), value: 10000000, icon: TrendingUp, prefix: "$" },
+    { label: t('stats.countries'), value: 48, icon: Award, suffix: "+" },
+    { label: t('stats.roiPaid'), value: 2500000, icon: DollarSign, prefix: "$" },
   ];
 
   const scrollToSection = (sectionId: string) => {
@@ -56,26 +59,41 @@ export default function LandingPage() {
             <span className="text-2xl font-bold bg-gradient-to-r from-[#D4AF37] to-[#FFD700] bg-clip-text text-transparent">
               Nexachain
             </span>
-            <nav className="hidden md:flex items-center gap-6 bg-white dark:bg-[#0A0A0A]">
-              <button onClick={() => scrollToSection("plans")} className="text-[#000000] dark:text-[#FFFFFF] hover:text-[#D4AF37] transition-colors">Plans</button>
-              <button onClick={() => scrollToSection("about")} className="text-[#000000] dark:text-[#FFFFFF] hover:text-[#D4AF37] transition-colors">About</button>
-              <button onClick={() => scrollToSection("services")} className="text-[#000000] dark:text-[#FFFFFF] hover:text-[#D4AF37] transition-colors">Services</button>
-              <button onClick={() => scrollToSection("contact")} className="text-[#000000] dark:text-[#FFFFFF] hover:text-[#D4AF37] transition-colors">Contact</button>
-              <a href="/account/signin" className="text-[#000000] dark:text-[#FFFFFF] hover:text-[#D4AF37] transition-colors">Sign In</a>
-              <a href="/account/signup" className="px-6 py-2 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white rounded-lg hover:shadow-lg transition-all">Get Started</a>
-            </nav>
-            <div className="md:hidden">
-              <MobileNav
-                links={[
-                  { label: "Plans", onClick: () => scrollToSection("plans") },
-                  { label: "About", onClick: () => scrollToSection("about") },
-                  { label: "Services", onClick: () => scrollToSection("services") },
-                  { label: "Contact", onClick: () => scrollToSection("contact") },
-                  { label: "Sign In", href: "/account/signin" },
-                ]}
-                ctaText="Get Started"
-                ctaHref="/account/signup"
-              />
+            <div className="flex items-center gap-4">
+              <nav className="hidden md:flex items-center gap-6 bg-white dark:bg-[#0A0A0A]">
+                <button onClick={() => scrollToSection("plans")} className="text-[#000000] dark:text-[#FFFFFF] hover:text-[#D4AF37] transition-colors">
+                  {t('nav.plans')}
+                </button>
+                <button onClick={() => scrollToSection("about")} className="text-[#000000] dark:text-[#FFFFFF] hover:text-[#D4AF37] transition-colors">
+                  {t('nav.about')}
+                </button>
+                <button onClick={() => scrollToSection("services")} className="text-[#000000] dark:text-[#FFFFFF] hover:text-[#D4AF37] transition-colors">
+                  {t('nav.services')}
+                </button>
+                <button onClick={() => scrollToSection("contact")} className="text-[#000000] dark:text-[#FFFFFF] hover:text-[#D4AF37] transition-colors">
+                  {t('nav.contact')}
+                </button>
+                <a href="/account/signin" className="text-[#000000] dark:text-[#FFFFFF] hover:text-[#D4AF37] transition-colors">
+                  {t('nav.signin')}
+                </a>
+                <a href="/account/signup" className="px-6 py-2 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white rounded-lg hover:shadow-lg transition-all">
+                  {t('nav.signup')}
+                </a>
+              </nav>
+              <LanguageSwitcher />
+              <div className="md:hidden">
+                <MobileNav
+                  links={[
+                    { label: t('nav.plans'), onClick: () => scrollToSection("plans") },
+                    { label: t('nav.about'), onClick: () => scrollToSection("about") },
+                    { label: t('nav.services'), onClick: () => scrollToSection("services") },
+                    { label: t('nav.contact'), onClick: () => scrollToSection("contact") },
+                    { label: t('nav.signin'), href: "/account/signin" },
+                  ]}
+                  ctaText={t('nav.signup')}
+                  ctaHref="/account/signup"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -84,16 +102,23 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="py-20 px-4 bg-gradient-to-b from-white to-[#F8F9FA] dark:from-[#0A0A0A] dark:to-[#1A1A1A]">
         <div className="max-w-7xl mx-auto text-center">
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="inline-block mb-6 px-4 py-2 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-full">
-            <span className="text-[#D4AF37] font-semibold text-sm">SAFE INVESTMENT • GET LIFETIME INCOME</span>
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.4 }} 
+            className="inline-block mb-6 px-4 py-2 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-full"
+          >
+            <span className="text-[#D4AF37] font-semibold text-sm">
+              {t('hero.badge')}
+            </span>
           </motion.div>
-           <motion.h1
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="text-5xl md:text-7xl font-extrabold mb-6 bg-gradient-to-r from-[#D4AF37] via-[#FFD700] to-[#D4AF37] bg-clip-text text-transparent"
           >
-            Climb to Your Financial Summit
+            {t('hero.title')}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -101,7 +126,7 @@ export default function LandingPage() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-xl md:text-2xl text-[#4A4A4A] dark:text-[#B8B8B8] mb-8 max-w-3xl mx-auto"
           >
-            The leading financial establishment providing high-quality international investment services. Join thousands of investors earning daily returns through our automated trading systems.
+            {t('hero.subtitle')}
           </motion.p>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -109,14 +134,25 @@ export default function LandingPage() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="text-lg text-[#6B7280] dark:text-[#B8B8B8] mb-12 max-w-2xl mx-auto"
           >
-            We are always ready to partner with you by offering full financial support with stable and automated investment strategies.
+            {t('hero.description')}
           </motion.p>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }} className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/account/signup" className="px-8 py-4 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white text-lg font-semibold rounded-lg hover:shadow-2xl hover:shadow-[#D4AF37]/50 transition-all inline-flex items-center justify-center">
-              Open Deposit <ArrowRight className="ml-2" />
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.6, delay: 0.4 }} 
+            className="flex flex-col sm:flex-row gap-4 justify-center"
+          >
+            <a 
+              href="/account/signup" 
+              className="px-8 py-4 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white text-lg font-semibold rounded-lg hover:shadow-2xl hover:shadow-[#D4AF37]/50 transition-all inline-flex items-center justify-center"
+            >
+              {t('hero.openDeposit')} <ArrowRight className="ml-2" />
             </a>
-            <button onClick={() => scrollToSection("plans")} className="px-8 py-4 border-2 border-[#D4AF37] text-[#000000] dark:text-[#FFFFFF] text-lg font-semibold rounded-lg hover:bg-[#D4AF37]/10 transition-all">
-              View Investment Plans
+            <button 
+              onClick={() => scrollToSection("plans")} 
+              className="px-8 py-4 border-2 border-[#D4AF37] text-[#000000] dark:text-[#FFFFFF] text-lg font-semibold rounded-lg hover:bg-[#D4AF37]/10 transition-all"
+            >
+              {t('hero.viewPlans')}
             </button>
           </motion.div>
         </div>
@@ -125,14 +161,22 @@ export default function LandingPage() {
       {/* Crypto Feed */}
       <div className="border-y border-[#D4AF37]/20 bg-[#1A1A1A] dark:bg-[#0A0A0A]">
         <div className="max-w-7xl mx-auto px-4">
-          <button onClick={() => setShowCryptoFeed(!showCryptoFeed)} className="w-full py-3 flex items-center justify-between text-[#D4AF37] hover:text-[#FFD700] transition-colors">
+          <button 
+            onClick={() => setShowCryptoFeed(!showCryptoFeed)} 
+            className="w-full py-3 flex items-center justify-between text-[#D4AF37] hover:text-[#FFD700] transition-colors"
+          >
             <span className="text-sm font-semibold">📊 Live Market Ticker</span>
             {showCryptoFeed ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
           </button>
         </div>
         <AnimatePresence>
           {showCryptoFeed && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }}>
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }} 
+              animate={{ height: "auto", opacity: 1 }} 
+              exit={{ height: 0, opacity: 0 }} 
+              transition={{ duration: 0.3 }}
+            >
               <LiveCryptoFeed />
             </motion.div>
           )}
@@ -146,7 +190,16 @@ export default function LandingPage() {
             {stats.map((stat, i) => {
               const Icon = stat.icon;
               return (
-                <motion.button key={stat.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} whileHover={{ scale: 1.05 }} onClick={() => setShowTestimonials(true)} className="p-6 rounded-xl bg-[#F8F9FA] dark:bg-[#1A1A1A] border-2 border-[#D4AF37]/20 hover:border-[#D4AF37] transition-all cursor-pointer text-center">
+                <motion.button 
+                  key={stat.label} 
+                  initial={{ opacity: 0, y: 20 }} 
+                  whileInView={{ opacity: 1, y: 0 }} 
+                  viewport={{ once: true }} 
+                  transition={{ delay: i * 0.1 }} 
+                  whileHover={{ scale: 1.05 }} 
+                  onClick={() => setShowTestimonials(true)} 
+                  className="p-6 rounded-xl bg-[#F8F9FA] dark:bg-[#1A1A1A] border-2 border-[#D4AF37]/20 hover:border-[#D4AF37] transition-all cursor-pointer text-center"
+                >
                   <Icon className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
                   <div className="text-3xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">
                     {stat.prefix}<AnimatedCounter end={stat.value} />{stat.suffix}
@@ -163,40 +216,64 @@ export default function LandingPage() {
       <section id="plans" className="py-20 bg-[#F8F9FA] dark:bg-[#1A1A1A] scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">Investment Proposals</h2>
+            <h2 className="text-4xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
+              {t('plans.title')}
+            </h2>
             <p className="text-xl text-[#4A4A4A] dark:text-[#B8B8B8]">
-              Nexachain employees ensure that every investor can earn money with our automated systems
+              {t('plans.subtitle')}
             </p>
             <div className="mt-6 inline-block px-6 py-3 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-lg">
               <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">
-                <span className="font-bold text-[#D4AF37]">No account opening fees</span> • 
-                <span className="ml-2 font-bold text-[#D4AF37]">No deposit commissions</span>
+                <span className="font-bold text-[#D4AF37]">{t('plans.noFees').split('•')[0].trim()}</span> • 
+                <span className="ml-2 font-bold text-[#D4AF37]">{t('plans.noFees').split('•')[1].trim()}</span>
               </p>
             </div>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {plans.map((p, i) => (
-              <motion.div key={p.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} whileHover={{ scale: 1.02 }} className="bg-white dark:bg-[#0A0A0A] p-8 rounded-2xl border-2 border-[#D4AF37]/20 hover:border-[#D4AF37] hover:shadow-2xl transition-all">
+              <motion.div 
+                key={p.name} 
+                initial={{ opacity: 0, y: 20 }} 
+                whileInView={{ opacity: 1, y: 0 }} 
+                viewport={{ once: true }} 
+                transition={{ delay: i * 0.1 }} 
+                whileHover={{ scale: 1.02 }} 
+                className="bg-white dark:bg-[#0A0A0A] p-8 rounded-2xl border-2 border-[#D4AF37]/20 hover:border-[#D4AF37] hover:shadow-2xl transition-all"
+              >
                 <div className="text-5xl mb-4">{p.emoji}</div>
                 <h3 className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">{p.name}</h3>
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-[#4A4A4A] dark:text-[#B8B8B8]">
-                    <span>Daily ROI:</span><span className="text-[#D4AF37] font-bold">{p.dailyROI}%</span>
+                    <span>{t('plans.dailyROI')}:</span>
+                    <span className="text-[#D4AF37] font-bold">{p.dailyROI}%</span>
                   </div>
                   <div className="flex justify-between text-[#4A4A4A] dark:text-[#B8B8B8]">
-                    <span>Total ROI:</span><span className="text-[#10B981] font-bold">{p.totalROI}%</span>
+                    <span>{t('plans.totalROI')}:</span>
+                    <span className="text-[#10B981] font-bold">{p.totalROI}%</span>
                   </div>
                   <div className="flex justify-between text-[#4A4A4A] dark:text-[#B8B8B8]">
-                    <span>Duration:</span><span>{p.duration} {p.duration === 1 ? "day" : "days"}</span>
+                    <span>{t('plans.duration')}:</span>
+                    <span>{p.duration} {p.duration === 1 ? t('plans.day') : t('plans.days')}</span>
                   </div>
                   <div className="pt-3 border-t border-[#D4AF37]/20 text-center">
-                    <span className="font-bold text-[#000000] dark:text-[#FFFFFF]">${p.minAmount.toLocaleString()}</span>
+                    <span className="font-bold text-[#000000] dark:text-[#FFFFFF]">
+                      ${p.minAmount.toLocaleString()}
+                    </span>
                     <span className="mx-2 text-[#D4AF37]">—</span>
-                    {p.maxAmount ? <span className="font-bold text-[#000000] dark:text-[#FFFFFF]">${p.maxAmount.toLocaleString()}</span> : <span className="font-bold text-[#D4AF37]">Unlimited</span>}
+                    {p.maxAmount ? (
+                      <span className="font-bold text-[#000000] dark:text-[#FFFFFF]">
+                        ${p.maxAmount.toLocaleString()}
+                      </span>
+                    ) : (
+                      <span className="font-bold text-[#D4AF37]">Unlimited</span>
+                    )}
                   </div>
                 </div>
-                <a href="/account/signup" className="w-full py-3 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white font-semibold rounded-lg hover:shadow-xl transition-all flex items-center justify-center group">
-                  Invest Now <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <a 
+                  href="/account/signup" 
+                  className="w-full py-3 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white font-semibold rounded-lg hover:shadow-xl transition-all flex items-center justify-center group"
+                >
+                  {t('plans.investNow')} <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </a>
               </motion.div>
             ))}
@@ -204,14 +281,15 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* About */}
       <section id="about" className="py-20 bg-white dark:bg-[#0A0A0A] scroll-mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
-              Why Choose Nexachain?
+              {t('about.title')}
             </h2>
             <p className="text-xl text-[#4A4A4A] dark:text-[#B8B8B8] max-w-3xl mx-auto">
-              Our team of experts does everything for you with automated trading systems
+              {t('about.subtitle')}
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-12">
@@ -225,10 +303,10 @@ export default function LandingPage() {
                 <Shield className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
-                Unique Trading Bot
+                {t('about.tradingBot.title')}
               </h3>
               <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                Our team of professionals has created a unique trading bot that trades with efficiency and escapes market dip, ensuring capitals return safely with accurate investment returns
+                {t('about.tradingBot.desc')}
               </p>
             </motion.div>
             <motion.div 
@@ -242,10 +320,10 @@ export default function LandingPage() {
                 <TrendingUp className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
-                Stable & Automated
+                {t('about.automated.title')}
               </h3>
               <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                The robot is not human-related, making all investments reliable and completely safe. Its efficiency increases daily achieving 99.9% trade accuracy
+                {t('about.automated.desc')}
               </p>
             </motion.div>
             <motion.div 
@@ -259,10 +337,10 @@ export default function LandingPage() {
                 <Users className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
-                Expert Team 24/7
+                {t('about.support.title')}
               </h3>
               <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                The highly professional Nexachain team controls all trading robot processes around the clock. After investing, observe your capital growth in real-time
+                {t('about.support.desc')}
               </p>
             </motion.div>
           </div>
@@ -271,15 +349,15 @@ export default function LandingPage() {
           <div className="mt-20">
             <div className="text-center mb-12">
               <h3 className="text-3xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
-                Get Started in 4 Simple Steps
+                {t('about.howItWorks')}
               </h3>
             </div>
             <div className="grid md:grid-cols-4 gap-8">
               {[
-                { step: 1, title: "Create Account", desc: "Sign up and verify your email address" },
-                { step: 2, title: "Verify Email", desc: "Confirm your email to activate your account" },
-                { step: 3, title: "Log In", desc: "Access your secure dashboard" },
-                { step: 4, title: "Activate Plan", desc: "Choose a plan and start earning" }
+                { step: 1, title: t('about.step1.title'), desc: t('about.step1.desc') },
+                { step: 2, title: t('about.step2.title'), desc: t('about.step2.desc') },
+                { step: 3, title: t('about.step3.title'), desc: t('about.step3.desc') },
+                { step: 4, title: t('about.step4.title'), desc: t('about.step4.desc') }
               ].map((item, index) => (
                 <motion.div
                   key={item.step}
@@ -309,22 +387,32 @@ export default function LandingPage() {
       <section id="contact" className="py-20 bg-white dark:bg-[#0A0A0A] scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">Get In Touch</h2>
+            <h2 className="text-4xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
+              {t('contact.title')}
+            </h2>
           </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <div className="text-center p-6 bg-[#F8F9FA] dark:bg-[#1A1A1A] rounded-xl border-2 border-[#D4AF37]/20">
               <Mail className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
-              <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">Email</h3>
+              <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">
+                {t('contact.email')}
+              </h3>
               <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">support@nexachain.com</p>
             </div>
             <div className="text-center p-6 bg-[#F8F9FA] dark:bg-[#1A1A1A] rounded-xl border-2 border-[#D4AF37]/20">
               <Phone className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
-              <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">Phone</h3>
-              <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">UK: +44 7878345807<br/>SA: +27 78 720 8949</p>
+              <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">
+                {t('contact.phone')}
+              </h3>
+              <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">
+                UK: +44 7878345807<br/>SA: +27 78 720 8949
+              </p>
             </div>
             <div className="text-center p-6 bg-[#F8F9FA] dark:bg-[#1A1A1A] rounded-xl border-2 border-[#D4AF37]/20">
               <MapPin className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
-              <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">Location</h3>
+              <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">
+                {t('contact.location')}
+              </h3>
               <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">United Kingdom</p>
             </div>
           </div>
@@ -337,36 +425,64 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <h3 className="text-xl font-bold text-[#D4AF37] mb-4">Nexachain</h3>
-              <p className="text-[#B8B8B8]">Your trusted investment platform</p>
+              <p className="text-[#B8B8B8]">{t('footer.tagline')}</p>
             </div>
             <div>
-              <h4 className="font-bold text-white mb-4">Quick Links</h4>
+              <h4 className="font-bold text-white mb-4">{t('footer.quickLinks')}</h4>
               <ul className="space-y-2">
                 {["plans", "about", "services", "contact"].map(s => (
-                  <li key={s}><button onClick={() => scrollToSection(s)} className="text-[#B8B8B8] hover:text-[#D4AF37] transition-colors capitalize">{s}</button></li>
+                  <li key={s}>
+                    <button 
+                      onClick={() => scrollToSection(s)} 
+                      className="text-[#B8B8B8] hover:text-[#D4AF37] transition-colors capitalize"
+                    >
+                      {t(`nav.${s}`)}
+                    </button>
+                  </li>
                 ))}
               </ul>
             </div>
             <div>
-              <h4 className="font-bold text-white mb-4">Legal</h4>
+              <h4 className="font-bold text-white mb-4">{t('footer.legal')}</h4>
               <ul className="space-y-2">
-                <li><a href="/legal" className="text-[#B8B8B8] hover:text-[#D4AF37] transition-colors">Terms of Service</a></li>
-                <li><a href="/legal" className="text-[#B8B8B8] hover:text-[#D4AF37] transition-colors">Privacy Policy</a></li>
+                <li>
+                  <a href="/legal" className="text-[#B8B8B8] hover:text-[#D4AF37] transition-colors">
+                    {t('footer.terms')}
+                  </a>
+                </li>
+                <li>
+                  <a href="/legal" className="text-[#B8B8B8] hover:text-[#D4AF37] transition-colors">
+                    {t('footer.privacy')}
+                  </a>
+                </li>
               </ul>
             </div>
             <div>
-              <h4 className="font-bold text-white mb-4">Support</h4>
+              <h4 className="font-bold text-white mb-4">{t('footer.support')}</h4>
               <ul className="space-y-2">
-                <li><a href="/faq" className="text-[#B8B8B8] hover:text-[#D4AF37] transition-colors">FAQ</a></li>
-                <li><button onClick={() => scrollToSection("contact")} className="text-[#B8B8B8] hover:text-[#D4AF37] transition-colors">Help Center</button></li>
+                <li>
+                  <a href="/faq" className="text-[#B8B8B8] hover:text-[#D4AF37] transition-colors">
+                    {t('footer.faq')}
+                  </a>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => scrollToSection("contact")} 
+                    className="text-[#B8B8B8] hover:text-[#D4AF37] transition-colors"
+                  >
+                    {t('footer.helpCenter')}
+                  </button>
+                </li>
               </ul>
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-[#D4AF37]/20 text-center text-[#B8B8B8]">
-            <p>&copy; 2025 Nexachain. All rights reserved.</p>
+            <p>&copy; 2025 Nexachain. {t('footer.copyright')}</p>
           </div>
         </div>
       </footer>
+
+      <TestimonialsModal isOpen={showTestimonials} onClose={() => setShowTestimonials(false)} />
 
       <TestimonialsModal isOpen={showTestimonials} onClose={() => setShowTestimonials(false)} />
      {/* Floating Contact Buttons */}

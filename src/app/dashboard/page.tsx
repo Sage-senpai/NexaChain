@@ -8,6 +8,7 @@ import AnimatedCounter from "@/components/AnimatedCounter";
 import LiveCryptoFeed from "@/components/LiveCryptoFeed";
 import LiveCryptoGraph from "@/components/LiveCryptoGraph"; 
 import UserMessagePanel from "@/components/messaging/UserMessagePanel";
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { createClient } from "@/lib/supabase/client";
 import {
   Wallet,
@@ -131,6 +132,7 @@ export default function DashboardPage() {
               <span className="text-responsive-sm text-[#4A4A4A] dark:text-[#B8B8B8] hide-mobile">
   Welcome, {profile?.full_name || user.email?.split("@")[0]}
                </span>
+              <LanguageSwitcher />
               {isAdmin && (
                 <a
                   href="/admin"

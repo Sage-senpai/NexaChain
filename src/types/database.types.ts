@@ -10,6 +10,7 @@ export interface Profile {
   city: string | null;
   state: string | null;
   country: string;
+  preferred_language?: string;
   account_balance: number;
   total_invested: number;
   total_withdrawn: number;
