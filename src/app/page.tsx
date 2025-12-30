@@ -1,18 +1,18 @@
-// src/app/page.tsx - FIXED VERSION (No hanging/freezing)
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   ArrowRight, TrendingUp, Shield, Users, DollarSign, Award,
   ChevronDown, ChevronUp, Mail, Phone, MapPin,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTranslation } from "react-i18next";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import LiveCryptoFeed from "@/components/LiveCryptoFeed";
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useTranslation } from "react-i18next";
 import MobileNav from "@/components/MobileNav";
 import TestimonialsModal from "@/components/TestimonialsModal";
+
 
 interface InvestmentPlan {
   name: string;
@@ -28,13 +28,7 @@ interface InvestmentPlan {
 export default function LandingPage() {
   const [showTestimonials, setShowTestimonials] = useState(false);
   const [showCryptoFeed, setShowCryptoFeed] = useState(true);
-  const { t, ready } = useTranslation(); // ✅ Added 'ready' check
-
-  // ✅ Wait for translations to load before rendering
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const { t } = useTranslation();
 
   const plans: InvestmentPlan[] = [
     { name: "Beginner Plan", emoji: "🔰", dailyROI: 5, totalROI: 5, duration: 1, minAmount: 50, maxAmount: 499, referralBonus: 5 },
@@ -44,29 +38,17 @@ export default function LandingPage() {
     { name: "Long Term Investment", emoji: "📈", dailyROI: 3, totalROI: 90, duration: 30, minAmount: 155, maxAmount: 5555, referralBonus: 5 },
   ];
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    element?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
-  // ✅ Show loading while translations initialize
-  if (!mounted || !ready) {
-    return (
-      <div className="min-h-screen bg-white dark:bg-[#0A0A0A] flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-[#D4AF37] font-semibold">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   const stats = [
     { label: t('stats.activeUsers'), value: 5076, icon: Users },
     { label: t('stats.totalInvestments'), value: 10000000, icon: TrendingUp, prefix: "$" },
     { label: t('stats.countries'), value: 48, icon: Award, suffix: "+" },
     { label: t('stats.roiPaid'), value: 2500000, icon: DollarSign, prefix: "$" },
   ];
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    element?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0A0A0A]">
@@ -230,7 +212,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Plans - Keeping rest of sections similar structure */}
+      {/* Plans */}
       <section id="plans" className="py-20 bg-[#F8F9FA] dark:bg-[#1A1A1A] scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
@@ -242,8 +224,8 @@ export default function LandingPage() {
             </p>
             <div className="mt-6 inline-block px-6 py-3 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-lg">
               <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">
-                <span className="font-bold text-[#D4AF37]">{t('plans.noFees').split('•')[0]?.trim() || 'No account opening fees'}</span> • 
-                <span className="ml-2 font-bold text-[#D4AF37]">{t('plans.noFees').split('•')[1]?.trim() || 'No deposit commissions'}</span>
+                <span className="font-bold text-[#D4AF37]">{t('plans.noFees').split('•')[0].trim()}</span> • 
+                <span className="ml-2 font-bold text-[#D4AF37]">{t('plans.noFees').split('•')[1].trim()}</span>
               </p>
             </div>
           </div>
@@ -299,7 +281,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* About Section - Simplified to avoid hanging */}
+      {/* About */}
       <section id="about" className="py-20 bg-white dark:bg-[#0A0A0A] scroll-mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -311,35 +293,59 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-12">
-            {[
-              { icon: Shield, titleKey: 'about.tradingBot.title', descKey: 'about.tradingBot.desc' },
-              { icon: TrendingUp, titleKey: 'about.automated.title', descKey: 'about.automated.desc' },
-              { icon: Users, titleKey: 'about.support.title', descKey: 'about.support.desc' }
-            ].map((item, index) => {
-              const Icon = item.icon;
-              return (
-                <motion.div 
-                  key={item.titleKey}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="text-center"
-                >
-                  <div className="w-16 h-16 bg-gradient-to-br from-[#D4AF37] to-[#FFD700] rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Icon className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
-                    {t(item.titleKey)}
-                  </h3>
-                  <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                    {t(item.descKey)}
-                  </p>
-                </motion.div>
-              );
-            })}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-[#D4AF37] to-[#FFD700] rounded-full flex items-center justify-center mx-auto mb-6">
+                <Shield className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
+                {t('about.tradingBot.title')}
+              </h3>
+              <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
+                {t('about.tradingBot.desc')}
+              </p>
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="text-center"
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-[#D4AF37] to-[#FFD700] rounded-full flex items-center justify-center mx-auto mb-6">
+                <TrendingUp className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
+                {t('about.automated.title')}
+              </h3>
+              <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
+                {t('about.automated.desc')}
+              </p>
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="text-center"
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-[#D4AF37] to-[#FFD700] rounded-full flex items-center justify-center mx-auto mb-6">
+                <Users className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
+                {t('about.support.title')}
+              </h3>
+              <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
+                {t('about.support.desc')}
+              </p>
+            </motion.div>
           </div>
 
+          {/* How It Works Section */}
           <div className="mt-20">
             <div className="text-center mb-12">
               <h3 className="text-3xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
@@ -347,23 +353,28 @@ export default function LandingPage() {
               </h3>
             </div>
             <div className="grid md:grid-cols-4 gap-8">
-              {[1, 2, 3, 4].map((step) => (
+              {[
+                { step: 1, title: t('about.step1.title'), desc: t('about.step1.desc') },
+                { step: 2, title: t('about.step2.title'), desc: t('about.step2.desc') },
+                { step: 3, title: t('about.step3.title'), desc: t('about.step3.desc') },
+                { step: 4, title: t('about.step4.title'), desc: t('about.step4.desc') }
+              ].map((item, index) => (
                 <motion.div
-                  key={step}
+                  key={item.step}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: step * 0.1 }}
+                  transition={{ delay: index * 0.1 }}
                   className="text-center p-6 bg-[#F8F9FA] dark:bg-[#1A1A1A] rounded-xl border-2 border-[#D4AF37]/20"
                 >
                   <div className="w-12 h-12 bg-gradient-to-br from-[#D4AF37] to-[#FFD700] rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl">
-                    {step}
+                    {item.step}
                   </div>
                   <h4 className="text-lg font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">
-                    {t(`about.step${step}.title`)}
+                    {item.title}
                   </h4>
                   <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">
-                    {t(`about.step${step}.desc`)}
+                    {item.desc}
                   </p>
                 </motion.div>
               ))}
@@ -381,24 +392,29 @@ export default function LandingPage() {
             </h2>
           </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            {[
-              { icon: Mail, titleKey: 'contact.email', text: 'support@nexachain.com' },
-              { icon: Phone, titleKey: 'contact.phone', text: 'UK: +44 7878345807\nSA: +27 78 720 8949' },
-              { icon: MapPin, titleKey: 'contact.location', text: 'United Kingdom' }
-            ].map((item) => {
-              const Icon = item.icon;
-              return (
-                <div key={item.titleKey} className="text-center p-6 bg-[#F8F9FA] dark:bg-[#1A1A1A] rounded-xl border-2 border-[#D4AF37]/20">
-                  <Icon className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
-                  <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">
-                    {t(item.titleKey)}
-                  </h3>
-                  <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8] whitespace-pre-line">
-                    {item.text}
-                  </p>
-                </div>
-              );
-            })}
+            <div className="text-center p-6 bg-[#F8F9FA] dark:bg-[#1A1A1A] rounded-xl border-2 border-[#D4AF37]/20">
+              <Mail className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
+              <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">
+                {t('contact.email')}
+              </h3>
+              <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">support@nexachain.com</p>
+            </div>
+            <div className="text-center p-6 bg-[#F8F9FA] dark:bg-[#1A1A1A] rounded-xl border-2 border-[#D4AF37]/20">
+              <Phone className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
+              <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">
+                {t('contact.phone')}
+              </h3>
+              <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">
+                UK: +44 7878345807<br/>SA: +27 78 720 8949
+              </p>
+            </div>
+            <div className="text-center p-6 bg-[#F8F9FA] dark:bg-[#1A1A1A] rounded-xl border-2 border-[#D4AF37]/20">
+              <MapPin className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
+              <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">
+                {t('contact.location')}
+              </h3>
+              <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">United Kingdom</p>
+            </div>
           </div>
         </div>
       </section>
