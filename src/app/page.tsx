@@ -1,7 +1,7 @@
-// src/app/page.tsx - FIXED VERSION (No hanging/freezing)
+// src/app/page.tsx - FIXED VERSION (No more hanging!)
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   ArrowRight, TrendingUp, Shield, Users, DollarSign, Award,
   ChevronDown, ChevronUp, Mail, Phone, MapPin,
@@ -28,45 +28,54 @@ interface InvestmentPlan {
 export default function LandingPage() {
   const [showTestimonials, setShowTestimonials] = useState(false);
   const [showCryptoFeed, setShowCryptoFeed] = useState(true);
-  const { t, ready } = useTranslation(); // ✅ Added 'ready' check
+  const { t, ready, i18n } = useTranslation();
 
-  // ✅ Wait for translations to load before rendering
-  const [mounted, setMounted] = useState(false);
+  // ✅ Single loading state
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // ✅ Wait for BOTH translation AND client mount
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    if (ready && typeof window !== 'undefined') {
+      // Small delay to ensure smooth render
+      const timer = setTimeout(() => {
+        setIsInitialized(true);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [ready]);
 
-  const plans: InvestmentPlan[] = [
+  // ✅ Memoize static data to prevent re-renders
+  const plans: InvestmentPlan[] = useMemo(() => [
     { name: "Beginner Plan", emoji: "🔰", dailyROI: 5, totalROI: 5, duration: 1, minAmount: 50, maxAmount: 499, referralBonus: 5 },
     { name: "Silver Plan", emoji: "🪙", dailyROI: 10, totalROI: 10, duration: 1, minAmount: 500, maxAmount: 999, referralBonus: 5 },
     { name: "Gold Plan", emoji: "🏆", dailyROI: 20, totalROI: 20, duration: 2, minAmount: 1000, maxAmount: 4999, referralBonus: 5 },
     { name: "VIP Membership", emoji: "💎", dailyROI: 35, totalROI: 35, duration: 4, minAmount: 5000, maxAmount: null, referralBonus: 5 },
     { name: "Long Term Investment", emoji: "📈", dailyROI: 3, totalROI: 90, duration: 30, minAmount: 155, maxAmount: 5555, referralBonus: 5 },
-  ];
+  ], []);
+
+  const stats = useMemo(() => [
+    { label: t('stats.activeUsers'), value: 5076, icon: Users },
+    { label: t('stats.totalInvestments'), value: 10000000, icon: TrendingUp, prefix: "$" },
+    { label: t('stats.countries'), value: 48, icon: Award, suffix: "+" },
+    { label: t('stats.roiPaid'), value: 2500000, icon: DollarSign, prefix: "$" },
+  ], [t]);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     element?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  // ✅ Show loading while translations initialize
-  if (!mounted || !ready) {
+  // ✅ Improved loading screen - faster render
+  if (!isInitialized) {
     return (
       <div className="min-h-screen bg-white dark:bg-[#0A0A0A] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-[#D4AF37] font-semibold">Loading...</p>
+          <div className="w-12 h-12 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-[#D4AF37] font-semibold text-sm">Loading Nexachain...</p>
         </div>
       </div>
     );
   }
-
-  const stats = [
-    { label: t('stats.activeUsers'), value: 5076, icon: Users },
-    { label: t('stats.totalInvestments'), value: 10000000, icon: TrendingUp, prefix: "$" },
-    { label: t('stats.countries'), value: 48, icon: Award, suffix: "+" },
-    { label: t('stats.roiPaid'), value: 2500000, icon: DollarSign, prefix: "$" },
-  ];
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0A0A0A]">
@@ -123,7 +132,7 @@ export default function LandingPage() {
           <motion.div 
             initial={{ opacity: 0, y: -10 }} 
             animate={{ opacity: 1, y: 0 }} 
-            transition={{ duration: 0.4 }} 
+            transition={{ duration: 0.3 }} 
             className="inline-block mb-6 px-4 py-2 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-full"
           >
             <span className="text-[#D4AF37] font-semibold text-sm">
@@ -133,7 +142,7 @@ export default function LandingPage() {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.4 }}
             className="text-5xl md:text-7xl font-extrabold mb-6 bg-gradient-to-r from-[#D4AF37] via-[#FFD700] to-[#D4AF37] bg-clip-text text-transparent"
           >
             {t('hero.title')}
@@ -141,7 +150,7 @@ export default function LandingPage() {
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
             className="text-xl md:text-2xl text-[#4A4A4A] dark:text-[#B8B8B8] mb-8 max-w-3xl mx-auto"
           >
             {t('hero.subtitle')}
@@ -149,7 +158,7 @@ export default function LandingPage() {
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
             className="text-lg text-[#6B7280] dark:text-[#B8B8B8] mb-12 max-w-2xl mx-auto"
           >
             {t('hero.description')}
@@ -157,7 +166,7 @@ export default function LandingPage() {
           <motion.div 
             initial={{ opacity: 0, y: 20 }} 
             animate={{ opacity: 1, y: 0 }} 
-            transition={{ duration: 0.6, delay: 0.4 }} 
+            transition={{ duration: 0.4, delay: 0.3 }} 
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
             <a 
@@ -230,7 +239,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Plans - Keeping rest of sections similar structure */}
+      {/* Plans Section */}
       <section id="plans" className="py-20 bg-[#F8F9FA] dark:bg-[#1A1A1A] scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
@@ -242,8 +251,8 @@ export default function LandingPage() {
             </p>
             <div className="mt-6 inline-block px-6 py-3 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-lg">
               <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">
-                <span className="font-bold text-[#D4AF37]">{t('plans.noFees').split('•')[0]?.trim() || 'No account opening fees'}</span> • 
-                <span className="ml-2 font-bold text-[#D4AF37]">{t('plans.noFees').split('•')[1]?.trim() || 'No deposit commissions'}</span>
+                <span className="font-bold text-[#D4AF37]">No account opening fees</span> • 
+                <span className="ml-2 font-bold text-[#D4AF37]">No deposit commissions</span>
               </p>
             </div>
           </div>
@@ -299,7 +308,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* About Section - Simplified to avoid hanging */}
+      {/* About Section */}
       <section id="about" className="py-20 bg-white dark:bg-[#0A0A0A] scroll-mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -467,7 +476,8 @@ export default function LandingPage() {
       </footer>
 
       <TestimonialsModal isOpen={showTestimonials} onClose={() => setShowTestimonials(false)} />
-     {/* Floating Contact Buttons */}
+      
+      {/* Floating Contact Buttons */}
       <div className="floating-contact-buttons">
         <a
           href="https://wa.me/+447878345807?text=Hello%2C%20I%27m%20interested%20in%20Nexachain%20investments"
