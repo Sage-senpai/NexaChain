@@ -1,6 +1,7 @@
 // FILE: src/app/dashboard/page.tsx
 "use client";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import useUser from "@/utils/useUser";
 import useAdmin from "@/utils/useAdmin";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -25,13 +26,14 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const { data: user, loading: userLoading } = useUser();
   const { isAdmin } = useAdmin();
   const [profile, setProfile] = useState<any>(null);
   const [investments, setInvestments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [showCryptoFeed, setShowCryptoFeed] = useState(true); // ✅ ADD THIS STATE
+  const [showCryptoFeed, setShowCryptoFeed] = useState(true);
   const supabase = createClient();
 
   useEffect(() => {
@@ -94,25 +96,25 @@ export default function DashboardPage() {
 
   const stats = [
     {
-      label: "Account Balance",
+      label: t('dashboard.accountBalance'),
       value: profile?.account_balance || 0,
       icon: Wallet,
       prefix: "$",
     },
     {
-      label: "Total Invested",
+      label: t('dashboard.totalInvested'),
       value: profile?.total_invested || 0,
       icon: TrendingUp,
       prefix: "$",
     },
     {
-      label: "Total Withdrawn",
+      label: t('dashboard.totalWithdrawn'),
       value: profile?.total_withdrawn || 0,
       icon: ArrowDownCircle,
       prefix: "$",
     },
     {
-      label: "Referral Bonus",
+      label: t('dashboard.referralBonus'),
       value: profile?.total_referral_bonus || 0,
       icon: Users,
       prefix: "$",
@@ -130,8 +132,8 @@ export default function DashboardPage() {
             </span>
             <div className="flex items-center gap-4">
               <span className="text-responsive-sm text-[#4A4A4A] dark:text-[#B8B8B8] hide-mobile">
-  Welcome, {profile?.full_name || user.email?.split("@")[0]}
-               </span>
+                {t('dashboard.welcome')}, {profile?.full_name || user.email?.split("@")[0]}
+              </span>
               <LanguageSwitcher />
               {isAdmin && (
                 <a
@@ -139,7 +141,7 @@ export default function DashboardPage() {
                   className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white rounded-lg hover:shadow-lg transition-all"
                 >
                   <Shield className="w-4 h-4" />
-                  Admin Panel
+                  {t('nav.admin')}
                 </a>
               )}
               <button
@@ -147,7 +149,7 @@ export default function DashboardPage() {
                 className="flex items-center gap-2 px-4 py-2 border-2 border-[#D4AF37]/20 text-[#000000] dark:text-[#FFFFFF] rounded-lg hover:bg-[#D4AF37]/10 transition-all"
               >
                 <LogOut className="w-4 h-4" />
-                Logout
+                {t('nav.logout')}
               </button>
             </div>
           </div>
@@ -161,7 +163,7 @@ export default function DashboardPage() {
             onClick={() => setShowCryptoFeed(!showCryptoFeed)}
             className="w-full py-2 flex items-center justify-between text-[#D4AF37] hover:text-[#FFD700] transition-colors"
           >
-            <span className="text-sm font-semibold">Live Market Ticker</span>
+            <span className="text-sm font-semibold">📊 Live Market Ticker</span>
             {showCryptoFeed ? (
               <ChevronUp className="w-5 h-5" />
             ) : (
@@ -224,9 +226,9 @@ export default function DashboardPage() {
             href="/dashboard/fund"
             className="bg-gradient-to-r from-[#D4AF37] to-[#FFD700] p-6 rounded-2xl text-white hover:shadow-2xl transition-all"
           >
-            <h3 className="text-xl font-bold mb-2">Make Deposit</h3>
+            <h3 className="text-xl font-bold mb-2">{t('dashboard.makeDeposit.title')}</h3>
             <p className="text-white/90">
-              Fund your account and start investing
+              {t('dashboard.makeDeposit.desc')}
             </p>
           </a>
           <a
@@ -234,10 +236,10 @@ export default function DashboardPage() {
             className="bg-white dark:bg-[#1A1A1A] p-6 rounded-2xl border-2 border-[#D4AF37]/20 hover:border-[#D4AF37] transition-all"
           >
             <h3 className="text-xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">
-              Withdraw Funds
+              {t('dashboard.withdrawFunds.title')}
             </h3>
             <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-              Request a payout to your wallet
+              {t('dashboard.withdrawFunds.desc')}
             </p>
           </a>
           <a
@@ -245,10 +247,10 @@ export default function DashboardPage() {
             className="bg-white dark:bg-[#1A1A1A] p-6 rounded-2xl border-2 border-[#D4AF37]/20 hover:border-[#D4AF37] transition-all"
           >
             <h3 className="text-xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">
-              Referrals
+              {t('dashboard.referrals.title')}
             </h3>
             <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-              Earn bonuses by referring friends
+              {t('dashboard.referrals.desc')}
             </p>
           </a>
         </div>
@@ -257,7 +259,7 @@ export default function DashboardPage() {
         {profile?.referral_code && (
           <div className="bg-white dark:bg-[#1A1A1A] p-6 rounded-2xl border-2 border-[#D4AF37]/20 mb-8">
             <h3 className="text-lg font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
-              Your Referral Link
+              {t('dashboard.yourReferralLink')}
             </h3>
             <div className="flex gap-2">
               <input
@@ -275,7 +277,7 @@ export default function DashboardPage() {
                 ) : (
                   <Copy className="w-5 h-5" />
                 )}
-                {copied ? "Copied!" : "Copy"}
+                {copied ? t('dashboard.copied') : t('dashboard.copy')}
               </button>
             </div>
           </div>
@@ -284,18 +286,18 @@ export default function DashboardPage() {
         {/* Active Investments */}
         <div className="bg-white dark:bg-[#1A1A1A] p-6 rounded-2xl border-2 border-[#D4AF37]/20">
           <h3 className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-6">
-            Active Investments
+            {t('dashboard.activeInvestments')}
           </h3>
           {investments.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-[#4A4A4A] dark:text-[#B8B8B8] mb-4">
-                No active investments yet
+                {t('dashboard.noInvestments')}
               </p>
               <a
                 href="/dashboard/fund"
                 className="inline-block px-6 py-3 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white rounded-lg hover:shadow-lg transition-all"
               >
-                Make Your First Deposit
+                {t('dashboard.makeFirstDeposit')}
               </a>
             </div>
           ) : (
@@ -313,13 +315,13 @@ export default function DashboardPage() {
                       </span>
                     </div>
                     <span className="text-[#D4AF37] font-bold">
-                      {inv.daily_roi}% Daily
+                      {inv.daily_roi}% {t('plans.dailyROI')}
                     </span>
                   </div>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                        Principal:
+                        {t('dashboard.principal')}:
                       </span>
                       <span className="font-semibold text-[#000000] dark:text-[#FFFFFF]">
                         ${parseFloat(inv.principal_amount).toFixed(2)}
@@ -327,7 +329,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                        Current Value:
+                        {t('dashboard.currentValue')}:
                       </span>
                       <span className="font-semibold text-[#000000] dark:text-[#FFFFFF]">
                         ${parseFloat(inv.current_value).toFixed(2)}
@@ -335,7 +337,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                        Expected Return:
+                        {t('dashboard.expectedReturn')}:
                       </span>
                       <span className="font-semibold text-[#10B981]">
                         ${parseFloat(inv.expected_return).toFixed(2)}
