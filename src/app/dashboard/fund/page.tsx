@@ -1,211 +1,198 @@
 // src/app/dashboard/fund/page.tsx
-"use client";
+"use client"
 
-import { useState, useEffect, ChangeEvent } from "react";
-import useUser from "@/utils/useUser";
-import LoadingScreen from "@/components/LoadingScreen";
-import { ArrowLeft, Check, Upload, Copy } from "lucide-react";
-import { InvestmentPlan } from "@/types/database.types";
-import { motion, AnimatePresence } from "framer-motion";
-import QRCode from "react-qr-code";
+import { useState, useEffect, type ChangeEvent } from "react"
+import { useTranslation } from "react-i18next"
+import useUser from "@/utils/useUser"
+import LoadingScreen from "@/components/LoadingScreen"
+import { ArrowLeft, Check, Upload, Copy } from "lucide-react"
+import type { InvestmentPlan } from "@/types/database.types"
+import { motion, AnimatePresence } from "framer-motion"
+import QRCode from "react-qr-code"
 
 interface WalletAddresses {
-  BTC: string;
-  XRP: string;
-  USDT_BEP20: string;
-  USDT_TRC20: string;
+  BTC: string
+  XRP: string
+  USDT_BEP20: string
+  USDT_TRC20: string
 }
 
-type CryptoType = keyof WalletAddresses;
+type CryptoType = keyof WalletAddresses
 
 export default function FundPage() {
-  const { data: user, loading: userLoading } = useUser();
-  const [step, setStep] = useState<number>(1);
-  const [plans, setPlans] = useState<InvestmentPlan[]>([]);
-  const [selectedPlan, setSelectedPlan] = useState<InvestmentPlan | null>(null);
-  const [amount, setAmount] = useState<string>("");
-  const [cryptoType, setCryptoType] = useState<CryptoType>("BTC");
-  const [proofImage, setProofImage] = useState<string | null>(null);
-  const [proofImageFile, setProofImageFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
-  const [success, setSuccess] = useState<boolean>(false);
-  const [copied, setCopied] = useState<boolean>(false);
+  const { t } = useTranslation()
+  const { data: user, loading: userLoading } = useUser()
+  const [step, setStep] = useState<number>(1)
+  const [plans, setPlans] = useState<InvestmentPlan[]>([])
+  const [selectedPlan, setSelectedPlan] = useState<InvestmentPlan | null>(null)
+  const [amount, setAmount] = useState<string>("")
+  const [cryptoType, setCryptoType] = useState<CryptoType>("BTC")
+  const [proofImage, setProofImage] = useState<string | null>(null)
+  const [proofImageFile, setProofImageFile] = useState<File | null>(null)
+  const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string>("")
+  const [success, setSuccess] = useState<boolean>(false)
+  const [copied, setCopied] = useState<boolean>(false)
 
   const wallets: WalletAddresses = {
     BTC: "1N3BavTnSRLiDiq5yWP4SLPJyPajBsFKR3",
     XRP: "rJn2zAPdFA193sixJwuFixRkYDUtx3apQh",
     USDT_TRC20: "THUxhmgffKvb8aN8Fx5ZmSXtJNDNL8goFa",
     USDT_BEP20: "0x1aea8691637110d926adaa9e96a3cfab4a531ebc",
-  };
+  }
 
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const res = await fetch("/api/plans");
+        const res = await fetch("/api/plans")
         if (res.ok) {
-          const data = await res.json();
-          setPlans(data.plans || []);
+          const data = await res.json()
+          setPlans(data.plans || [])
         }
       } catch (err) {
-        console.error("Error fetching plans:", err);
+        console.error("Error fetching plans:", err)
       }
-    };
-    fetchPlans();
-  }, []);
+    }
+    fetchPlans()
+  }, [])
 
   // Convert image file to base64
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
+      const reader = new FileReader()
       reader.onload = () => {
-        if (typeof reader.result === 'string') {
-          resolve(reader.result);
+        if (typeof reader.result === "string") {
+          resolve(reader.result)
         } else {
-          reject(new Error('Failed to convert file to base64'));
+          reject(new Error("Failed to convert file to base64"))
         }
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
+      }
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+  }
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files?.[0]
     if (file) {
       try {
-        setLoading(true);
-        setError("");
+        setLoading(true)
+        setError("")
 
         // Validate file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
-          throw new Error("File size must be less than 5MB");
+          throw new Error("File size must be less than 5MB")
         }
 
         // Validate file type
-        const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+        const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
         if (!allowedTypes.includes(file.type)) {
-          throw new Error("Only JPG, PNG, and WebP images are allowed");
+          throw new Error("Only JPG, PNG, and WebP images are allowed")
         }
 
         // Convert to base64
-        const base64String = await fileToBase64(file);
-        
-        setProofImage(base64String);
-        setProofImageFile(file);
+        const base64String = await fileToBase64(file)
+
+        setProofImage(base64String)
+        setProofImageFile(file)
       } catch (err) {
-        console.error("Error processing file:", err);
-        setError(err instanceof Error ? err.message : "Failed to process proof of payment");
+        console.error("Error processing file:", err)
+        setError(err instanceof Error ? err.message : "Failed to process proof of payment")
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
     }
-  };
-const handleSubmit = async () => {
-  if (!selectedPlan || !amount || !proofImage) {
-    setError("Please complete all fields");
-    return;
   }
 
-  const numAmount = parseFloat(amount);
-  if (
-    numAmount < selectedPlan.min_amount ||
-    (selectedPlan.max_amount && numAmount > selectedPlan.max_amount)
-  ) {
-    setError(
-      `Amount must be between $${selectedPlan.min_amount} and $${selectedPlan.max_amount || "unlimited"}`
-    );
-    return;
-  }
+  const handleSubmit = async () => {
+    if (!selectedPlan || !amount || !proofImage) {
+      setError("Please complete all fields")
+      return
+    }
 
-  try {
-    setLoading(true);
-    setError("");
+    const numAmount = Number.parseFloat(amount)
+    if (numAmount < selectedPlan.min_amount || (selectedPlan.max_amount && numAmount > selectedPlan.max_amount)) {
+      setError(`Amount must be between $${selectedPlan.min_amount} and $${selectedPlan.max_amount || "unlimited"}`)
+      return
+    }
 
-    const res = await fetch("/api/deposits", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        plan_id: selectedPlan.id,
-        crypto_type: cryptoType,
-        wallet_address: wallets[cryptoType],
-        amount: numAmount,
-        proof_image_base64: proofImage,
-      }),
-    });
-
-    // Get response text first for better error debugging
-    const text = await res.text();
-    let data;
     try {
-      data = JSON.parse(text);
-    } catch (e) {
-      console.error("Response parsing error:", text);
-      throw new Error(`Server returned invalid response: ${text.substring(0, 100)}`);
-    }
+      setLoading(true)
+      setError("")
 
-    if (!res.ok) {
-      throw new Error(data.error || `Server error: ${res.status}`);
-    }
+      const res = await fetch("/api/deposits", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          plan_id: selectedPlan.id,
+          crypto_type: cryptoType,
+          wallet_address: wallets[cryptoType],
+          amount: numAmount,
+          proof_image_base64: proofImage,
+        }),
+      })
 
-    setSuccess(true);
-    setTimeout(() => {
-      window.location.href = "/dashboard";
-    }, 3000);
-  } catch (err: any) {
-    console.error("Error submitting deposit:", err);
-    setError(err.message || "Failed to submit deposit. Please try again.");
-  } finally {
-    setLoading(false);
+      // Get response text first for better error debugging
+      const text = await res.text()
+      let data
+      try {
+        data = JSON.parse(text)
+      } catch (e) {
+        console.error("Response parsing error:", text)
+        throw new Error(`Server returned invalid response: ${text.substring(0, 100)}`)
+      }
+
+      if (!res.ok) {
+        throw new Error(data.error || `Server error: ${res.status}`)
+      }
+
+      setSuccess(true)
+      setTimeout(() => {
+        window.location.href = "/dashboard"
+      }, 3000)
+    } catch (err: any) {
+      console.error("Error submitting deposit:", err)
+      setError(err.message || "Failed to submit deposit. Please try again.")
+    } finally {
+      setLoading(false)
+    }
   }
-};
 
   const copyWalletAddress = () => {
-    navigator.clipboard.writeText(wallets[cryptoType]);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  
+    navigator.clipboard.writeText(wallets[cryptoType])
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   if (userLoading) {
-    return <LoadingScreen />;
+    return <LoadingScreen />
   }
 
   if (!user) {
     if (typeof window !== "undefined") {
-      window.location.href = "/account/signin";
+      window.location.href = "/account/signin"
     }
-    return null;
+    return null
   }
 
   if (success) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F8F9FA] to-white dark:from-[#0A0A0A] dark:to-[#1A1A1A] flex items-center justify-center">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="text-center"
-        >
+        <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
           <div className="w-20 h-20 bg-[#10B981] rounded-full flex items-center justify-center mx-auto mb-6">
             <Check className="w-12 h-12 text-white" />
           </div>
-          <h2 className="text-3xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
-            Deposit Submitted!
-          </h2>
-          <p className="text-[#4A4A4A] dark:text-[#B8B8B8] mb-6">
-            Your deposit has been submitted and admins have been notified via email.
-            You'll be notified once it's confirmed.
-          </p>
+          <h2 className="text-3xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">{t("fund.depositSuccess")}</h2>
+          <p className="text-[#4A4A4A] dark:text-[#B8B8B8] mb-6">{t("fund.depositSuccessDesc")}</p>
           <a
             href="/dashboard"
             className="inline-block px-6 py-3 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white rounded-lg hover:shadow-lg transition-all"
           >
-            Back to Dashboard
+            {t("nav.backToDashboard")}
           </a>
         </motion.div>
       </div>
-    );
+    )
   }
 
   return (
@@ -218,7 +205,7 @@ const handleSubmit = async () => {
               className="flex items-center gap-2 text-[#000000] dark:text-[#FFFFFF] hover:text-[#D4AF37] transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
-              <span>Back to Dashboard</span>
+              <span>{t("nav.backToDashboard")}</span>
             </a>
             <span className="text-2xl font-bold bg-gradient-to-r from-[#D4AF37] to-[#FFD700] bg-clip-text text-transparent">
               Nexachain
@@ -263,9 +250,7 @@ const handleSubmit = async () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <h2 className="text-3xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-6">
-                  Choose Investment Plan
-                </h2>
+                <h2 className="text-3xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-6">{t("fund.choosePlan")}</h2>
                 <div className="grid md:grid-cols-2 gap-4">
                   {plans.map((plan) => (
                     <motion.div
@@ -277,31 +262,21 @@ const handleSubmit = async () => {
                     >
                       <div className="flex items-center gap-3 mb-4">
                         <span className="text-4xl">{plan.emoji}</span>
-                        <h3 className="text-xl font-bold text-[#000000] dark:text-[#FFFFFF]">
-                          {plan.name}
-                        </h3>
+                        <h3 className="text-xl font-bold text-[#000000] dark:text-[#FFFFFF]">{plan.name}</h3>
                       </div>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                            Daily ROI:
-                          </span>
-                          <span className="text-[#D4AF37] font-bold">
-                            {plan.daily_roi}%
-                          </span>
+                          <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">{t("plans.dailyROI")}:</span>
+                          <span className="text-[#D4AF37] font-bold">{plan.daily_roi}%</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                            Duration:
-                          </span>
+                          <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">{t("plans.duration")}:</span>
                           <span className="font-semibold text-[#000000] dark:text-[#FFFFFF]">
-                            {plan.duration_days} days
+                            {plan.duration_days} {t("plans.days")}
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                            Range:
-                          </span>
+                          <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">Range:</span>
                           <span className="font-semibold text-[#000000] dark:text-[#FFFFFF]">
                             ${plan.min_amount} - ${plan.max_amount || "∞"}
                           </span>
@@ -315,7 +290,7 @@ const handleSubmit = async () => {
                   disabled={!selectedPlan}
                   className="w-full mt-8 px-6 py-4 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white font-semibold rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Continue
+                  {t("fund.continue")}
                 </button>
               </motion.div>
             )}
@@ -328,13 +303,9 @@ const handleSubmit = async () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <h2 className="text-3xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-6">
-                  Enter Investment Amount
-                </h2>
+                <h2 className="text-3xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-6">{t("fund.enterAmount")}</h2>
                 <div className="mb-6">
-                  <label className="block text-[#4A4A4A] dark:text-[#B8B8B8] mb-2">
-                    Amount (USD)
-                  </label>
+                  <label className="block text-[#4A4A4A] dark:text-[#B8B8B8] mb-2">{t("withdrawal.amount")}</label>
                   <input
                     type="number"
                     value={amount}
@@ -350,27 +321,17 @@ const handleSubmit = async () => {
                     className="p-4 rounded-lg bg-[#F8F9FA] dark:bg-[#0A0A0A] border border-[#D4AF37]/20 mb-6"
                   >
                     <div className="flex justify-between mb-2">
-                      <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                        Expected Daily Return:
-                      </span>
+                      <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">{t("fund.expectedDailyReturn")}:</span>
                       <span className="font-bold text-[#10B981]">
-                        $
-                        {(
-                          (parseFloat(amount) * selectedPlan.daily_roi) /
-                          100
-                        ).toFixed(2)}
+                        ${((Number.parseFloat(amount) * selectedPlan.daily_roi) / 100).toFixed(2)}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                        Total Return After {selectedPlan.duration_days} Days:
+                        {t("fund.totalReturnAfter", { days: selectedPlan.duration_days })}:
                       </span>
                       <span className="font-bold text-[#10B981]">
-                        $
-                        {(
-                          parseFloat(amount) *
-                          (1 + selectedPlan.total_roi / 100)
-                        ).toFixed(2)}
+                        ${(Number.parseFloat(amount) * (1 + selectedPlan.total_roi / 100)).toFixed(2)}
                       </span>
                     </div>
                   </motion.div>
@@ -380,14 +341,14 @@ const handleSubmit = async () => {
                     onClick={() => setStep(1)}
                     className="flex-1 px-6 py-4 border-2 border-[#D4AF37]/20 text-[#000000] dark:text-[#FFFFFF] font-semibold rounded-lg hover:bg-[#D4AF37]/10 transition-all"
                   >
-                    Back
+                    {t("fund.back")}
                   </button>
                   <button
                     onClick={() => amount && setStep(3)}
                     disabled={!amount}
                     className="flex-1 px-6 py-4 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white font-semibold rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Continue
+                    {t("fund.continue")}
                   </button>
                 </div>
               </motion.div>
@@ -402,7 +363,7 @@ const handleSubmit = async () => {
                 exit={{ opacity: 0, x: -20 }}
               >
                 <h2 className="text-3xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-6">
-                  Choose Payment Method
+                  {t("fund.choosePayment")}
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                   {(Object.keys(wallets) as CryptoType[]).map((crypto) => (
@@ -413,20 +374,18 @@ const handleSubmit = async () => {
                       whileTap={{ scale: 0.95 }}
                       className={`p-6 rounded-xl border-2 cursor-pointer text-center transition-all ${cryptoType === crypto ? "border-[#D4AF37] bg-[#D4AF37]/5" : "border-[#D4AF37]/20 hover:border-[#D4AF37]/50"}`}
                     >
-                      <div className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF]">
-                        {crypto}
-                      </div>
+                      <div className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF]">{crypto}</div>
                     </motion.div>
                   ))}
                 </div>
                 <div className="p-6 rounded-lg bg-[#F8F9FA] dark:bg-[#0A0A0A] border border-[#D4AF37]/20 mb-6">
                   <h3 className="font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
-                    Send ${amount} worth of {cryptoType} to:
+                    {t("fund.sendTo", { amount, crypto: cryptoType })}
                   </h3>
-                  
+
                   {/* QR Code */}
                   <div className="qr-code-container">
-                   <QRCode value={wallets[cryptoType]} />
+                    <QRCode value={wallets[cryptoType]} />
                   </div>
 
                   <div className="p-4 bg-white dark:bg-[#1A1A1A] rounded-lg border border-[#D4AF37]/20 break-all font-mono text-sm text-[#000000] dark:text-[#FFFFFF] mb-4">
@@ -438,11 +397,11 @@ const handleSubmit = async () => {
                   >
                     {copied ? (
                       <>
-                        <Check className="w-5 h-5" /> Copied!
+                        <Check className="w-5 h-5" /> {t("dashboard.copied")}
                       </>
                     ) : (
                       <>
-                        <Copy className="w-5 h-5" /> Copy Address
+                        <Copy className="w-5 h-5" /> {t("fund.copyAddress")}
                       </>
                     )}
                   </button>
@@ -452,13 +411,13 @@ const handleSubmit = async () => {
                     onClick={() => setStep(2)}
                     className="flex-1 px-6 py-4 border-2 border-[#D4AF37]/20 text-[#000000] dark:text-[#FFFFFF] font-semibold rounded-lg hover:bg-[#D4AF37]/10 transition-all"
                   >
-                    Back
+                    {t("fund.back")}
                   </button>
                   <button
                     onClick={() => setStep(4)}
                     className="flex-1 px-6 py-4 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white font-semibold rounded-lg hover:shadow-lg transition-all"
                   >
-                    I've Sent the Payment
+                    {t("fund.sentPayment")}
                   </button>
                 </div>
               </motion.div>
@@ -472,40 +431,27 @@ const handleSubmit = async () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <h2 className="text-3xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-6">
-                  Upload Proof of Payment
-                </h2>
-                <p className="text-[#4A4A4A] dark:text-[#B8B8B8] mb-6">
-                  Please upload a screenshot of your transaction confirmation.
-                  All admins will be notified via email with your proof.
-                </p>
+                <h2 className="text-3xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-6">{t("fund.uploadProof")}</h2>
+                <p className="text-[#4A4A4A] dark:text-[#B8B8B8] mb-6">{t("fund.uploadProofDesc")}</p>
 
                 <div className="mb-6">
                   <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-[#D4AF37]/20 rounded-lg cursor-pointer hover:border-[#D4AF37] transition-all">
                     {proofImage ? (
                       <div className="text-center">
                         <Check className="w-12 h-12 text-[#10B981] mx-auto mb-2" />
-                        <p className="text-[#10B981] font-semibold">
-                          Proof Uploaded
-                        </p>
+                        <p className="text-[#10B981] font-semibold">{t("fund.proofUploaded")}</p>
                         <img
-                          src={proofImage}
+                          src={proofImage || "/placeholder.svg"}
                           alt="Proof"
                           className="mt-4 max-h-32 mx-auto rounded-lg"
                         />
-                        <p className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] mt-2">
-                          {proofImageFile?.name}
-                        </p>
+                        <p className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] mt-2">{proofImageFile?.name}</p>
                       </div>
                     ) : (
                       <div className="text-center">
                         <Upload className="w-12 h-12 text-[#D4AF37] mx-auto mb-2" />
-                        <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
-                          Click to upload proof (Max 5MB)
-                        </p>
-                        <p className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] mt-2">
-                          JPG, PNG, or WebP
-                        </p>
+                        <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">{t("fund.clickToUpload")}</p>
+                        <p className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8] mt-2">JPG, PNG, or WebP</p>
                       </div>
                     )}
                     <input
@@ -526,7 +472,7 @@ const handleSubmit = async () => {
 
                 <div className="p-4 rounded-lg bg-[#FEF3C7] dark:bg-[#78350F]/20 border border-[#FCD34D] dark:border-[#78350F] mb-6">
                   <p className="text-sm text-[#92400E] dark:text-[#FCD34D]">
-                    ℹ️ <strong>Note:</strong> Your proof will be sent directly to admin emails for faster processing. No storage upload required!
+                    ℹ️ <strong>{t("fund.note")}</strong>
                   </p>
                 </div>
 
@@ -536,14 +482,14 @@ const handleSubmit = async () => {
                     disabled={loading}
                     className="flex-1 px-6 py-4 border-2 border-[#D4AF37]/20 text-[#000000] dark:text-[#FFFFFF] font-semibold rounded-lg hover:bg-[#D4AF37]/10 transition-all disabled:opacity-50"
                   >
-                    Back
+                    {t("fund.back")}
                   </button>
                   <button
                     onClick={handleSubmit}
                     disabled={!proofImage || loading}
                     className="flex-1 px-6 py-4 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white font-semibold rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {loading ? "Submitting..." : "Submit Deposit"}
+                    {loading ? t("fund.submitting") : t("fund.submitDeposit")}
                   </button>
                 </div>
               </motion.div>
@@ -552,5 +498,5 @@ const handleSubmit = async () => {
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -221,5 +221,163 @@
     "approved": "Approved",
     "rejected": "Rejected",
     "completed": "Completed"
+  },
+  "onboarding": {
+    "title": "Complete Your Profile",
+    "tagline": "Tell us a bit more about yourself",
+    "phone": "Phone Number",
+    "city": "City",
+    "state": "State",
+    "country": "Country",
+    "enterPhone": "Enter your phone number",
+    "enterCity": "Enter your city",
+    "enterState": "Enter your state or province",
+    "enterCountry": "Enter your country",
+    "continue": "Continue to Dashboard",
+    "skip": "Skip for Now",
+    "saving": "Saving...",
+    "success": "Welcome to Nexachain!",
+    "redirecting": "Redirecting to your dashboard..."
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Find answers to common questions about Nexachain",
+    "all": "All",
+    "gettingStarted": "Getting Started",
+    "investments": "Investments",
+    "depositsWithdrawals": "Deposits & Withdrawals",
+    "referrals": "Referrals",
+    "security": "Security",
+    "technical": "Technical",
+    "stillHaveQuestions": "Still Have Questions?",
+    "supportAvailable": "Our support team is available 24/7 to help you",
+    "contactSupport": "Contact Support"
+  },
+  "legal": {
+    "title": "Legal Information",
+    "subtitle": "Our commitment to transparency and your rights",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "lastUpdated": "Last Updated",
+    "terms": {
+      "acceptance": {
+        "title": "Acceptance of Terms",
+        "content": "By accessing and using Nexachain's platform, you accept and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services."
+      },
+      "eligibility": {
+        "title": "Eligibility",
+        "intro": "To use Nexachain, you must:",
+        "item1": "Be at least 18 years old or the age of majority in your jurisdiction",
+        "item2": "Have the legal capacity to enter into binding contracts",
+        "item3": "Not be restricted from using our services under applicable laws",
+        "item4": "Provide accurate and complete registration information"
+      },
+      "risks": {
+        "title": "Investment Risks",
+        "content": "Cryptocurrency investments carry inherent risks. Past performance does not guarantee future results. You should only invest amounts you can afford to lose. Nexachain provides investment opportunities but does not guarantee profits."
+      },
+      "security": {
+        "title": "Account Security",
+        "content": "You are responsible for maintaining the confidentiality of your account credentials. Notify us immediately of any unauthorized access. We are not liable for losses resulting from unauthorized account use."
+      },
+      "deposits": {
+        "title": "Deposits and Withdrawals",
+        "item1": "All deposits must be made using supported cryptocurrencies",
+        "item2": "Deposits are confirmed within 24-48 hours after verification",
+        "item3": "Withdrawals are processed within 24-48 hours",
+        "item4": "Minimum withdrawal amount is $10",
+        "item5": "Blockchain network fees may apply"
+      },
+      "referral": {
+        "title": "Referral Program",
+        "content": "Our referral program rewards users for referring new members. Referral bonuses are paid when referred users make their first deposit. Abuse of the referral system may result in account suspension."
+      },
+      "prohibited": {
+        "title": "Prohibited Activities",
+        "item1": "Money laundering or financing illegal activities",
+        "item2": "Creating multiple accounts to abuse bonuses",
+        "item3": "Using automated systems or bots",
+        "item4": "Attempting to hack or disrupt our platform",
+        "item5": "Providing false or misleading information"
+      },
+      "liability": {
+        "title": "Limitation of Liability",
+        "content": "Nexachain is not liable for any direct, indirect, incidental, or consequential damages arising from your use of our platform. This includes, but is not limited to, loss of profits, data, or cryptocurrency."
+      },
+      "termination": {
+        "title": "Termination",
+        "content": "We reserve the right to suspend or terminate your account at any time for violation of these terms or suspected fraudulent activity. Upon termination, you may withdraw your remaining balance subject to our verification process."
+      },
+      "changes": {
+        "title": "Changes to Terms",
+        "content": "We may update these terms at any time. Continued use of our platform after changes constitutes acceptance of the new terms. Material changes will be communicated via email or platform notification."
+      },
+      "contact": {
+        "title": "Contact Information",
+        "content": "For questions about these terms, contact us at:"
+      }
+    },
+    "privacy": {
+      "collection": {
+        "title": "Information We Collect",
+        "intro": "We collect the following information:",
+        "item1": "Personal information (name, email, phone number)",
+        "item2": "Location information (city, state, country)",
+        "item3": "Cryptocurrency wallet addresses",
+        "item4": "Transaction history and investment data",
+        "item5": "Device and browser information",
+        "item6": "IP addresses and usage data"
+      },
+      "usage": {
+        "title": "How We Use Your Information",
+        "item1": "To provide and improve our investment services",
+        "item2": "To process deposits and withdrawals",
+        "item3": "To verify your identity and prevent fraud",
+        "item4": "To communicate about your account and investments",
+        "item5": "To comply with legal obligations",
+        "item6": "To send promotional emails (with your consent)"
+      },
+      "sharing": {
+        "title": "Information Sharing",
+        "intro": "We do not sell your personal information. We may share information with:",
+        "item1": "Service providers who assist in platform operations",
+        "item2": "Legal authorities when required by law",
+        "item3": "Professional advisors (lawyers, accountants)",
+        "item4": "Business partners with your explicit consent"
+      },
+      "security": {
+        "title": "Data Security",
+        "content": "We implement industry-standard security measures including encryption, secure servers, and regular security audits. However, no system is completely secure, and we cannot guarantee absolute security."
+      },
+      "cookies": {
+        "title": "Cookies and Tracking",
+        "content": "We use cookies and similar technologies to improve user experience, analyze platform usage, and remember your preferences. You can control cookie settings in your browser."
+      },
+      "rights": {
+        "title": "Your Rights",
+        "item1": "Access your personal information",
+        "item2": "Correct inaccurate data",
+        "item3": "Request deletion of your data",
+        "item4": "Object to data processing",
+        "item5": "Export your data",
+        "item6": "Withdraw consent for marketing communications"
+      },
+      "retention": {
+        "title": "Data Retention",
+        "content": "We retain your information for as long as your account is active or as needed to provide services. Transaction records are kept for at least 7 years to comply with financial regulations."
+      },
+      "international": {
+        "title": "International Transfers",
+        "content": "Your information may be transferred to and processed in countries outside your residence. We ensure appropriate safeguards are in place to protect your data during international transfers."
+      },
+      "children": {
+        "title": "Children's Privacy",
+        "content": "Our platform is not intended for individuals under 18 years old. We do not knowingly collect information from children. If we discover we have collected such information, we will delete it immediately."
+      },
+      "contact": {
+        "title": "Contact Us",
+        "content": "For privacy-related inquiries:"
+      }
+    }
   }
 }
