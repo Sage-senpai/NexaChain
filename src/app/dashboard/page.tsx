@@ -1,4 +1,4 @@
-// FILE: src/app/dashboard/page.tsx
+// FILE: src/app/dashboard/page.tsx k
 "use client"
 import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
