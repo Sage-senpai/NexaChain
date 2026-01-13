@@ -1,4 +1,7 @@
 // src/app/api/profile/route.ts
+// ============================================
+// FIXED VERSION - Better error handling + admin support
+// ============================================
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest } from "next/server";
 
@@ -20,9 +23,13 @@ export async function GET() {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
+      console.error("Auth error in /api/profile:", userError);
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    console.log("Fetching profile for user:", user.email);
+
+    // Fetch profile - this should work with the fixed RLS policies
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("*")
@@ -30,14 +37,68 @@ export async function GET() {
       .single();
 
     if (profileError) {
-      console.error("Profile fetch error:", profileError);
-      return Response.json({ error: "Failed to fetch profile" }, { status: 500 });
+      console.error("❌ Profile fetch error:", {
+        code: profileError.code,
+        message: profileError.message,
+        details: profileError.details,
+        hint: profileError.hint,
+        user_id: user.id,
+        user_email: user.email
+      });
+
+      // If profile doesn't exist, create it
+      if (profileError.code === 'PGRST116') { // Not found
+        console.log("Profile not found, creating new profile...");
+        
+        const generatedReferralCode = `NXC${Date.now().toString(36).toUpperCase()}${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+        
+        const { data: newProfile, error: createError } = await supabase
+          .from("profiles")
+          .insert({
+            id: user.id,
+            email: user.email!,
+            full_name: user.user_metadata?.full_name || "",
+            referral_code: generatedReferralCode,
+            role: 'user', // Default role
+          })
+          .select()
+          .single();
+
+        if (createError) {
+          console.error("Failed to create profile:", createError);
+          return Response.json({ 
+            error: "Failed to create profile",
+            details: createError.message 
+          }, { status: 500 });
+        }
+
+        console.log("✅ Profile created successfully");
+        return Response.json({ profile: newProfile, user });
+      }
+
+      // If it's an RLS error (infinite recursion), return helpful message
+      if (profileError.code === '42P17') {
+        return Response.json({ 
+          error: "Database policy error - Please run the RLS fix SQL",
+          details: "Infinite recursion detected in RLS policy. Check server logs for fix."
+        }, { status: 500 });
+      }
+
+      return Response.json({ 
+        error: "Failed to fetch profile",
+        details: profileError.message 
+      }, { status: 500 });
     }
 
+    console.log("✅ Profile fetched successfully for", user.email, "- Role:", profile.role);
     return Response.json({ profile, user });
+
   } catch (err) {
-    console.error("GET /api/profile error", err);
-    return Response.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error("❌ GET /api/profile critical error:", err);
+    return Response.json({ 
+      error: "Internal Server Error",
+      details: err instanceof Error ? err.message : "Unknown error"
+    }, { status: 500 });
   }
 }
 
@@ -102,6 +163,7 @@ export async function PUT(request: NextRequest) {
           country: country || "United Kingdom",
           referral_code: generatedReferralCode,
           referred_by: referrerUserId,
+          role: 'user', // Default role
         })
         .select()
         .single();

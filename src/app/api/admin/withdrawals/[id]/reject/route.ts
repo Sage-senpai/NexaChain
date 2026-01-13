@@ -1,85 +1,69 @@
-// src/app/api/admin/withdrawals/[id]/reject/route.ts
+// FILE 11: src/app/api/admin/withdrawals/[withdrawalId]/reject/route.ts
+// ============================================
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
 import { NextRequest } from "next/server";
-
-interface RouteParams {
-  params: Promise<{
-    id: string;
-  }>;
-}
 
 export async function POST(
   request: NextRequest,
-  { params }: RouteParams
+  { params }: { params: { withdrawalId: string } }
 ) {
   try {
     const supabase = await createClient();
-    
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile || profile.role !== "admin") {
+    const isAdmin = await verifyAdminAccess(user.id);
+    
+    if (!isAdmin) {
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const { id: withdrawalId } = await params;
+    const withdrawalId = params.withdrawalId;
+    const adminClient = createAdminClient();
 
     // Get withdrawal details
-    const { data: withdrawal } = await supabase
+    const { data: withdrawal, error: withdrawalError } = await adminClient
       .from("withdrawals")
-      .select("*")
+      .select("*, profiles(email)")
       .eq("id", withdrawalId)
       .single();
 
-    if (!withdrawal) {
+    if (withdrawalError || !withdrawal) {
       return Response.json({ error: "Withdrawal not found" }, { status: 404 });
     }
 
-    // If withdrawal was already approved and balance was deducted, refund it
-    if (withdrawal.status === "approved") {
-      // Refund the amount back to user's balance
-      await supabase.rpc("credit_roi", {
-        target_user_id: withdrawal.user_id,
-        roi_amount: parseFloat(withdrawal.amount),
-      });
-
-      // Create refund transaction record
-      await supabase.from("transactions").insert({
-        user_id: withdrawal.user_id,
-        type: "roi",
-        amount: withdrawal.amount,
-        description: "Withdrawal rejected - amount refunded",
-        reference_id: withdrawalId,
-      });
+    if (withdrawal.status !== "pending") {
+      return Response.json({ 
+        error: `Withdrawal already ${withdrawal.status}` 
+      }, { status: 400 });
     }
 
-    // Update withdrawal status to rejected
-    await supabase
+    // Update withdrawal status
+    const { error: updateError } = await adminClient
       .from("withdrawals")
-      .update({
+      .update({ 
         status: "rejected",
-        processed_by: user.id,
-        processed_at: new Date().toISOString(),
+        rejected_at: new Date().toISOString(),
       })
       .eq("id", withdrawalId);
 
-    return Response.json({ 
+    if (updateError) {
+      console.error("Withdrawal rejection error:", updateError);
+      return Response.json({ error: "Failed to reject withdrawal" }, { status: 500 });
+    }
+
+    console.log(`✅ Admin ${user.email} rejected withdrawal ${withdrawalId}`);
+
+    return Response.json({
       success: true,
-      message: withdrawal.status === "approved" 
-        ? "Withdrawal rejected and amount refunded to user"
-        : "Withdrawal rejected"
+      message: "Withdrawal rejected. User balance unchanged.",
     });
   } catch (err) {
-    console.error("POST /api/admin/withdrawals/[id]/reject error", err);
+    console.error("POST /api/admin/withdrawals/[withdrawalId]/reject error", err);
     return Response.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

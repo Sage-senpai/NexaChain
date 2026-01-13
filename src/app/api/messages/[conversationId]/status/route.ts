@@ -1,5 +1,7 @@
-// src/app/api/messages/[conversationId]/status/route.ts
+// FILE 3: src/app/api/messages/[conversationId]/status/route.ts
+// ============================================
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient, verifyAdminAccess } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function PATCH(
@@ -8,29 +10,25 @@ export async function PATCH(
 ) {
   try {
     const supabase = await createClient()
-    const { conversationId } = await params // Await the params Promise
+    const { conversationId } = await params
     const body = await request.json()
 
-    // Get current user
     const { data: { user }, error: userError } = await supabase.auth.getUser()
     
     if (userError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user profile to check if admin
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+    const isAdmin = await verifyAdminAccess(user.id)
 
-    if (profile?.role !== 'admin') {
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 })
     }
 
-    // Update conversation status
-    const { data: conversation, error: updateError } = await supabase
+    // Use admin client to update status
+    const adminClient = createAdminClient()
+    
+    const { data: conversation, error: updateError } = await adminClient
       .from('conversations')
       .update({ 
         status: body.status,
@@ -47,7 +45,6 @@ export async function PATCH(
       return NextResponse.json({ error: updateError.message }, { status: 500 })
     }
 
-    // Handle profiles array properly
     const profileData = Array.isArray(conversation.profiles) 
       ? conversation.profiles[0] 
       : conversation.profiles
@@ -62,9 +59,6 @@ export async function PATCH(
 
   } catch (error) {
     console.error('Error updating conversation status:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

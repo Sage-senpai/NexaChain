@@ -1,52 +1,66 @@
-// src/app/api/messages/conversations/route.ts
+// ============================================
+// FILE 1: src/app/api/messages/conversations/route.ts
+// ============================================
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient, verifyAdminAccess } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 
-// ============================================
-// GET - Fetch all conversations for current user
-// ============================================
+// GET - Fetch all conversations
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
     
-    // Get current user
     const { data: { user }, error: userError } = await supabase.auth.getUser()
     
     if (userError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user profile to check role
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+    // Check if admin
+    const isAdmin = await verifyAdminAccess(user.id)
 
-    const isAdmin = profile?.role === 'admin'
+    let conversations;
+    
+    if (isAdmin) {
+      // Admin: Use admin client to see ALL conversations
+      const adminClient = createAdminClient()
+      
+      const { data, error } = await adminClient
+        .from('conversations')
+        .select(`
+          *,
+          profiles!conversations_user_id_fkey(full_name, email, phone),
+          messages(created_at, content, sender_role)
+        `)
+        .order('updated_at', { ascending: false })
 
-    // Fetch conversations based on role
-    let query = supabase
-      .from('conversations')
-      .select(`
-        *,
-        profiles!conversations_user_id_fkey(full_name, email, phone),
-        messages(created_at, content, sender_role)
-      `)
-      .order('updated_at', { ascending: false })
+      if (error) {
+        console.error('Admin conversations fetch error:', error)
+        return NextResponse.json({ error: error.message }, { status: 500 })
+      }
+      
+      conversations = data
+    } else {
+      // Regular user: Use regular client (RLS applies)
+      const { data, error } = await supabase
+        .from('conversations')
+        .select(`
+          *,
+          profiles!conversations_user_id_fkey(full_name, email, phone),
+          messages(created_at, content, sender_role)
+        `)
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false })
 
-    // If not admin, only show user's own conversations
-    if (!isAdmin) {
-      query = query.eq('user_id', user.id)
+      if (error) {
+        console.error('User conversations fetch error:', error)
+        return NextResponse.json({ error: error.message }, { status: 500 })
+      }
+      
+      conversations = data
     }
 
-    const { data: conversations, error: convError } = await query
-
-    if (convError) {
-      return NextResponse.json({ error: convError.message }, { status: 500 })
-    }
-
-    // Format conversations with last message
+    // Format conversations
     const formattedConversations = conversations?.map(conv => {
       const profileData = Array.isArray(conv.profiles) 
         ? conv.profiles[0] 
@@ -71,32 +85,27 @@ export async function GET(request: NextRequest) {
       }
     }) || []
 
+    console.log(`✅ Fetched ${formattedConversations.length} conversations (isAdmin: ${isAdmin})`)
+
     return NextResponse.json({ conversations: formattedConversations })
 
   } catch (error) {
     console.error('Error fetching conversations:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-// ============================================
-// POST - Create new conversation with first message
-// ============================================
+// POST - Create new conversation
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
     
-    // Get current user
     const { data: { user }, error: userError } = await supabase.auth.getUser()
     
     if (userError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Parse request body
     const body = await request.json()
     const { subject, content } = body
 
@@ -121,10 +130,7 @@ export async function POST(request: NextRequest) {
 
     if (convError) {
       console.error('Error creating conversation:', convError)
-      return NextResponse.json(
-        { error: convError.message },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: convError.message }, { status: 500 })
     }
 
     // Create first message
@@ -141,28 +147,14 @@ export async function POST(request: NextRequest) {
 
     if (messageError) {
       console.error('Error creating message:', messageError)
-      // Try to clean up the conversation
-      await supabase
-        .from('conversations')
-        .delete()
-        .eq('id', conversation.id)
-      
-      return NextResponse.json(
-        { error: messageError.message },
-        { status: 500 }
-      )
+      await supabase.from('conversations').delete().eq('id', conversation.id)
+      return NextResponse.json({ error: messageError.message }, { status: 500 })
     }
 
-    return NextResponse.json({
-      conversation,
-      message
-    }, { status: 201 })
+    return NextResponse.json({ conversation, message }, { status: 201 })
 
   } catch (error) {
     console.error('Error creating conversation:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

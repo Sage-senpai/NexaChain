@@ -1,28 +1,26 @@
-// src/app/api/admin/users/route.ts
+// FILE 4: src/app/api/admin/users/route.ts
+// ============================================
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
 
 export async function GET() {
   try {
     const supabase = await createClient();
-    
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile || profile.role !== "admin") {
-      return Response.json({ error: "Forbidden" }, { status: 403 });
+    const isAdmin = await verifyAdminAccess(user.id);
+    
+    if (!isAdmin) {
+      return Response.json({ error: "Forbidden - Admin access required" }, { status: 403 });
     }
 
-    // Fetch all users with their investment data
-    const { data: users, error } = await supabase
+    const adminClient = createAdminClient();
+    
+    const { data: users, error } = await adminClient
       .from("profiles")
       .select(`
         *,
@@ -34,19 +32,31 @@ export async function GET() {
           status,
           start_date,
           end_date,
-          investment_plans(name, emoji)
+          investment_plans(name, emoji, daily_roi)
         )
       `)
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("Users fetch error:", error);
-      return Response.json({ error: "Failed to fetch users" }, { status: 500 });
+      console.error("❌ Admin users fetch error:", error);
+      return Response.json({ 
+        error: "Failed to fetch users",
+        details: error.message 
+      }, { status: 500 });
     }
 
-    return Response.json({ users: users || [] });
+    console.log(`✅ Fetched ${users?.length || 0} users for admin`);
+
+    return Response.json({ 
+      users: users || [],
+      count: users?.length || 0 
+    });
+
   } catch (err) {
-    console.error("GET /api/admin/users error", err);
-    return Response.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error("❌ GET /api/admin/users critical error:", err);
+    return Response.json({ 
+      error: "Internal Server Error",
+      details: err instanceof Error ? err.message : "Unknown error"
+    }, { status: 500 });
   }
 }

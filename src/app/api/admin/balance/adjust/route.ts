@@ -1,24 +1,21 @@
+// FILE 6: src/app/api/admin/balance/adjust/route.ts
+// ============================================
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
 import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
-    
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if user is admin
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile || profile.role !== "admin") {
+    const isAdmin = await verifyAdminAccess(user.id);
+    
+    if (!isAdmin) {
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -32,29 +29,58 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Call Supabase function to adjust balance
-    const { data, error } = await supabase.rpc("admin_adjust_balance", {
-      target_user_id: user_id,
-      adjustment_amount: parseFloat(amount),
-      description: description || null,
-    });
+    const adminClient = createAdminClient();
+    const adjustAmount = parseFloat(amount);
 
-    if (error) {
-      console.error("Adjust balance error:", error);
+    // Get current balance
+    const { data: targetUser, error: userError2 } = await adminClient
+      .from("profiles")
+      .select("account_balance, email")
+      .eq("id", user_id)
+      .single();
+
+    if (userError2 || !targetUser) {
+      return Response.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const oldBalance = parseFloat(targetUser.account_balance.toString());
+    const newBalance = oldBalance + adjustAmount;
+
+    if (newBalance < 0) {
+      return Response.json({ 
+        error: "Insufficient balance. Cannot deduct more than available balance." 
+      }, { status: 400 });
+    }
+
+    // Update balance
+    const { error: updateError } = await adminClient
+      .from("profiles")
+      .update({ account_balance: newBalance })
+      .eq("id", user_id);
+
+    if (updateError) {
+      console.error("Balance adjustment error:", updateError);
       return Response.json({ error: "Failed to adjust balance" }, { status: 500 });
     }
 
-    if (!data.success) {
-      return Response.json({ error: data.message }, { status: 400 });
-    }
+    // Create transaction record
+    const action = adjustAmount > 0 ? "added" : "deducted";
+    await adminClient.from("transactions").insert({
+      user_id: user_id,
+      type: "admin_adjustment",
+      amount: adjustAmount,
+      description: description || `Admin ${action} $${Math.abs(adjustAmount).toFixed(2)}`,
+      status: "completed",
+    });
 
-    const action = parseFloat(amount) > 0 ? "added" : "deducted";
+    console.log(`✅ Admin ${user.email} adjusted ${targetUser.email} balance: $${oldBalance} → $${newBalance}`);
+
     return Response.json({
       success: true,
-      message: `$${Math.abs(parseFloat(amount)).toFixed(2)} ${action} successfully`,
-      old_balance: data.old_balance,
-      new_balance: data.new_balance,
-      adjustment: data.adjustment,
+      message: `$${Math.abs(adjustAmount).toFixed(2)} ${action} successfully`,
+      old_balance: oldBalance,
+      new_balance: newBalance,
+      adjustment: adjustAmount,
     });
   } catch (err) {
     console.error("POST /api/admin/balance/adjust error", err);

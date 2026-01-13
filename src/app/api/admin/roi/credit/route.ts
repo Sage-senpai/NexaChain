@@ -1,26 +1,21 @@
-// src/app/api/admin/roi/credit/route.ts
-// NEW FILE - Create this file for ROI crediting
+// FILE 7: src/app/api/admin/roi/credit/route.ts
+// ============================================
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
 import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
-    
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if user is admin
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile || profile.role !== "admin") {
+    const isAdmin = await verifyAdminAccess(user.id);
+    
+    if (!isAdmin) {
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -34,10 +29,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const adminClient = createAdminClient();
+    const roiAmount = parseFloat(amount);
+
     // Get investment details
-    const { data: investment, error: invError } = await supabase
+    const { data: investment, error: invError } = await adminClient
       .from("active_investments")
-      .select("*, investment_plans(*)")
+      .select(`
+        *,
+        investment_plans(name, emoji),
+        profiles(email, account_balance)
+      `)
       .eq("id", investment_id)
       .single();
 
@@ -45,57 +47,57 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "Investment not found" }, { status: 404 });
     }
 
-    const roiAmount = parseFloat(amount);
-    const oldValue = parseFloat(investment.current_value);
-    const newValue = oldValue + roiAmount;
+    const oldInvestmentValue = parseFloat(investment.current_value);
+    const newInvestmentValue = oldInvestmentValue + roiAmount;
 
-    // Update investment current value
-    const { error: updateError } = await supabase
+    const oldUserBalance = parseFloat(investment.profiles.account_balance.toString());
+    const newUserBalance = oldUserBalance + roiAmount;
+
+    // Update investment value
+    const { error: invUpdateError } = await adminClient
       .from("active_investments")
-      .update({ 
-        current_value: newValue,
-        updated_at: new Date().toISOString()
-      })
+      .update({ current_value: newInvestmentValue })
       .eq("id", investment_id);
 
-    if (updateError) {
-      console.error("Investment update error:", updateError);
+    if (invUpdateError) {
+      console.error("Investment update error:", invUpdateError);
       return Response.json({ error: "Failed to update investment" }, { status: 500 });
     }
 
-    // Credit user's account balance
-    const { error: balanceError } = await supabase.rpc("credit_roi", {
-      target_user_id: investment.user_id,
-      roi_amount: roiAmount,
-    });
+    // Credit user balance
+    const { error: balanceError } = await adminClient
+      .from("profiles")
+      .update({ account_balance: newUserBalance })
+      .eq("id", investment.user_id);
 
     if (balanceError) {
-      console.error("Balance credit error:", balanceError);
-      // Try to rollback investment update
-      await supabase
-        .from("active_investments")
-        .update({ current_value: oldValue })
-        .eq("id", investment_id);
-      
-      return Response.json({ error: "Failed to credit balance" }, { status: 500 });
+      console.error("Balance update error:", balanceError);
+      return Response.json({ error: "Failed to update user balance" }, { status: 500 });
     }
 
     // Create transaction record
-    await supabase.from("transactions").insert({
+    await adminClient.from("transactions").insert({
       user_id: investment.user_id,
-      type: "roi_credit",
+      type: "roi",
       amount: roiAmount,
-      description: description || `ROI credited for ${investment.investment_plans?.name || 'investment'}`,
+      description: description || `ROI credited for ${investment.investment_plans?.name || "investment"}`,
       reference_id: investment_id,
       status: "completed",
     });
 
+    console.log(`✅ Admin ${user.email} credited $${roiAmount} ROI to ${investment.profiles.email}`);
+
     return Response.json({
       success: true,
       message: `Successfully credited $${roiAmount.toFixed(2)} ROI`,
-      old_value: oldValue,
-      new_value: newValue,
-      credited_amount: roiAmount,
+      investment: {
+        old_value: oldInvestmentValue,
+        new_value: newInvestmentValue,
+      },
+      user_balance: {
+        old_balance: oldUserBalance,
+        new_balance: newUserBalance,
+      },
     });
   } catch (err) {
     console.error("POST /api/admin/roi/credit error", err);

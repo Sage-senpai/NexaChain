@@ -1,29 +1,26 @@
-// src/app/api/admin/deposits/route.ts
-// FIXED VERSION - Now includes user email and plan details
+// FILE 2: src/app/api/admin/deposits/route.ts
+// ============================================
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
 
 export async function GET() {
   try {
     const supabase = await createClient();
-    
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile || profile.role !== "admin") {
-      return Response.json({ error: "Forbidden" }, { status: 403 });
+    const isAdmin = await verifyAdminAccess(user.id);
+    
+    if (!isAdmin) {
+      return Response.json({ error: "Forbidden - Admin access required" }, { status: 403 });
     }
 
-    // ✅ FIXED: Now joins with profiles to get user email and plan details
-    const { data: deposits, error } = await supabase
+    const adminClient = createAdminClient();
+    
+    const { data: deposits, error } = await adminClient
       .from("deposits")
       .select(`
         *,
@@ -43,25 +40,36 @@ export async function GET() {
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("Admin deposits fetch error:", error);
-      return Response.json({ error: "Failed to fetch deposits" }, { status: 500 });
+      console.error("❌ Admin deposits fetch error:", error);
+      return Response.json({ 
+        error: "Failed to fetch deposits",
+        details: error.message 
+      }, { status: 500 });
     }
 
-    // Transform data to flatten user and plan info
-    const transformedDeposits = deposits?.map((deposit: any) => ({
-      ...deposit,
-      user_email: deposit.profiles?.email || 'Unknown',
-      user_name: deposit.profiles?.full_name || deposit.profiles?.email || 'Unknown User',
-      plan_name: deposit.investment_plans?.name || 'Unknown Plan',
-      plan_emoji: deposit.investment_plans?.emoji || '📊',
-      plan_daily_roi: deposit.investment_plans?.daily_roi,
-      plan_total_roi: deposit.investment_plans?.total_roi,
-      plan_duration_days: deposit.investment_plans?.duration_days,
+    const formattedDeposits = deposits?.map(d => ({
+      ...d,
+      user_email: d.profiles?.email || 'Unknown',
+      user_name: d.profiles?.full_name || 'Unknown',
+      plan_name: d.investment_plans?.name || 'Unknown',
+      plan_emoji: d.investment_plans?.emoji || '💰',
+      plan_daily_roi: d.investment_plans?.daily_roi,
+      plan_total_roi: d.investment_plans?.total_roi,
+      plan_duration_days: d.investment_plans?.duration_days,
     })) || [];
 
-    return Response.json({ deposits: transformedDeposits });
+    console.log(`✅ Fetched ${formattedDeposits.length} deposits for admin`);
+
+    return Response.json({ 
+      deposits: formattedDeposits,
+      count: formattedDeposits.length 
+    });
+
   } catch (err) {
-    console.error("GET /api/admin/deposits error", err);
-    return Response.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error("❌ GET /api/admin/deposits critical error:", err);
+    return Response.json({ 
+      error: "Internal Server Error",
+      details: err instanceof Error ? err.message : "Unknown error"
+    }, { status: 500 });
   }
 }

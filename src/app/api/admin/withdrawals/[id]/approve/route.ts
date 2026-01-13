@@ -1,109 +1,109 @@
+// FILE 10: src/app/api/admin/withdrawals/[withdrawalId]/approve/route.ts
+// ============================================
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
 import { NextRequest } from "next/server";
-
-interface RouteParams {
-  params: Promise<{
-    id: string;
-  }>;
-}
 
 export async function POST(
   request: NextRequest,
-  { params }: RouteParams
+  { params }: { params: { withdrawalId: string } }
 ) {
   try {
     const supabase = await createClient();
-    
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile || profile.role !== "admin") {
+    const isAdmin = await verifyAdminAccess(user.id);
+    
+    if (!isAdmin) {
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const { id: withdrawalId } = await params;
+    const withdrawalId = params.withdrawalId;
+    const adminClient = createAdminClient();
 
     // Get withdrawal details
-    const { data: withdrawal } = await supabase
+    const { data: withdrawal, error: withdrawalError } = await adminClient
       .from("withdrawals")
-      .select("*")
+      .select(`
+        *,
+        profiles(email, account_balance, total_withdrawn)
+      `)
       .eq("id", withdrawalId)
       .single();
 
-    if (!withdrawal) {
+    if (withdrawalError || !withdrawal) {
       return Response.json({ error: "Withdrawal not found" }, { status: 404 });
     }
 
     if (withdrawal.status !== "pending") {
-      return Response.json({ error: "Withdrawal already processed" }, { status: 400 });
+      return Response.json({ 
+        error: `Withdrawal already ${withdrawal.status}` 
+      }, { status: 400 });
     }
 
-    // Check if user has sufficient balance
-    const { data: userProfile } = await supabase
+    const withdrawalAmount = parseFloat(withdrawal.amount);
+    const currentBalance = parseFloat(withdrawal.profiles.account_balance.toString());
+
+    // Verify user has sufficient balance
+    if (currentBalance < withdrawalAmount) {
+      return Response.json({ 
+        error: "Insufficient balance" 
+      }, { status: 400 });
+    }
+
+    // Deduct from user's balance
+    const newBalance = currentBalance - withdrawalAmount;
+    const { error: balanceError } = await adminClient
       .from("profiles")
-      .select("account_balance")
-      .eq("id", withdrawal.user_id)
-      .single();
-
-    if (!userProfile || parseFloat(userProfile.account_balance) < parseFloat(withdrawal.amount)) {
-      return Response.json({ error: "Insufficient balance" }, { status: 400 });
-    }
-
-    // Update withdrawal status to approved
-    const { error: updateError } = await supabase
-      .from("withdrawals")
-      .update({
-        status: "approved",
-        processed_by: user.id,
-        processed_at: new Date().toISOString(),
+      .update({ 
+        account_balance: newBalance,
+        total_withdrawn: parseFloat(withdrawal.profiles.total_withdrawn.toString()) + withdrawalAmount,
       })
-      .eq("id", withdrawalId);
-
-    if (updateError) throw updateError;
-
-    // FIXED: Use correct function name and parameters
-    const { error: balanceError } = await supabase.rpc("process_withdrawal", {
-      target_user_id: withdrawal.user_id,  // ← FIXED parameter name
-      withdrawal_amount: parseFloat(withdrawal.amount),
-    });
+      .eq("id", withdrawal.user_id);
 
     if (balanceError) {
       console.error("Balance deduction error:", balanceError);
-      // Rollback withdrawal status if balance update fails
-      await supabase
-        .from("withdrawals")
-        .update({ status: "pending" })
-        .eq("id", withdrawalId);
-      
-      return Response.json({ 
-        error: "Failed to process withdrawal. Please check Supabase functions are properly set up." 
-      }, { status: 500 });
+      return Response.json({ error: "Failed to deduct balance" }, { status: 500 });
+    }
+
+    // Update withdrawal status
+    const { error: updateError } = await adminClient
+      .from("withdrawals")
+      .update({ 
+        status: "approved",
+        approved_at: new Date().toISOString(),
+      })
+      .eq("id", withdrawalId);
+
+    if (updateError) {
+      console.error("Withdrawal update error:", updateError);
+      return Response.json({ error: "Failed to update withdrawal" }, { status: 500 });
     }
 
     // Create transaction record
-    await supabase.from("transactions").insert({
+    await adminClient.from("transactions").insert({
       user_id: withdrawal.user_id,
       type: "withdrawal",
-      amount: withdrawal.amount,
-      description: `Withdrawal approved - ${withdrawal.crypto_type} to ${withdrawal.wallet_address.substring(0, 10)}...`,
-      reference_id: withdrawalId,
+      amount: -withdrawalAmount,
+      description: `Withdrawal to ${withdrawal.crypto_type} wallet`,
+      reference_id: withdrawal.id,
+      status: "completed",
     });
 
-    return Response.json({ 
+    console.log(`✅ Admin ${user.email} approved withdrawal ${withdrawalId} for ${withdrawal.profiles.email}`);
+
+    return Response.json({
       success: true,
-      message: "Withdrawal approved. Balance deducted. Please send funds to user's wallet."
+      message: `Withdrawal approved. $${withdrawalAmount.toFixed(2)} deducted from user balance.`,
+      old_balance: currentBalance,
+      new_balance: newBalance,
     });
   } catch (err) {
-    console.error("POST /api/admin/withdrawals/[id]/approve error", err);
+    console.error("POST /api/admin/withdrawals/[withdrawalId]/approve error", err);
     return Response.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

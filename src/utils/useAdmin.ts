@@ -1,55 +1,41 @@
-// src/utils/useAdmin.ts
-"use client";
-
-import { useEffect, useState } from "react";
+// FILE 12: src/utils/useAdmin.ts (NEW FILE - UTILITY HOOK)
+// ============================================
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-interface UseAdminReturn {
-  isAdmin: boolean;
-  loading: boolean;
-}
-
-export default function useAdmin(): UseAdminReturn {
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true);
-  const supabase = createClient();
+export default function useAdmin() {
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkAdmin = async () => {
+    const checkAdminStatus = async () => {
       try {
+        const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
-        
-        if (user) {
-          // Check from JWT user_metadata
-          const role = user.user_metadata?.role;
-          setIsAdmin(role === "admin");
+
+        if (!user) {
+          setIsAdmin(false);
+          setLoading(false);
+          return;
         }
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .single();
+
+        setIsAdmin(profile?.role === "admin");
       } catch (err) {
-        console.error("Error checking admin status:", err);
+        console.error("Admin check error:", err);
         setIsAdmin(false);
       } finally {
         setLoading(false);
       }
     };
 
-    checkAdmin();
-
-    // Subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        if (session?.user) {
-          const role = session.user.user_metadata?.role;
-          setIsAdmin(role === "admin");
-        } else {
-          setIsAdmin(false);
-        }
-      }
-    );
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [supabase]);
+    checkAdminStatus();
+  }, []);
 
   return { isAdmin, loading };
 }

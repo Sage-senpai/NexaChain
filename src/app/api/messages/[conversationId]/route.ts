@@ -1,10 +1,10 @@
-// src/app/api/messages/[conversationId]/route.ts
+// FILE 2: src/app/api/messages/[conversationId]/route.ts
+// ============================================
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient, verifyAdminAccess } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 
-// ============================================
 // GET - Fetch conversation with messages
-// ============================================
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ conversationId: string }> }
@@ -13,39 +13,75 @@ export async function GET(
     const supabase = await createClient()
     const { conversationId } = await params
 
-    // Get current user
     const { data: { user }, error: userError } = await supabase.auth.getUser()
     
     if (userError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get conversation with profile info
-    const { data: conversation, error: convError } = await supabase
-      .from('conversations')
-      .select(`
-        *,
-        profiles!conversations_user_id_fkey(full_name, email, phone)
-      `)
-      .eq('id', conversationId)
-      .single()
+    const isAdmin = await verifyAdminAccess(user.id)
 
-    if (convError || !conversation) {
-      return NextResponse.json({ error: 'Conversation not found' }, { status: 404 })
+    let conversation, messages;
+
+    if (isAdmin) {
+      // Admin: Use admin client
+      const adminClient = createAdminClient()
+      
+      const { data: convData, error: convError } = await adminClient
+        .from('conversations')
+        .select(`
+          *,
+          profiles!conversations_user_id_fkey(full_name, email, phone)
+        `)
+        .eq('id', conversationId)
+        .single()
+
+      if (convError || !convData) {
+        return NextResponse.json({ error: 'Conversation not found' }, { status: 404 })
+      }
+
+      const { data: messagesData, error: messagesError } = await adminClient
+        .from('messages')
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: true })
+
+      if (messagesError) {
+        return NextResponse.json({ error: messagesError.message }, { status: 500 })
+      }
+
+      conversation = convData
+      messages = messagesData
+    } else {
+      // Regular user: Use regular client
+      const { data: convData, error: convError } = await supabase
+        .from('conversations')
+        .select(`
+          *,
+          profiles!conversations_user_id_fkey(full_name, email, phone)
+        `)
+        .eq('id', conversationId)
+        .eq('user_id', user.id) // RLS ensures this
+        .single()
+
+      if (convError || !convData) {
+        return NextResponse.json({ error: 'Conversation not found' }, { status: 404 })
+      }
+
+      const { data: messagesData, error: messagesError } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: true })
+
+      if (messagesError) {
+        return NextResponse.json({ error: messagesError.message }, { status: 500 })
+      }
+
+      conversation = convData
+      messages = messagesData
     }
 
-    // Get messages
-    const { data: messages, error: messagesError } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('conversation_id', conversationId)
-      .order('created_at', { ascending: true })
-
-    if (messagesError) {
-      return NextResponse.json({ error: messagesError.message }, { status: 500 })
-    }
-
-    // Handle profiles array properly
     const profileData = Array.isArray(conversation.profiles) 
       ? conversation.profiles[0] 
       : conversation.profiles
@@ -61,16 +97,11 @@ export async function GET(
 
   } catch (error) {
     console.error('Error fetching conversation:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-// ============================================
-// POST - Send message in conversation
-// ============================================
+// POST - Send message
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ conversationId: string }> }
@@ -80,36 +111,13 @@ export async function POST(
     const { conversationId } = await params
     const body = await request.json()
 
-    // Get current user
     const { data: { user }, error: userError } = await supabase.auth.getUser()
     
     if (userError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user profile to check role
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    const isAdmin = profile?.role === 'admin'
-
-    // Verify conversation exists and user has access
-    const { data: conversation } = await supabase
-      .from('conversations')
-      .select('user_id')
-      .eq('id', conversationId)
-      .single()
-
-    if (!conversation) {
-      return NextResponse.json({ error: 'Conversation not found' }, { status: 404 })
-    }
-
-    if (!isAdmin && conversation.user_id !== user.id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const isAdmin = await verifyAdminAccess(user.id)
 
     // Validate content
     if (!body.content || !body.content.trim()) {
@@ -119,13 +127,38 @@ export async function POST(
       )
     }
 
-    // Insert message with correct sender_role
+    // Verify conversation access
+    if (isAdmin) {
+      const adminClient = createAdminClient()
+      const { data: conv } = await adminClient
+        .from('conversations')
+        .select('id')
+        .eq('id', conversationId)
+        .single()
+
+      if (!conv) {
+        return NextResponse.json({ error: 'Conversation not found' }, { status: 404 })
+      }
+    } else {
+      const { data: conv } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('id', conversationId)
+        .eq('user_id', user.id)
+        .single()
+
+      if (!conv) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      }
+    }
+
+    // Insert message
     const { data: message, error: messageError } = await supabase
       .from('messages')
       .insert({
         conversation_id: conversationId,
         sender_id: user.id,
-        sender_role: isAdmin ? 'admin' : 'user', // ✅ Use sender_role not sender_type
+        sender_role: isAdmin ? 'admin' : 'user',
         content: body.content.trim()
       })
       .select()
@@ -136,7 +169,7 @@ export async function POST(
       return NextResponse.json({ error: messageError.message }, { status: 500 })
     }
 
-    // Update conversation updated_at and last_message_at
+    // Update conversation
     await supabase
       .from('conversations')
       .update({ 
@@ -149,9 +182,6 @@ export async function POST(
 
   } catch (error) {
     console.error('Error creating message:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

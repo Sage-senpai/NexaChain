@@ -1,24 +1,21 @@
+// FILE 5: src/app/api/admin/balance/set/route.ts
+// ============================================
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
 import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
-    
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if user is admin
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile || profile.role !== "admin") {
+    const isAdmin = await verifyAdminAccess(user.id);
+    
+    if (!isAdmin) {
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -32,26 +29,49 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Call Supabase function to set balance
-    const { data, error } = await supabase.rpc("admin_set_balance", {
-      target_user_id: user_id,
-      new_balance: parseFloat(amount),
+    const adminClient = createAdminClient();
+
+    // Get current balance
+    const { data: targetUser, error: userError2 } = await adminClient
+      .from("profiles")
+      .select("account_balance, email")
+      .eq("id", user_id)
+      .single();
+
+    if (userError2 || !targetUser) {
+      return Response.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const oldBalance = parseFloat(targetUser.account_balance.toString());
+    const newBalance = parseFloat(amount);
+
+    // Update balance
+    const { error: updateError } = await adminClient
+      .from("profiles")
+      .update({ account_balance: newBalance })
+      .eq("id", user_id);
+
+    if (updateError) {
+      console.error("Balance update error:", updateError);
+      return Response.json({ error: "Failed to update balance" }, { status: 500 });
+    }
+
+    // Create transaction record
+    await adminClient.from("transactions").insert({
+      user_id: user_id,
+      type: "admin_adjustment",
+      amount: newBalance - oldBalance,
+      description: description || `Admin set balance to $${newBalance.toFixed(2)}`,
+      status: "completed",
     });
 
-    if (error) {
-      console.error("Set balance error:", error);
-      return Response.json({ error: "Failed to set balance" }, { status: 500 });
-    }
-
-    if (!data.success) {
-      return Response.json({ error: data.message }, { status: 400 });
-    }
+    console.log(`✅ Admin ${user.email} set ${targetUser.email} balance: $${oldBalance} → $${newBalance}`);
 
     return Response.json({
       success: true,
-      message: `Balance set to $${parseFloat(amount).toFixed(2)}`,
-      old_balance: data.old_balance,
-      new_balance: data.new_balance,
+      message: `Balance set to $${newBalance.toFixed(2)}`,
+      old_balance: oldBalance,
+      new_balance: newBalance,
     });
   } catch (err) {
     console.error("POST /api/admin/balance/set error", err);
