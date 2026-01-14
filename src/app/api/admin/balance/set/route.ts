@@ -1,4 +1,4 @@
-// FILE 5: src/app/api/admin/balance/set/route.ts
+// src/app/api/admin/balance/set/route.ts
 // ============================================
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       .eq("id", user_id);
 
     if (updateError) {
-      console.error("Balance update error:", updateError);
+      console.error("❌ Balance update error:", updateError);
       return Response.json({ error: "Failed to update balance" }, { status: 500 });
     }
 
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       new_balance: newBalance,
     });
   } catch (err) {
-    console.error("POST /api/admin/balance/set error", err);
+    console.error("❌ POST /api/admin/balance/set error:", err);
     return Response.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

@@ -1,4 +1,4 @@
-// FILE 7: src/app/api/admin/roi/credit/route.ts
+// src/app/api/admin/roi/credit/route.ts
 // ============================================
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
@@ -32,13 +32,13 @@ export async function POST(request: NextRequest) {
     const adminClient = createAdminClient();
     const roiAmount = parseFloat(amount);
 
-    // Get investment details
+    // Get investment details with related data
     const { data: investment, error: invError } = await adminClient
       .from("active_investments")
       .select(`
         *,
-        investment_plans(name, emoji),
-        profiles(email, account_balance)
+        investment_plans(id, name, emoji, daily_roi),
+        profiles(id, email, account_balance)
       `)
       .eq("id", investment_id)
       .single();
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
       .eq("id", investment_id);
 
     if (invUpdateError) {
-      console.error("Investment update error:", invUpdateError);
+      console.error("❌ Investment update error:", invUpdateError);
       return Response.json({ error: "Failed to update investment" }, { status: 500 });
     }
 
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       .eq("id", investment.user_id);
 
     if (balanceError) {
-      console.error("Balance update error:", balanceError);
+      console.error("❌ Balance update error:", balanceError);
       return Response.json({ error: "Failed to update user balance" }, { status: 500 });
     }
 
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
       status: "completed",
     });
 
-    console.log(`✅ Admin ${user.email} credited $${roiAmount} ROI to ${investment.profiles.email}`);
+    console.log(`✅ Admin ${user.email} credited $${roiAmount.toFixed(2)} ROI to ${investment.profiles.email}`);
 
     return Response.json({
       success: true,
@@ -93,6 +93,7 @@ export async function POST(request: NextRequest) {
       investment: {
         old_value: oldInvestmentValue,
         new_value: newInvestmentValue,
+        profit: newInvestmentValue - parseFloat(investment.principal_amount),
       },
       user_balance: {
         old_balance: oldUserBalance,
@@ -100,7 +101,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (err) {
-    console.error("POST /api/admin/roi/credit error", err);
+    console.error("❌ POST /api/admin/roi/credit error:", err);
     return Response.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

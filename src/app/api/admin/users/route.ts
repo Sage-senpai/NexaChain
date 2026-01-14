@@ -1,4 +1,4 @@
-// FILE 4: src/app/api/admin/users/route.ts
+// src/app/api/admin/users/route.ts
 // ============================================
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
@@ -32,7 +32,7 @@ export async function GET() {
           status,
           start_date,
           end_date,
-          investment_plans(name, emoji, daily_roi)
+          investment_plans(id, name, emoji, daily_roi, total_roi, duration_days)
         )
       `)
       .order("created_at", { ascending: false });

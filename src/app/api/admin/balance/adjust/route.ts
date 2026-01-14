@@ -1,4 +1,4 @@
-// FILE 6: src/app/api/admin/balance/adjust/route.ts
+// src/app/api/admin/balance/adjust/route.ts
 // ============================================
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 
     if (newBalance < 0) {
       return Response.json({ 
-        error: "Insufficient balance. Cannot deduct more than available balance." 
+        error: `Insufficient balance. Current: $${oldBalance.toFixed(2)}, Cannot subtract $${Math.abs(adjustAmount).toFixed(2)}`
       }, { status: 400 });
     }
 
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       .eq("id", user_id);
 
     if (updateError) {
-      console.error("Balance adjustment error:", updateError);
+      console.error("❌ Balance adjustment error:", updateError);
       return Response.json({ error: "Failed to adjust balance" }, { status: 500 });
     }
 
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
       adjustment: adjustAmount,
     });
   } catch (err) {
-    console.error("POST /api/admin/balance/adjust error", err);
+    console.error("❌ POST /api/admin/balance/adjust error:", err);
     return Response.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

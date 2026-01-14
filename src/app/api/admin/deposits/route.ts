@@ -1,9 +1,10 @@
-// FILE 2: src/app/api/admin/deposits/route.ts
+// src/app/api/admin/deposits/route.ts
 // ============================================
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
+import { NextRequest } from "next/server";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -19,8 +20,12 @@ export async function GET() {
     }
 
     const adminClient = createAdminClient();
+
+    // Get status filter from query params
+    const url = new URL(request.url);
+    const statusFilter = url.searchParams.get("status");
     
-    const { data: deposits, error } = await adminClient
+    let query = adminClient
       .from("deposits")
       .select(`
         *,
@@ -39,6 +44,13 @@ export async function GET() {
       `)
       .order("created_at", { ascending: false });
 
+    // Apply status filter if provided
+    if (statusFilter && statusFilter !== "all") {
+      query = query.eq("status", statusFilter);
+    }
+
+    const { data: deposits, error } = await query;
+
     if (error) {
       console.error("❌ Admin deposits fetch error:", error);
       return Response.json({ 
@@ -56,13 +68,15 @@ export async function GET() {
       plan_daily_roi: d.investment_plans?.daily_roi,
       plan_total_roi: d.investment_plans?.total_roi,
       plan_duration_days: d.investment_plans?.duration_days,
+      plan_referral_bonus_percent: d.investment_plans?.referral_bonus_percent,
     })) || [];
 
-    console.log(`✅ Fetched ${formattedDeposits.length} deposits for admin`);
+    console.log(`✅ Fetched ${formattedDeposits.length} deposits for admin${statusFilter ? ` (${statusFilter})` : ""}`);
 
     return Response.json({ 
       deposits: formattedDeposits,
-      count: formattedDeposits.length 
+      count: formattedDeposits.length,
+      status_filter: statusFilter || "all"
     });
 
   } catch (err) {

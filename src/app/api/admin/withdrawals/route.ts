@@ -1,9 +1,10 @@
-// FILE 3: src/app/api/admin/withdrawals/route.ts
+// src/app/api/admin/withdrawals/route.ts
 // ============================================
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
+import { NextRequest } from "next/server";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -19,17 +20,30 @@ export async function GET() {
     }
 
     const adminClient = createAdminClient();
+
+    // Get status filter from query params
+    const url = new URL(request.url);
+    const statusFilter = url.searchParams.get("status");
     
-    const { data: withdrawals, error } = await adminClient
+    let query = adminClient
       .from("withdrawals")
       .select(`
         *,
         profiles!withdrawals_user_id_fkey (
           email,
-          full_name
+          full_name,
+          account_balance,
+          total_withdrawn
         )
       `)
       .order("created_at", { ascending: false });
+
+    // Apply status filter if provided
+    if (statusFilter && statusFilter !== "all") {
+      query = query.eq("status", statusFilter);
+    }
+
+    const { data: withdrawals, error } = await query;
 
     if (error) {
       console.error("❌ Admin withdrawals fetch error:", error);
@@ -43,13 +57,16 @@ export async function GET() {
       ...w,
       user_email: w.profiles?.email || 'Unknown',
       user_name: w.profiles?.full_name || 'Unknown',
+      user_account_balance: w.profiles?.account_balance,
+      user_total_withdrawn: w.profiles?.total_withdrawn,
     })) || [];
 
-    console.log(`✅ Fetched ${formattedWithdrawals.length} withdrawals for admin`);
+    console.log(`✅ Fetched ${formattedWithdrawals.length} withdrawals for admin${statusFilter ? ` (${statusFilter})` : ""}`);
 
     return Response.json({ 
       withdrawals: formattedWithdrawals,
-      count: formattedWithdrawals.length 
+      count: formattedWithdrawals.length,
+      status_filter: statusFilter || "all"
     });
 
   } catch (err) {
