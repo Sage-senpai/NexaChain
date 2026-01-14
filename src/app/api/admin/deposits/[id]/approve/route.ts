@@ -6,9 +6,10 @@ import { NextRequest } from "next/server";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { depositId: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: depositId } = await params;
     const supabase = await createClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
@@ -22,7 +23,6 @@ export async function POST(
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const depositId = params.depositId;
     const adminClient = createAdminClient();
 
     // Get deposit details with plan info

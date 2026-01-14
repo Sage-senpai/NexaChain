@@ -6,9 +6,10 @@ import { NextRequest } from "next/server";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { withdrawalId: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: withdrawalId } = await params;
     const supabase = await createClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
@@ -22,7 +23,6 @@ export async function POST(
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const withdrawalId = params.withdrawalId;
     const adminClient = createAdminClient();
 
     // Get withdrawal details
