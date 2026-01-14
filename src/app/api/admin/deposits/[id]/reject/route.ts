@@ -1,4 +1,4 @@
-// FILE 9: src/app/api/admin/deposits/[depositId]/reject/route.ts
+// src/app/api/admin/deposits/[depositId]/reject/route.ts
 // ============================================
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
@@ -10,17 +10,20 @@ export async function POST(
 ) {
   try {
     const { id: depositId } = await params;
+    
     const supabase = await createClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
+      console.error("❌ Auth error:", userError);
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const isAdmin = await verifyAdminAccess(user.id);
     
     if (!isAdmin) {
-      return Response.json({ error: "Forbidden" }, { status: 403 });
+      console.error("❌ User is not admin");
+      return Response.json({ error: "Forbidden - Admin access required" }, { status: 403 });
     }
 
     const adminClient = createAdminClient();
@@ -28,11 +31,23 @@ export async function POST(
     // Get deposit details
     const { data: deposit, error: depositError } = await adminClient
       .from("deposits")
-      .select("*, profiles(email)")
+      .select(`
+        *,
+        profiles(id, email, full_name)
+      `)
       .eq("id", depositId)
       .single();
 
-    if (depositError || !deposit) {
+    if (depositError) {
+      console.error("❌ Deposit fetch error:", depositError);
+      return Response.json({ 
+        error: "Deposit not found",
+        details: depositError.message 
+      }, { status: 404 });
+    }
+
+    if (!deposit) {
+      console.error("❌ Deposit is null/undefined");
       return Response.json({ error: "Deposit not found" }, { status: 404 });
     }
 
@@ -52,18 +67,31 @@ export async function POST(
       .eq("id", depositId);
 
     if (updateError) {
-      console.error("Deposit rejection error:", updateError);
+      console.error("❌ Deposit rejection error:", updateError);
       return Response.json({ error: "Failed to reject deposit" }, { status: 500 });
     }
 
-    console.log(`✅ Admin ${user.email} rejected deposit ${depositId}`);
+    // Create transaction record to log the rejection
+    await adminClient.from("transactions").insert({
+      user_id: deposit.user_id,
+      type: "deposit_rejected",
+      amount: 0,
+      description: `Deposit rejected by admin`,
+      reference_id: deposit.id,
+      status: "completed",
+    });
+
+    console.log(`✅ Admin ${user.email} rejected deposit ${depositId} for ${deposit.profiles.email}`);
 
     return Response.json({
       success: true,
       message: "Deposit rejected",
     });
   } catch (err) {
-    console.error("POST /api/admin/deposits/[depositId]/reject error", err);
-    return Response.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error("❌ POST /api/admin/deposits/[depositId]/reject error:", err);
+    return Response.json({ 
+      error: "Internal Server Error",
+      details: err instanceof Error ? err.message : "Unknown error"
+    }, { status: 500 });
   }
 }

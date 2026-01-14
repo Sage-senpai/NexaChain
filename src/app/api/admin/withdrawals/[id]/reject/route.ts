@@ -1,4 +1,4 @@
-// FILE 11: src/app/api/admin/withdrawals/[withdrawalId]/reject/route.ts
+// src/app/api/admin/withdrawals/[withdrawalId]/reject/route.ts
 // ============================================
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
@@ -10,17 +10,20 @@ export async function POST(
 ) {
   try {
     const { id: withdrawalId } = await params;
+    
     const supabase = await createClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
+      console.error("❌ Auth error:", userError);
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const isAdmin = await verifyAdminAccess(user.id);
     
     if (!isAdmin) {
-      return Response.json({ error: "Forbidden" }, { status: 403 });
+      console.error("❌ User is not admin");
+      return Response.json({ error: "Forbidden - Admin access required" }, { status: 403 });
     }
 
     const adminClient = createAdminClient();
@@ -28,11 +31,23 @@ export async function POST(
     // Get withdrawal details
     const { data: withdrawal, error: withdrawalError } = await adminClient
       .from("withdrawals")
-      .select("*, profiles(email)")
+      .select(`
+        *,
+        profiles(id, email, full_name, account_balance)
+      `)
       .eq("id", withdrawalId)
       .single();
 
-    if (withdrawalError || !withdrawal) {
+    if (withdrawalError) {
+      console.error("❌ Withdrawal fetch error:", withdrawalError);
+      return Response.json({ 
+        error: "Withdrawal not found",
+        details: withdrawalError.message 
+      }, { status: 404 });
+    }
+
+    if (!withdrawal) {
+      console.error("❌ Withdrawal is null/undefined");
       return Response.json({ error: "Withdrawal not found" }, { status: 404 });
     }
 
@@ -52,18 +67,36 @@ export async function POST(
       .eq("id", withdrawalId);
 
     if (updateError) {
-      console.error("Withdrawal rejection error:", updateError);
+      console.error("❌ Withdrawal rejection error:", updateError);
       return Response.json({ error: "Failed to reject withdrawal" }, { status: 500 });
     }
 
-    console.log(`✅ Admin ${user.email} rejected withdrawal ${withdrawalId}`);
+    // Create transaction record to log the rejection
+    await adminClient.from("transactions").insert({
+      user_id: withdrawal.user_id,
+      type: "withdrawal_rejected",
+      amount: 0,
+      description: `Withdrawal rejected by admin. Balance remains unchanged.`,
+      reference_id: withdrawal.id,
+      status: "completed",
+    });
+
+    console.log(`✅ Admin ${user.email} rejected withdrawal ${withdrawalId} for ${withdrawal.profiles.email}`);
 
     return Response.json({
       success: true,
       message: "Withdrawal rejected. User balance unchanged.",
+      withdrawal: {
+        id: withdrawal.id,
+        amount: withdrawal.amount,
+        user_balance: withdrawal.profiles.account_balance,
+      },
     });
   } catch (err) {
-    console.error("POST /api/admin/withdrawals/[withdrawalId]/reject error", err);
-    return Response.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error("❌ POST /api/admin/withdrawals/[withdrawalId]/reject error:", err);
+    return Response.json({ 
+      error: "Internal Server Error",
+      details: err instanceof Error ? err.message : "Unknown error"
+    }, { status: 500 });
   }
 }

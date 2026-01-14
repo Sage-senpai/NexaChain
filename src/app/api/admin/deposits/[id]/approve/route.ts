@@ -1,4 +1,4 @@
-// FILE 8: src/app/api/admin/deposits/[depositId]/approve/route.ts
+// src/app/api/admin/deposits/[depositId]/approve/route.ts
 // ============================================
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
@@ -10,17 +10,20 @@ export async function POST(
 ) {
   try {
     const { id: depositId } = await params;
+    
     const supabase = await createClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
+      console.error("❌ Auth error:", userError);
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const isAdmin = await verifyAdminAccess(user.id);
     
     if (!isAdmin) {
-      return Response.json({ error: "Forbidden" }, { status: 403 });
+      console.error("❌ User is not admin");
+      return Response.json({ error: "Forbidden - Admin access required" }, { status: 403 });
     }
 
     const adminClient = createAdminClient();
@@ -30,13 +33,36 @@ export async function POST(
       .from("deposits")
       .select(`
         *,
-        investment_plans(*),
-        profiles(email, full_name, referred_by)
+        investment_plans(
+          id,
+          name,
+          emoji,
+          daily_roi,
+          total_roi,
+          duration_days,
+          referral_bonus_percent
+        ),
+        profiles(
+          id,
+          email,
+          full_name,
+          referred_by,
+          account_balance
+        )
       `)
       .eq("id", depositId)
       .single();
 
-    if (depositError || !deposit) {
+    if (depositError) {
+      console.error("❌ Deposit fetch error:", depositError);
+      return Response.json({ 
+        error: "Deposit not found",
+        details: depositError.message 
+      }, { status: 404 });
+    }
+
+    if (!deposit) {
+      console.error("❌ Deposit is null/undefined");
       return Response.json({ error: "Deposit not found" }, { status: 404 });
     }
 
@@ -58,7 +84,7 @@ export async function POST(
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + durationDays);
 
-    // Start transaction: Update deposit status
+    // Step 1: Update deposit status
     const { error: updateError } = await adminClient
       .from("deposits")
       .update({ 
@@ -68,11 +94,11 @@ export async function POST(
       .eq("id", depositId);
 
     if (updateError) {
-      console.error("Deposit update error:", updateError);
+      console.error("❌ Deposit update error:", updateError);
       return Response.json({ error: "Failed to update deposit" }, { status: 500 });
     }
 
-    // Create active investment
+    // Step 2: Create active investment
     const { data: investment, error: investmentError } = await adminClient
       .from("active_investments")
       .insert({
@@ -90,11 +116,11 @@ export async function POST(
       .single();
 
     if (investmentError) {
-      console.error("Investment creation error:", investmentError);
+      console.error("❌ Investment creation error:", investmentError);
       return Response.json({ error: "Failed to create investment" }, { status: 500 });
     }
 
-    // Update user's total_invested
+    // Step 3: Update user's total_invested
     const { error: profileUpdateError } = await adminClient
       .rpc("increment_total_invested", {
         user_id_param: deposit.user_id,
@@ -102,33 +128,38 @@ export async function POST(
       });
 
     if (profileUpdateError) {
-      console.error("Profile update error:", profileUpdateError);
+      console.error("⚠️ Profile update error (non-critical):", profileUpdateError);
+      // Don't fail the whole operation if this fails
     }
 
-    // Handle referral bonus
+    // Step 4: Handle referral bonus
     if (deposit.profiles.referred_by && plan.referral_bonus_percent > 0) {
       const bonusAmount = depositAmount * (plan.referral_bonus_percent / 100);
 
-      // Credit referrer's balance
-      await adminClient.rpc("credit_referral_bonus", {
-        referrer_id_param: deposit.profiles.referred_by,
-        bonus_amount_param: bonusAmount,
-      });
+      try {
+        // Credit referrer's balance
+        await adminClient.rpc("credit_referral_bonus", {
+          referrer_id_param: deposit.profiles.referred_by,
+          bonus_amount_param: bonusAmount,
+        });
 
-      // Create referral bonus transaction
-      await adminClient.from("transactions").insert({
-        user_id: deposit.profiles.referred_by,
-        type: "referral_bonus",
-        amount: bonusAmount,
-        description: `Referral bonus from ${deposit.profiles.email || "user"}'s deposit`,
-        reference_id: deposit.id,
-        status: "completed",
-      });
+        // Create referral bonus transaction
+        await adminClient.from("transactions").insert({
+          user_id: deposit.profiles.referred_by,
+          type: "referral_bonus",
+          amount: bonusAmount,
+          description: `Referral bonus from ${deposit.profiles.email || "user"}'s deposit`,
+          reference_id: deposit.id,
+          status: "completed",
+        });
 
-      console.log(`✅ Credited $${bonusAmount} referral bonus`);
+        console.log(`✅ Credited $${bonusAmount.toFixed(2)} referral bonus to ${deposit.profiles.referred_by}`);
+      } catch (err) {
+        console.error("⚠️ Referral bonus error (non-critical):", err);
+      }
     }
 
-    // Create deposit transaction
+    // Step 5: Create deposit transaction
     await adminClient.from("transactions").insert({
       user_id: deposit.user_id,
       type: "deposit",
@@ -138,7 +169,7 @@ export async function POST(
       status: "completed",
     });
 
-    console.log(`✅ Admin ${user.email} approved deposit ${depositId}`);
+    console.log(`✅ Admin ${user.email} approved deposit ${depositId} for ${deposit.profiles.email}`);
 
     return Response.json({
       success: true,
@@ -146,7 +177,10 @@ export async function POST(
       investment,
     });
   } catch (err) {
-    console.error("POST /api/admin/deposits/[depositId]/approve error", err);
-    return Response.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error("❌ POST /api/admin/deposits/[depositId]/approve error:", err);
+    return Response.json({ 
+      error: "Internal Server Error",
+      details: err instanceof Error ? err.message : "Unknown error"
+    }, { status: 500 });
   }
 }
