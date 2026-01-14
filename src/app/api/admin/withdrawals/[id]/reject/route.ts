@@ -1,4 +1,4 @@
-// src/app/api/admin/withdrawals/[withdrawalId]/reject/route.ts
+// src/app/api/admin/withdrawals/[id]/reject/route.ts
 // ============================================
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
@@ -71,7 +71,7 @@ export async function POST(
       return Response.json({ error: "Failed to reject withdrawal" }, { status: 500 });
     }
 
-    // Create transaction record to log the rejection
+    // Create transaction record
     await adminClient.from("transactions").insert({
       user_id: withdrawal.user_id,
       type: "withdrawal_rejected",
@@ -81,19 +81,14 @@ export async function POST(
       status: "completed",
     });
 
-    console.log(`✅ Admin ${user.email} rejected withdrawal ${withdrawalId} for ${withdrawal.profiles.email}`);
+    console.log(`✅ Admin ${user.email} rejected withdrawal ${withdrawalId}`);
 
     return Response.json({
       success: true,
       message: "Withdrawal rejected. User balance unchanged.",
-      withdrawal: {
-        id: withdrawal.id,
-        amount: withdrawal.amount,
-        user_balance: withdrawal.profiles.account_balance,
-      },
     });
   } catch (err) {
-    console.error("❌ POST /api/admin/withdrawals/[withdrawalId]/reject error:", err);
+    console.error("❌ POST /api/admin/withdrawals/[id]/reject error:", err);
     return Response.json({ 
       error: "Internal Server Error",
       details: err instanceof Error ? err.message : "Unknown error"

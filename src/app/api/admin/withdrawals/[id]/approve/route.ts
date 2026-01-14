@@ -1,4 +1,4 @@
-// src/app/api/admin/withdrawals/[withdrawalId]/approve/route.ts
+// src/app/api/admin/withdrawals/[id]/approve/route.ts
 // ============================================
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
@@ -107,29 +107,21 @@ export async function POST(
       user_id: withdrawal.user_id,
       type: "withdrawal",
       amount: -withdrawalAmount,
-      description: `Withdrawal to ${withdrawal.crypto_type} wallet: ${withdrawal.wallet_address.substring(0, 10)}...`,
+      description: `Withdrawal to ${withdrawal.crypto_type} wallet`,
       reference_id: withdrawal.id,
       status: "completed",
     });
 
-    console.log(`✅ Admin ${user.email} approved withdrawal ${withdrawalId} for ${withdrawal.profiles.email} - $${withdrawalAmount.toFixed(2)}`);
+    console.log(`✅ Admin ${user.email} approved withdrawal ${withdrawalId}`);
 
     return Response.json({
       success: true,
       message: `Withdrawal approved. $${withdrawalAmount.toFixed(2)} deducted from user balance.`,
-      withdrawal: {
-        id: withdrawal.id,
-        amount: withdrawalAmount,
-        crypto_type: withdrawal.crypto_type,
-        wallet_address: withdrawal.wallet_address,
-      },
-      user_balance: {
-        old_balance: currentBalance,
-        new_balance: newBalance,
-      },
+      old_balance: currentBalance,
+      new_balance: newBalance,
     });
   } catch (err) {
-    console.error("❌ POST /api/admin/withdrawals/[withdrawalId]/approve error:", err);
+    console.error("❌ POST /api/admin/withdrawals/[id]/approve error:", err);
     return Response.json({ 
       error: "Internal Server Error",
       details: err instanceof Error ? err.message : "Unknown error"

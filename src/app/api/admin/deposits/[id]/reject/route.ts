@@ -1,4 +1,4 @@
-// src/app/api/admin/deposits/[depositId]/reject/route.ts
+// src/app/api/admin/deposits/[id]/reject/route.ts
 // ============================================
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
@@ -71,7 +71,7 @@ export async function POST(
       return Response.json({ error: "Failed to reject deposit" }, { status: 500 });
     }
 
-    // Create transaction record to log the rejection
+    // Create transaction record
     await adminClient.from("transactions").insert({
       user_id: deposit.user_id,
       type: "deposit_rejected",
@@ -81,14 +81,14 @@ export async function POST(
       status: "completed",
     });
 
-    console.log(`✅ Admin ${user.email} rejected deposit ${depositId} for ${deposit.profiles.email}`);
+    console.log(`✅ Admin ${user.email} rejected deposit ${depositId}`);
 
     return Response.json({
       success: true,
       message: "Deposit rejected",
     });
   } catch (err) {
-    console.error("❌ POST /api/admin/deposits/[depositId]/reject error:", err);
+    console.error("❌ POST /api/admin/deposits/[id]/reject error:", err);
     return Response.json({ 
       error: "Internal Server Error",
       details: err instanceof Error ? err.message : "Unknown error"

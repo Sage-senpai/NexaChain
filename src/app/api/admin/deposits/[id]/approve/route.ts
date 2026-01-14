@@ -1,4 +1,4 @@
-// src/app/api/admin/deposits/[depositId]/approve/route.ts
+// src/app/api/admin/deposits/[id]/approve/route.ts
 // ============================================
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
@@ -129,7 +129,6 @@ export async function POST(
 
     if (profileUpdateError) {
       console.error("⚠️ Profile update error (non-critical):", profileUpdateError);
-      // Don't fail the whole operation if this fails
     }
 
     // Step 4: Handle referral bonus
@@ -137,13 +136,11 @@ export async function POST(
       const bonusAmount = depositAmount * (plan.referral_bonus_percent / 100);
 
       try {
-        // Credit referrer's balance
         await adminClient.rpc("credit_referral_bonus", {
           referrer_id_param: deposit.profiles.referred_by,
           bonus_amount_param: bonusAmount,
         });
 
-        // Create referral bonus transaction
         await adminClient.from("transactions").insert({
           user_id: deposit.profiles.referred_by,
           type: "referral_bonus",
@@ -153,7 +150,7 @@ export async function POST(
           status: "completed",
         });
 
-        console.log(`✅ Credited $${bonusAmount.toFixed(2)} referral bonus to ${deposit.profiles.referred_by}`);
+        console.log(`✅ Credited $${bonusAmount.toFixed(2)} referral bonus`);
       } catch (err) {
         console.error("⚠️ Referral bonus error (non-critical):", err);
       }
@@ -169,7 +166,7 @@ export async function POST(
       status: "completed",
     });
 
-    console.log(`✅ Admin ${user.email} approved deposit ${depositId} for ${deposit.profiles.email}`);
+    console.log(`✅ Admin ${user.email} approved deposit ${depositId}`);
 
     return Response.json({
       success: true,
@@ -177,7 +174,7 @@ export async function POST(
       investment,
     });
   } catch (err) {
-    console.error("❌ POST /api/admin/deposits/[depositId]/approve error:", err);
+    console.error("❌ POST /api/admin/deposits/[id]/approve error:", err);
     return Response.json({ 
       error: "Internal Server Error",
       details: err instanceof Error ? err.message : "Unknown error"
