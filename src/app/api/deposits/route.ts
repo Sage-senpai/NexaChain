@@ -1,6 +1,6 @@
 // src/app/api/deposits/route.ts
 import { createClient } from "@/lib/supabase/server";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,8 +9,8 @@ export async function POST(request: NextRequest) {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
-      console.error("Auth error:", userError);
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+      console.error("❌ Auth error:", userError);
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
@@ -18,8 +18,8 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!plan_id || !crypto_type || !wallet_address || !amount) {
-      console.error("Missing required fields");
-      return Response.json(
+      console.error("❌ Missing required fields:", { plan_id, crypto_type, wallet_address, amount });
+      return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
@@ -33,8 +33,8 @@ export async function POST(request: NextRequest) {
       .single();
     
     if (planError || !plan) {
-      console.error("Plan error:", planError);
-      return Response.json({ error: "Invalid plan" }, { status: 400 });
+      console.error("❌ Plan error:", planError);
+      return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
 
     const numAmount = parseFloat(amount);
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       numAmount < parseFloat(plan.min_amount) ||
       (plan.max_amount && numAmount > parseFloat(plan.max_amount))
     ) {
-      return Response.json(
+      return NextResponse.json(
         {
           error: `Amount must be between $${plan.min_amount} and $${plan.max_amount || "unlimited"}`,
         },
@@ -57,6 +57,8 @@ export async function POST(request: NextRequest) {
       .select("full_name, email")
       .eq("id", user.id)
       .single();
+
+    console.log("✅ Creating deposit for user:", user.email);
 
     // Create deposit (PRIMARY OPERATION - must succeed)
     const { data: deposit, error: depositError } = await supabase
@@ -74,9 +76,14 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (depositError) {
-      console.error("Deposit creation error:", depositError);
-      return Response.json({ error: "Failed to create deposit" }, { status: 500 });
+      console.error("❌ Deposit creation error:", depositError);
+      return NextResponse.json({ 
+        error: "Failed to create deposit",
+        details: depositError.message 
+      }, { status: 500 });
     }
+
+    console.log("✅ Deposit created successfully:", deposit.id);
 
     // ✅ DEPOSIT CREATED SUCCESSFULLY - Now try email as non-blocking operation
     
@@ -112,17 +119,19 @@ export async function POST(request: NextRequest) {
             });
             
             if (!emailResponse.ok) {
-              console.warn("Email notification failed:", await emailResponse.text());
+              console.warn("⚠️ Email notification failed:", await emailResponse.text());
+            } else {
+              console.log("✅ Email notification sent successfully");
             }
           } catch (emailError) {
-            console.warn("Email notification error (non-critical):", emailError);
+            console.warn("⚠️ Email notification error (non-critical):", emailError);
           }
         });
       } catch (err) {
-        console.warn("Failed to initiate email send (non-critical):", err);
+        console.warn("⚠️ Failed to initiate email send (non-critical):", err);
       }
     } else {
-      console.log("Email not sent:", { 
+      console.log("ℹ️ Email not sent:", { 
         hasAdmins: admins && admins.length > 0, 
         hasProof: !!proof_image_base64,
         hasResendKey: !!process.env.RESEND_API_KEY 
@@ -130,11 +139,14 @@ export async function POST(request: NextRequest) {
     }
 
     // ✅ Return success immediately (don't wait for email)
-    return Response.json({ deposit });
+    return NextResponse.json({ 
+      deposit,
+      message: "Deposit created successfully"
+    });
     
   } catch (err) {
-    console.error("POST /api/deposits critical error:", err);
-    return Response.json({ 
+    console.error("❌ POST /api/deposits critical error:", err);
+    return NextResponse.json({ 
       error: "Internal Server Error",
       details: err instanceof Error ? err.message : "Unknown error"
     }, { status: 500 });

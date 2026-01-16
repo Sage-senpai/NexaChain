@@ -1,29 +1,29 @@
 // src/app/api/admin/withdrawals/[id]/approve/route.ts
-// ============================================
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: withdrawalId } = await params;
+    // ✅ FIX: Await params for Next.js 16
+    const { id: withdrawalId } = await context.params;
     
     const supabase = await createClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
       console.error("❌ Auth error:", userError);
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const isAdmin = await verifyAdminAccess(user.id);
     
     if (!isAdmin) {
       console.error("❌ User is not admin");
-      return Response.json({ error: "Forbidden - Admin access required" }, { status: 403 });
+      return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 });
     }
 
     const adminClient = createAdminClient();
@@ -46,7 +46,7 @@ export async function POST(
 
     if (withdrawalError) {
       console.error("❌ Withdrawal fetch error:", withdrawalError);
-      return Response.json({ 
+      return NextResponse.json({ 
         error: "Withdrawal not found",
         details: withdrawalError.message 
       }, { status: 404 });
@@ -54,11 +54,11 @@ export async function POST(
 
     if (!withdrawal) {
       console.error("❌ Withdrawal is null/undefined");
-      return Response.json({ error: "Withdrawal not found" }, { status: 404 });
+      return NextResponse.json({ error: "Withdrawal not found" }, { status: 404 });
     }
 
     if (withdrawal.status !== "pending") {
-      return Response.json({ 
+      return NextResponse.json({ 
         error: `Withdrawal already ${withdrawal.status}` 
       }, { status: 400 });
     }
@@ -68,7 +68,7 @@ export async function POST(
 
     // Verify user has sufficient balance
     if (currentBalance < withdrawalAmount) {
-      return Response.json({ 
+      return NextResponse.json({ 
         error: `Insufficient balance. Current: $${currentBalance.toFixed(2)}, Requested: $${withdrawalAmount.toFixed(2)}`
       }, { status: 400 });
     }
@@ -85,7 +85,7 @@ export async function POST(
 
     if (balanceError) {
       console.error("❌ Balance deduction error:", balanceError);
-      return Response.json({ error: "Failed to deduct balance" }, { status: 500 });
+      return NextResponse.json({ error: "Failed to deduct balance" }, { status: 500 });
     }
 
     // Step 2: Update withdrawal status
@@ -99,7 +99,7 @@ export async function POST(
 
     if (updateError) {
       console.error("❌ Withdrawal update error:", updateError);
-      return Response.json({ error: "Failed to update withdrawal" }, { status: 500 });
+      return NextResponse.json({ error: "Failed to update withdrawal" }, { status: 500 });
     }
 
     // Step 3: Create transaction record
@@ -114,7 +114,7 @@ export async function POST(
 
     console.log(`✅ Admin ${user.email} approved withdrawal ${withdrawalId}`);
 
-    return Response.json({
+    return NextResponse.json({
       success: true,
       message: `Withdrawal approved. $${withdrawalAmount.toFixed(2)} deducted from user balance.`,
       old_balance: currentBalance,
@@ -122,7 +122,7 @@ export async function POST(
     });
   } catch (err) {
     console.error("❌ POST /api/admin/withdrawals/[id]/approve error:", err);
-    return Response.json({ 
+    return NextResponse.json({ 
       error: "Internal Server Error",
       details: err instanceof Error ? err.message : "Unknown error"
     }, { status: 500 });
