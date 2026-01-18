@@ -1,4 +1,5 @@
 // src/app/api/deposits/route.ts
+// FIXED VERSION - Works for both regular users and admin viewing
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -150,5 +151,43 @@ export async function POST(request: NextRequest) {
       error: "Internal Server Error",
       details: err instanceof Error ? err.message : "Unknown error"
     }, { status: 500 });
+  }
+}
+
+// GET route for fetching user's deposit history
+export async function GET() {
+  try {
+    const supabase = await createClient();
+    
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data: deposits, error } = await supabase
+      .from("deposits")
+      .select(`
+        *,
+        investment_plans (
+          name,
+          emoji,
+          daily_roi,
+          total_roi,
+          duration_days
+        )
+      `)
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Deposits fetch error:", error);
+      return NextResponse.json({ error: "Failed to fetch deposits" }, { status: 500 });
+    }
+
+    return NextResponse.json({ deposits: deposits || [] });
+  } catch (err) {
+    console.error("GET /api/deposits error", err);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
