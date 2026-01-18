@@ -1,12 +1,13 @@
 // src/app/api/deposits/route.ts
-// FIXED VERSION - Works for both regular users and admin viewing
+// FIXED VERSION - Uses admin client for inserts to bypass RLS
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
+    // ✅ Step 1: Authenticate user with regular client
     const supabase = await createClient();
-    
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
@@ -14,6 +15,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    console.log("✅ User authenticated:", user.email);
+
+    // ✅ Step 2: Parse and validate request body
     const body = await request.json();
     const { plan_id, crypto_type, wallet_address, amount, proof_image_base64 } = body;
 
@@ -26,7 +30,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate plan and amount
+    // ✅ Step 3: Validate plan and amount (using regular client - read operations work with RLS)
     const { data: plan, error: planError } = await supabase
       .from("investment_plans")
       .select("*")
@@ -52,7 +56,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user profile for email
+    // ✅ Step 4: Get user profile for email
     const { data: profile } = await supabase
       .from("profiles")
       .select("full_name, email")
@@ -61,8 +65,10 @@ export async function POST(request: NextRequest) {
 
     console.log("✅ Creating deposit for user:", user.email);
 
-    // Create deposit (PRIMARY OPERATION - must succeed)
-    const { data: deposit, error: depositError } = await supabase
+    // ✅ Step 5: Use ADMIN CLIENT to create deposit (bypasses RLS)
+    const adminClient = createAdminClient();
+    
+    const { data: deposit, error: depositError } = await adminClient
       .from("deposits")
       .insert({
         user_id: user.id,
@@ -86,18 +92,16 @@ export async function POST(request: NextRequest) {
 
     console.log("✅ Deposit created successfully:", deposit.id);
 
-    // ✅ DEPOSIT CREATED SUCCESSFULLY - Now try email as non-blocking operation
-    
-    // Get all admin emails
-    const { data: admins } = await supabase
-      .from("profiles")
-      .select("email, full_name")
-      .eq("role", "admin");
+    // ✅ Step 6: Send email notification (non-blocking)
+    if (proof_image_base64 && process.env.RESEND_API_KEY) {
+      // Get all admin emails using admin client
+      const { data: admins } = await adminClient
+        .from("profiles")
+        .select("email, full_name")
+        .eq("role", "admin");
 
-    // Send email notification (DON'T BLOCK on email failure)
-    if (admins && admins.length > 0 && proof_image_base64 && process.env.RESEND_API_KEY) {
-      try {
-        // Use Promise.resolve().then() to make this non-blocking
+      if (admins && admins.length > 0) {
+        // Fire and forget email
         Promise.resolve().then(async () => {
           try {
             const emailResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/send-deposit-email`, {
@@ -128,18 +132,10 @@ export async function POST(request: NextRequest) {
             console.warn("⚠️ Email notification error (non-critical):", emailError);
           }
         });
-      } catch (err) {
-        console.warn("⚠️ Failed to initiate email send (non-critical):", err);
       }
-    } else {
-      console.log("ℹ️ Email not sent:", { 
-        hasAdmins: admins && admins.length > 0, 
-        hasProof: !!proof_image_base64,
-        hasResendKey: !!process.env.RESEND_API_KEY 
-      });
     }
 
-    // ✅ Return success immediately (don't wait for email)
+    // ✅ Return success immediately
     return NextResponse.json({ 
       deposit,
       message: "Deposit created successfully"
@@ -165,6 +161,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // ✅ Use regular client for SELECT - RLS policy allows users to view their own deposits
     const { data: deposits, error } = await supabase
       .from("deposits")
       .select(`
