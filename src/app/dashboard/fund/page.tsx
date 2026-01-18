@@ -1,4 +1,5 @@
 // src/app/dashboard/fund/page.tsx
+// FIXED VERSION - Better error handling and logging
 "use client"
 
 import { useState, useEffect, type ChangeEvent } from "react"
@@ -56,7 +57,6 @@ export default function FundPage() {
     fetchPlans()
   }, [])
 
-  // Convert image file to base64
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
@@ -79,20 +79,16 @@ export default function FundPage() {
         setLoading(true)
         setError("")
 
-        // Validate file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
           throw new Error("File size must be less than 5MB")
         }
 
-        // Validate file type
         const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
         if (!allowedTypes.includes(file.type)) {
           throw new Error("Only JPG, PNG, and WebP images are allowed")
         }
 
-        // Convert to base64
         const base64String = await fileToBase64(file)
-
         setProofImage(base64String)
         setProofImageFile(file)
       } catch (err) {
@@ -105,6 +101,8 @@ export default function FundPage() {
   }
 
   const handleSubmit = async () => {
+    console.log("🔄 [FUND] handleSubmit called");
+    
     if (!selectedPlan || !amount || !proofImage) {
       setError("Please complete all fields")
       return
@@ -120,38 +118,68 @@ export default function FundPage() {
       setLoading(true)
       setError("")
 
+      console.log("📤 [FUND] Sending deposit request...");
+      console.log("📤 [FUND] Plan ID:", selectedPlan.id);
+      console.log("📤 [FUND] Amount:", numAmount);
+      console.log("📤 [FUND] Crypto:", cryptoType);
+
+      const requestBody = {
+        plan_id: selectedPlan.id,
+        crypto_type: cryptoType,
+        wallet_address: wallets[cryptoType],
+        amount: numAmount,
+        proof_image_base64: proofImage,
+      };
+
+      console.log("📤 [FUND] Request body prepared:", {
+        plan_id: requestBody.plan_id,
+        crypto_type: requestBody.crypto_type,
+        wallet_address: requestBody.wallet_address.substring(0, 10) + "...",
+        amount: requestBody.amount,
+        has_proof: !!requestBody.proof_image_base64
+      });
+
       const res = await fetch("/api/deposits", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          plan_id: selectedPlan.id,
-          crypto_type: cryptoType,
-          wallet_address: wallets[cryptoType],
-          amount: numAmount,
-          proof_image_base64: proofImage,
-        }),
-      })
+        headers: { 
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
 
-      // Get response text first for better error debugging
-      const text = await res.text()
-      let data
+      console.log("📥 [FUND] Response status:", res.status);
+      console.log("📥 [FUND] Response ok:", res.ok);
+
+      // Get response text first for debugging
+      const responseText = await res.text();
+      console.log("📥 [FUND] Response text:", responseText);
+
+      let data;
       try {
-        data = JSON.parse(text)
-      } catch (e) {
-        console.error("Response parsing error:", text)
-        throw new Error(`Server returned invalid response: ${text.substring(0, 100)}`)
+        data = JSON.parse(responseText);
+        console.log("📥 [FUND] Parsed response:", data);
+      } catch (parseError) {
+        console.error("❌ [FUND] JSON parse error:", parseError);
+        console.error("❌ [FUND] Raw response:", responseText);
+        throw new Error(`Invalid server response: ${responseText.substring(0, 100)}`);
       }
 
       if (!res.ok) {
-        throw new Error(data.error || `Server error: ${res.status}`)
+        console.error("❌ [FUND] Server error response:", data);
+        throw new Error(data.error || data.details || `Server error: ${res.status}`);
       }
 
+      console.log("✅ [FUND] Deposit created successfully!");
       setSuccess(true)
       setTimeout(() => {
         window.location.href = "/dashboard"
       }, 3000)
     } catch (err: any) {
-      console.error("Error submitting deposit:", err)
+      console.error("❌ [FUND] Error submitting deposit:", err);
+      console.error("❌ [FUND] Error name:", err.name);
+      console.error("❌ [FUND] Error message:", err.message);
+      console.error("❌ [FUND] Error stack:", err.stack);
+      
       setError(err.message || "Failed to submit deposit. Please try again.")
     } finally {
       setLoading(false)
@@ -383,7 +411,6 @@ export default function FundPage() {
                     {t("fund.sendTo", { amount, crypto: cryptoType })}
                   </h3>
 
-                  {/* QR Code */}
                   <div className="qr-code-container">
                     <QRCode value={wallets[cryptoType]} />
                   </div>
