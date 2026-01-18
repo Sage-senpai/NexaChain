@@ -1,6 +1,6 @@
 // src/app/api/admin/withdrawals/[id]/reject/route.ts
+// FIXED VERSION - Simplified admin verification
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
@@ -8,9 +8,12 @@ export async function POST(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    // ✅ FIX: Await params for Next.js 16
+    // ✅ Get withdrawal ID from params
     const { id: withdrawalId } = await context.params;
     
+    console.log("🔄 Attempting to reject withdrawal:", withdrawalId);
+    
+    // ✅ Verify admin access
     const supabase = await createClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
@@ -19,21 +22,28 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const isAdmin = await verifyAdminAccess(user.id);
-    
-    if (!isAdmin) {
-      console.error("❌ User is not admin");
-      return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 });
+    // ✅ Check admin role
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (profileError || !profile || profile.role !== "admin") {
+      console.error("❌ Not an admin:", profile?.role);
+      return NextResponse.json({ 
+        error: "Forbidden - Admin access required" 
+      }, { status: 403 });
     }
 
-    const adminClient = createAdminClient();
+    console.log("✅ Admin verified:", user.email);
 
-    // Get withdrawal details
-    const { data: withdrawal, error: withdrawalError } = await adminClient
+    // ✅ Get withdrawal details
+    const { data: withdrawal, error: withdrawalError } = await supabase
       .from("withdrawals")
       .select(`
         *,
-        profiles(id, email, full_name, account_balance)
+        profiles!withdrawals_user_id_fkey(id, email, full_name, account_balance)
       `)
       .eq("id", withdrawalId)
       .single();
@@ -47,9 +57,18 @@ export async function POST(
     }
 
     if (!withdrawal) {
-      console.error("❌ Withdrawal is null/undefined");
-      return NextResponse.json({ error: "Withdrawal not found" }, { status: 404 });
+      console.error("❌ Withdrawal is null");
+      return NextResponse.json({ 
+        error: "Withdrawal not found" 
+      }, { status: 404 });
     }
+
+    console.log("✅ Withdrawal found:", {
+      id: withdrawal.id,
+      amount: withdrawal.amount,
+      status: withdrawal.status,
+      user: withdrawal.profiles?.email
+    });
 
     if (withdrawal.status !== "pending") {
       return NextResponse.json({ 
@@ -57,8 +76,9 @@ export async function POST(
       }, { status: 400 });
     }
 
-    // Update withdrawal status
-    const { error: updateError } = await adminClient
+    // ✅ Update withdrawal status
+    console.log("📝 Updating withdrawal status to rejected...");
+    const { error: updateError } = await supabase
       .from("withdrawals")
       .update({ 
         status: "rejected",
@@ -68,11 +88,17 @@ export async function POST(
 
     if (updateError) {
       console.error("❌ Withdrawal rejection error:", updateError);
-      return NextResponse.json({ error: "Failed to reject withdrawal" }, { status: 500 });
+      return NextResponse.json({ 
+        error: "Failed to reject withdrawal",
+        details: updateError.message 
+      }, { status: 500 });
     }
 
-    // Create transaction record
-    await adminClient.from("transactions").insert({
+    console.log("✅ Withdrawal status updated to rejected");
+
+    // ✅ Create transaction record
+    console.log("📝 Creating transaction record...");
+    await supabase.from("transactions").insert({
       user_id: withdrawal.user_id,
       type: "withdrawal_rejected",
       amount: 0,
@@ -88,7 +114,7 @@ export async function POST(
       message: "Withdrawal rejected. User balance unchanged.",
     });
   } catch (err) {
-    console.error("❌ POST /api/admin/withdrawals/[id]/reject error:", err);
+    console.error("❌ POST /api/admin/withdrawals/[id]/reject critical error:", err);
     return NextResponse.json({ 
       error: "Internal Server Error",
       details: err instanceof Error ? err.message : "Unknown error"
