@@ -42,7 +42,7 @@ export interface Deposit {
   user_id: string;
   plan_id: string;
   amount: number;
-  crypto_type: 'BTC' | 'ETH' | 'USDT' | 'SOL';
+  crypto_type: 'BTC' | 'ETH' | 'USDT' | 'SOL' | 'XRP' | 'USDT_BEP20' | 'USDT_TRC20'; // ✅ UPDATED
   wallet_address: string;
   proof_image_url: string | null;
   status: 'pending' | 'confirmed' | 'rejected';
@@ -77,7 +77,7 @@ export interface Withdrawal {
   id: string;
   user_id: string;
   amount: number;
-  crypto_type: 'BTC' | 'ETH' | 'USDT' | 'SOL';
+  crypto_type: 'BTC' | 'ETH' | 'USDT' | 'SOL' | 'XRP' | 'USDT_BEP20' | 'USDT_TRC20'; // ✅ UPDATED
   wallet_address: string;
   status: 'pending' | 'approved' | 'rejected' | 'completed';
   processed_by: string | null;
@@ -197,14 +197,14 @@ export interface OnboardingFormData {
 export interface DepositFormData {
   planId: string;
   amount: number;
-  cryptoType: 'BTC' | 'ETH' | 'USDT' | 'SOL';
+  cryptoType: 'BTC' | 'ETH' | 'USDT' | 'SOL' | 'XRP' | 'USDT_BEP20' | 'USDT_TRC20'; // ✅ UPDATED
   walletAddress: string;
   proofImageUrl?: string;
 }
 
 export interface WithdrawalFormData {
   amount: number;
-  cryptoType: 'BTC' | 'ETH' | 'USDT' | 'SOL';
+  cryptoType: 'BTC' | 'ETH' | 'USDT' | 'SOL' | 'XRP' | 'USDT_BEP20' | 'USDT_TRC20'; // ✅ UPDATED
   walletAddress: string;
 }
 
