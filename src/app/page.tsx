@@ -22,6 +22,7 @@ import LiveCryptoFeed from "@/components/LiveCryptoFeed"
 import LanguageSwitcher from "@/components/LanguageSwitcher"
 import MobileNav from "@/components/MobileNav"
 import TestimonialsModal from "@/components/TestimonialsModal"
+import NexachainVideo from "@/components/NexachainVideo"
 
 interface InvestmentPlan {
   name: string
@@ -314,6 +315,16 @@ export default function LandingPage() {
               )
             })}
           </div>
+        </div>
+      </section>
+
+      {/* Video Section */}
+      <section className="py-20 bg-[#F8F9FA] dark:bg-[#1A1A1A]">
+        <div className="max-w-7xl mx-auto px-4">
+          <NexachainVideo
+            title="Discover Nexachain"
+            description="Watch our introduction video to learn how we help you grow your investments"
+          />
         </div>
       </section>
 

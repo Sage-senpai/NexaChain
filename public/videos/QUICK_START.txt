@@ -1,0 +1,86 @@
+╔═══════════════════════════════════════════════════════════════╗
+║                                                               ║
+║         NEXACHAIN VIDEO - QUICK START GUIDE                  ║
+║                                                               ║
+╚═══════════════════════════════════════════════════════════════╝
+
+📁 ADD YOUR VIDEO FILES HERE:
+
+Required:
+  ✓ nexachain-intro.mp4        (Your main video file)
+
+Optional but recommended:
+  ✓ nexachain-thumbnail.jpg    (Video preview image)
+  ✓ nexachain-intro.webm       (WebM format for compatibility)
+
+═══════════════════════════════════════════════════════════════
+
+📋 FILE SPECIFICATIONS:
+
+Video (nexachain-intro.mp4):
+  • Format: MP4 (H.264 codec)
+  • Resolution: 1920x1080 or 1280x720
+  • Aspect Ratio: 16:9
+  • Max Size: 50MB recommended
+  • Duration: 2-5 minutes
+
+Thumbnail (nexachain-thumbnail.jpg):
+  • Format: JPG
+  • Size: 1920 x 1080 pixels
+  • Quality: High (85-95%)
+
+═══════════════════════════════════════════════════════════════
+
+🚀 TO MAKE YOUR VIDEO LIVE:
+
+1. Add nexachain-intro.mp4 to this folder
+
+2. (Optional) Add nexachain-thumbnail.jpg to this folder
+
+3. Commit and push:
+   git add public/videos/
+   git commit -m "Add Nexachain video"
+   git push
+
+4. Done! Video is now live on:
+   • Landing page (/)
+   • FAQ page (/faq)
+
+═══════════════════════════════════════════════════════════════
+
+📍 WHERE YOUR VIDEO APPEARS:
+
+Landing Page (homepage):
+  Hero Section
+      ↓
+  Live Crypto Feed
+      ↓
+  Statistics
+      ↓
+  ★ VIDEO PLAYER ★  ← Here!
+      ↓
+  Investment Plans
+      ↓
+  About Section
+      ↓
+  Contact
+
+FAQ Page:
+  Header
+      ↓
+  ★ VIDEO PLAYER ★  ← Here!
+      ↓
+  Category Filters
+      ↓
+  FAQ Questions
+      ↓
+  Contact CTA
+
+═══════════════════════════════════════════════════════════════
+
+Need detailed instructions?
+→ Read README.md in this folder
+→ Read THUMBNAIL_CREATION.md for thumbnail help
+→ Read VIDEO_SETUP_INSTRUCTIONS.md in project root
+
+═══════════════════════════════════════════════════════════════

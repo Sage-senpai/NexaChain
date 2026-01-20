@@ -5,6 +5,7 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronDown, ArrowLeft } from "lucide-react"
+import NexachainVideo from "@/components/NexachainVideo"
 
 interface FAQ {
   question: string
@@ -162,6 +163,14 @@ export default function FAQPage() {
           </h1>
           <p className="text-xl text-[#4A4A4A] dark:text-[#B8B8B8]">{t("faq.subtitle")}</p>
         </motion.div>
+
+        {/* Video Section */}
+        <div className="mb-16">
+          <NexachainVideo
+            title="Learn About Nexachain"
+            description="Watch our video guide to understand how our platform works"
+          />
+        </div>
 
         {/* Category Filter */}
         <div className="faq-categories mb-12">
