@@ -466,7 +466,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             {[
               { icon: Mail, titleKey: "contact.email", text: "support@nexachain.com" },
-              { icon: Phone, titleKey: "contact.phone", text: "SA: +27 78 720 8949" },
+              //{ icon: Phone, titleKey: "contact.phone", text: "SA: +27 78 720 8949" },
               { icon: MapPin, titleKey: "contact.location", text: "United Kingdom" },
             ].map((item) => {
               const Icon = item.icon
