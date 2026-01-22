@@ -1,7 +1,44 @@
 // src/app/api/admin/withdrawals/[id]/approve/route.ts
-// ULTRA-FIXED VERSION - Handles all database constraints
+// ULTRA-FIXED VERSION - Handles all database constraints + Email notifications
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+
+// Helper function to send withdrawal approval email (non-blocking)
+async function sendApprovalEmail(userData: {
+  email: string;
+  full_name: string;
+  amount: number;
+  crypto_type: string;
+  wallet_address: string;
+  withdrawal_id: string;
+  created_at: string;
+}) {
+  try {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const response = await fetch(`${appUrl}/api/send-withdrawal-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_email: userData.email,
+        user_name: userData.full_name,
+        amount: userData.amount,
+        crypto_type: userData.crypto_type,
+        wallet_address: userData.wallet_address,
+        withdrawal_id: userData.withdrawal_id,
+        status: 'approved',
+        created_at: userData.created_at,
+      }),
+    });
+
+    if (!response.ok) {
+      console.warn('⚠️ [APPROVE WITHDRAWAL] Email send failed but continuing:', await response.text());
+    } else {
+      console.log('✅ [APPROVE WITHDRAWAL] Approval email sent successfully');
+    }
+  } catch (error) {
+    console.warn('⚠️ [APPROVE WITHDRAWAL] Email send error (non-critical):', error);
+  }
+}
 
 export async function POST(
   request: NextRequest,
@@ -38,10 +75,10 @@ export async function POST(
 
     console.log("✅ [APPROVE WITHDRAWAL] Admin verified");
 
-    // Get withdrawal with minimal select
+    // Get withdrawal with user profile for email
     const { data: withdrawal, error: withdrawalError } = await supabase
       .from("withdrawals")
-      .select("id, user_id, amount, status, crypto_type, wallet_address")
+      .select("id, user_id, amount, status, crypto_type, wallet_address, created_at")
       .eq("id", withdrawalId)
       .single();
 
@@ -75,10 +112,10 @@ export async function POST(
 
     const withdrawalAmount = parseFloat(withdrawal.amount.toString());
 
-    // Get user's current balance
+    // Get user's current balance and email for notification
     const { data: userProfile, error: userProfileError } = await supabase
       .from("profiles")
-      .select("account_balance, total_withdrawn")
+      .select("account_balance, total_withdrawn, email, full_name")
       .eq("id", withdrawal.user_id)
       .single();
 
@@ -174,9 +211,25 @@ export async function POST(
 
     console.log("🎉 [APPROVE WITHDRAWAL] Success!");
 
+    // Step 4: Send approval email to user (non-blocking)
+    if (userProfile.email) {
+      Promise.resolve().then(() => {
+        sendApprovalEmail({
+          email: userProfile.email,
+          full_name: userProfile.full_name || 'Valued Investor',
+          amount: withdrawalAmount,
+          crypto_type: withdrawal.crypto_type,
+          wallet_address: withdrawal.wallet_address,
+          withdrawal_id: withdrawal.id,
+          created_at: withdrawal.created_at,
+        });
+      });
+      console.log("📧 [APPROVE WITHDRAWAL] Email notification queued");
+    }
+
     return NextResponse.json({
       success: true,
-      message: `Withdrawal approved. $${withdrawalAmount.toFixed(2)} deducted from user balance.`,
+      message: `Withdrawal approved. $${withdrawalAmount.toFixed(2)} deducted from user balance. Email notification sent.`,
       old_balance: currentBalance,
       new_balance: newBalance,
     });

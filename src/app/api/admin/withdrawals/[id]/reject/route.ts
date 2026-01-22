@@ -1,7 +1,46 @@
 // src/app/api/admin/withdrawals/[id]/reject/route.ts
-// ULTRA-FIXED VERSION - Handles all database constraints
+// ULTRA-FIXED VERSION - Handles all database constraints + Email notifications
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+
+// Helper function to send withdrawal rejection email (non-blocking)
+async function sendRejectionEmail(userData: {
+  email: string;
+  full_name: string;
+  amount: number;
+  crypto_type: string;
+  wallet_address: string;
+  withdrawal_id: string;
+  created_at: string;
+  rejection_reason?: string;
+}) {
+  try {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const response = await fetch(`${appUrl}/api/send-withdrawal-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_email: userData.email,
+        user_name: userData.full_name,
+        amount: userData.amount,
+        crypto_type: userData.crypto_type,
+        wallet_address: userData.wallet_address,
+        withdrawal_id: userData.withdrawal_id,
+        status: 'rejected',
+        rejection_reason: userData.rejection_reason,
+        created_at: userData.created_at,
+      }),
+    });
+
+    if (!response.ok) {
+      console.warn('⚠️ [REJECT WITHDRAWAL] Email send failed but continuing:', await response.text());
+    } else {
+      console.log('✅ [REJECT WITHDRAWAL] Rejection email sent successfully');
+    }
+  } catch (error) {
+    console.warn('⚠️ [REJECT WITHDRAWAL] Email send error (non-critical):', error);
+  }
+}
 
 export async function POST(
   request: NextRequest,
@@ -9,6 +48,15 @@ export async function POST(
 ) {
   try {
     const { id: withdrawalId } = await context.params;
+
+    // Parse optional rejection reason from request body
+    let rejectionReason: string | undefined;
+    try {
+      const body = await request.json();
+      rejectionReason = body.reason;
+    } catch {
+      // No body or invalid JSON - that's fine, reason is optional
+    }
     
     console.log("🔄 [REJECT WITHDRAWAL] Starting for ID:", withdrawalId);
     
@@ -38,10 +86,10 @@ export async function POST(
 
     console.log("✅ [REJECT WITHDRAWAL] Admin verified");
 
-    // Get withdrawal with minimal select
+    // Get withdrawal with details for email notification
     const { data: withdrawal, error: withdrawalError } = await supabase
       .from("withdrawals")
-      .select("id, user_id, amount, status")
+      .select("id, user_id, amount, status, crypto_type, wallet_address, created_at")
       .eq("id", withdrawalId)
       .single();
 
@@ -68,9 +116,20 @@ export async function POST(
 
     if (withdrawal.status !== "pending") {
       console.warn("⚠️ [REJECT WITHDRAWAL] Already processed:", withdrawal.status);
-      return NextResponse.json({ 
-        error: `Withdrawal already ${withdrawal.status}` 
+      return NextResponse.json({
+        error: `Withdrawal already ${withdrawal.status}`
       }, { status: 400 });
+    }
+
+    // Get user's email for notification
+    const { data: userProfile, error: userProfileError } = await supabase
+      .from("profiles")
+      .select("email, full_name")
+      .eq("id", withdrawal.user_id)
+      .single();
+
+    if (userProfileError) {
+      console.warn("⚠️ [REJECT WITHDRAWAL] Could not fetch user profile for email:", userProfileError);
     }
 
     // Update withdrawal status with minimal fields
@@ -110,9 +169,26 @@ export async function POST(
 
     console.log("🎉 [REJECT WITHDRAWAL] Success!");
 
+    // Send rejection email to user (non-blocking)
+    if (userProfile?.email) {
+      Promise.resolve().then(() => {
+        sendRejectionEmail({
+          email: userProfile.email,
+          full_name: userProfile.full_name || 'Valued Investor',
+          amount: parseFloat(withdrawal.amount.toString()),
+          crypto_type: withdrawal.crypto_type,
+          wallet_address: withdrawal.wallet_address,
+          withdrawal_id: withdrawal.id,
+          created_at: withdrawal.created_at,
+          rejection_reason: rejectionReason,
+        });
+      });
+      console.log("📧 [REJECT WITHDRAWAL] Rejection email notification queued");
+    }
+
     return NextResponse.json({
       success: true,
-      message: "Withdrawal rejected. User balance unchanged.",
+      message: "Withdrawal rejected. User balance unchanged. Email notification sent.",
     });
   } catch (err) {
     console.error("❌ [REJECT WITHDRAWAL] Critical error:", err);
