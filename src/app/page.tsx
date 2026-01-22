@@ -23,6 +23,7 @@ import LanguageSwitcher from "@/components/LanguageSwitcher"
 import MobileNav from "@/components/MobileNav"
 import TestimonialsModal from "@/components/TestimonialsModal"
 import NexachainVideo from "@/components/NexachainVideo"
+import CertificateModal from "@/components/CertificateModal"
 
 interface InvestmentPlan {
   name: string
@@ -38,6 +39,7 @@ interface InvestmentPlan {
 export default function LandingPage() {
   const [showTestimonials, setShowTestimonials] = useState(false)
   const [showCryptoFeed, setShowCryptoFeed] = useState(true)
+  const [showCertificate, setShowCertificate] = useState(false)
   const { t, ready, i18n } = useTranslation()
 
   // ✅ Single loading state
@@ -457,6 +459,106 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Certificate Section */}
+      <section className="py-20 bg-[#F8F9FA] dark:bg-[#1A1A1A]">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-4xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
+                Verified & Certified
+              </h2>
+              <p className="text-xl text-[#4A4A4A] dark:text-[#B8B8B8] max-w-2xl mx-auto">
+                Nexachain is officially registered and fully compliant with regulatory standards
+              </p>
+            </motion.div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="max-w-2xl mx-auto"
+          >
+            <button
+              onClick={() => setShowCertificate(true)}
+              className="w-full group"
+            >
+              <div className="relative bg-white dark:bg-[#0A0A0A] p-8 rounded-2xl border-4 border-[#D4AF37]/30 hover:border-[#D4AF37] transition-all shadow-lg hover:shadow-2xl hover:shadow-[#D4AF37]/20">
+                {/* Certificate Preview Card */}
+                <div className="flex flex-col md:flex-row items-center gap-6">
+                  {/* Icon/Badge */}
+                  <div className="flex-shrink-0">
+                    <div className="w-24 h-24 bg-gradient-to-br from-[#D4AF37] to-[#FFD700] rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                      <Award className="w-12 h-12 text-white" />
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 text-center md:text-left">
+                    <h3 className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">
+                      Company Certificate
+                    </h3>
+                    <p className="text-[#4A4A4A] dark:text-[#B8B8B8] mb-4">
+                      View our official company registration certificate and compliance documentation
+                    </p>
+                    <div className="flex flex-wrap justify-center md:justify-start gap-3">
+                      <span className="px-3 py-1 bg-[#D4AF37]/10 text-[#D4AF37] text-sm font-semibold rounded-full">
+                        Officially Registered
+                      </span>
+                      <span className="px-3 py-1 bg-green-500/10 text-green-500 text-sm font-semibold rounded-full">
+                        Fully Compliant
+                      </span>
+                      <span className="px-3 py-1 bg-blue-500/10 text-blue-500 text-sm font-semibold rounded-full">
+                        Verified
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Arrow/Action */}
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 bg-[#D4AF37]/10 rounded-full flex items-center justify-center group-hover:bg-[#D4AF37] transition-colors">
+                      <ArrowRight className="w-6 h-6 text-[#D4AF37] group-hover:text-white transition-colors" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Click hint */}
+                <p className="mt-6 text-sm text-[#4A4A4A] dark:text-[#B8B8B8] text-center opacity-70 group-hover:opacity-100 transition-opacity">
+                  Click to view full certificate
+                </p>
+              </div>
+            </button>
+          </motion.div>
+
+          {/* Trust Indicators */}
+          <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
+            {[
+              { icon: "🔒", label: "Secure Platform" },
+              { icon: "📜", label: "Legal Entity" },
+              { icon: "✅", label: "KYC Compliant" },
+              { icon: "🌍", label: "Global Operations" },
+            ].map((item, i) => (
+              <motion.div
+                key={item.label}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="text-center p-4 bg-white dark:bg-[#0A0A0A] rounded-xl border border-[#D4AF37]/20"
+              >
+                <div className="text-2xl mb-2">{item.icon}</div>
+                <p className="text-sm font-semibold text-[#000000] dark:text-[#FFFFFF]">{item.label}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Contact */}
       <section id="contact" className="py-20 bg-white dark:bg-[#0A0A0A] scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4">
@@ -549,6 +651,7 @@ export default function LandingPage() {
       </footer>
 
       <TestimonialsModal isOpen={showTestimonials} onClose={() => setShowTestimonials(false)} />
+      <CertificateModal isOpen={showCertificate} onClose={() => setShowCertificate(false)} />
 
       {/* Floating Contact Buttons */}
       <div className="floating-contact-buttons">
