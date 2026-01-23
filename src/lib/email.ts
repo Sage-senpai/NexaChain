@@ -1,5 +1,6 @@
 // src/lib/email.ts
 // Centralized email service using Nodemailer with Gmail SMTP
+import 'server-only';
 import nodemailer from 'nodemailer';
 
 // Create reusable transporter using Gmail SMTP

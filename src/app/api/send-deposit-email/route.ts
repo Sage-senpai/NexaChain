@@ -1,5 +1,7 @@
 // src/app/api/send-deposit-email/route.ts
 // FIXED VERSION - Using Nodemailer with Gmail SMTP
+export const runtime = 'nodejs';
+
 import { NextRequest } from "next/server";
 import { sendEmail } from "@/lib/email";
 
