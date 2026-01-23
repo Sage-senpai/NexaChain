@@ -1,9 +1,7 @@
 // src/app/api/send-deposit-email/route.ts
-// FIXED VERSION - Ready for production
+// FIXED VERSION - Using Nodemailer with Gmail SMTP
 import { NextRequest } from "next/server";
-import { Resend } from 'resend';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { sendEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -218,26 +216,23 @@ export async function POST(request: NextRequest) {
         </html>
       `;
 
-      // Send email using Resend
-      try {
-        const { data, error } = await resend.emails.send({
-          from: 'Nexachain Admin <onboarding@resend.dev>', // ✅ FIXED - Valid email format
-          to: admin.email,
-          subject: `🔔 New Deposit: $${parseFloat(deposit.amount).toFixed(2)} from ${deposit.user_name}`,
-          html: emailHTML,
-        });
+      // Send email using Nodemailer
+      console.log(`📧 [DEPOSIT EMAIL] Attempting to send to admin: ${admin.email}`);
 
-        if (error) {
-          console.error(`Failed to send email to ${admin.email}:`, error);
-          return { success: false, email: admin.email, error };
-        }
+      const subject = `🔔 New Deposit: $${parseFloat(deposit.amount).toFixed(2)} from ${deposit.user_name}`;
+      const result = await sendEmail({
+        to: admin.email,
+        subject,
+        html: emailHTML,
+      });
 
-        console.log(`✅ Email sent successfully to ${admin.email}`);
-        return { success: true, email: admin.email, data };
-      } catch (error) {
-        console.error(`Error sending email to ${admin.email}:`, error);
-        return { success: false, email: admin.email, error };
+      if (!result.success) {
+        console.error(`❌ [DEPOSIT EMAIL] Failed for ${admin.email}:`, result.error);
+        return { success: false, email: admin.email, error: result.error };
       }
+
+      console.log(`✅ [DEPOSIT EMAIL] Sent to ${admin.email}`);
+      return { success: true, email: admin.email };
     });
 
     const results = await Promise.all(emailPromises);

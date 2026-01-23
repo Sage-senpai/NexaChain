@@ -1,9 +1,7 @@
 // src/app/api/send-withdrawal-email/route.ts
 // Sends email notifications to users when their withdrawal is approved or rejected
 import { NextRequest } from "next/server";
-import { Resend } from 'resend';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { sendEmail } from "@/lib/email";
 
 interface WithdrawalEmailData {
   user_email: string;
@@ -49,35 +47,28 @@ export async function POST(request: NextRequest) {
       ? `✅ Withdrawal Approved - $${parseFloat(amount.toString()).toFixed(2)}`
       : `❌ Withdrawal Rejected - $${parseFloat(amount.toString()).toFixed(2)}`;
 
-    try {
-      const { data, error } = await resend.emails.send({
-        from: 'Nexachain <onboarding@resend.dev>',
-        to: user_email,
-        subject: subject,
-        html: emailHTML,
-      });
+    console.log(`📧 [WITHDRAWAL EMAIL] Attempting to send ${status} email to: ${user_email}`);
+    console.log(`📧 [WITHDRAWAL EMAIL] Subject: ${subject}`);
 
-      if (error) {
-        console.error(`Failed to send withdrawal email to ${user_email}:`, error);
-        return Response.json({
-          success: false,
-          error: error.message
-        }, { status: 500 });
-      }
+    const result = await sendEmail({
+      to: user_email,
+      subject: subject,
+      html: emailHTML,
+    });
 
-      console.log(`✅ Withdrawal ${status} email sent to ${user_email}`);
-      return Response.json({
-        success: true,
-        message: `Withdrawal ${status} email sent successfully`,
-        data
-      });
-    } catch (error) {
-      console.error(`Error sending withdrawal email to ${user_email}:`, error);
+    if (!result.success) {
+      console.error(`❌ [WITHDRAWAL EMAIL] Failed to send to ${user_email}:`, result.error);
       return Response.json({
         success: false,
-        error: error instanceof Error ? error.message : "Failed to send email"
+        error: result.error
       }, { status: 500 });
     }
+
+    console.log(`✅ [WITHDRAWAL EMAIL] Successfully sent ${status} email to ${user_email}`);
+    return Response.json({
+      success: true,
+      message: `Withdrawal ${status} email sent successfully`
+    });
   } catch (err) {
     console.error("Send withdrawal email error:", err);
     return Response.json({

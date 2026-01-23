@@ -1,8 +1,53 @@
 // src/app/api/withdrawals/route.ts
-// FIXED VERSION - Uses admin client for inserts to bypass RLS
+// FIXED VERSION - Uses admin client for inserts to bypass RLS + Email notifications to admins
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextRequest, NextResponse } from "next/server";
+
+// Helper function to send withdrawal request email to all admins (non-blocking)
+async function sendWithdrawalRequestEmailToAdmins(withdrawalData: {
+  id: string;
+  amount: number;
+  crypto_type: string;
+  wallet_address: string;
+  created_at: string;
+  user_name: string;
+  user_email: string;
+  user_balance: number;
+}) {
+  try {
+    const adminClient = createAdminClient();
+
+    // Fetch all admin emails
+    const { data: admins, error: adminsError } = await adminClient
+      .from("profiles")
+      .select("email, full_name")
+      .eq("role", "admin");
+
+    if (adminsError || !admins || admins.length === 0) {
+      console.warn("⚠️ [WITHDRAWAL] No admins found for email notification:", adminsError);
+      return;
+    }
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const response = await fetch(`${appUrl}/api/send-withdrawal-request-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        admins,
+        withdrawal: withdrawalData,
+      }),
+    });
+
+    if (!response.ok) {
+      console.warn('⚠️ [WITHDRAWAL] Admin email send failed but continuing:', await response.text());
+    } else {
+      console.log('✅ [WITHDRAWAL] Admin notification emails sent successfully');
+    }
+  } catch (error) {
+    console.warn('⚠️ [WITHDRAWAL] Admin email send error (non-critical):', error);
+  }
+}
 
 // Create a new withdrawal request
 export async function POST(request: NextRequest) {
@@ -31,7 +76,7 @@ export async function POST(request: NextRequest) {
     // ✅ Step 3: Get user's profile and check balance (using regular client)
     const { data: profile } = await supabase
       .from("profiles")
-      .select("id, account_balance")
+      .select("id, account_balance, full_name, email")
       .eq("id", user.id)
       .single();
 
@@ -79,6 +124,21 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("✅ Withdrawal created successfully:", withdrawal.id);
+
+    // ✅ Step 5: Send email notification to all admins (non-blocking)
+    Promise.resolve().then(() => {
+      sendWithdrawalRequestEmailToAdmins({
+        id: withdrawal.id,
+        amount: numAmount,
+        crypto_type,
+        wallet_address,
+        created_at: withdrawal.created_at,
+        user_name: profile.full_name || user.email || 'Unknown User',
+        user_email: profile.email || user.email || 'Unknown',
+        user_balance: balance,
+      });
+    });
+    console.log("📧 [WITHDRAWAL] Admin notification email queued");
 
     return NextResponse.json({ withdrawal });
   } catch (err) {
