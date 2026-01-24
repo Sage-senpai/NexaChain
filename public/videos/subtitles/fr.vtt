@@ -1,0 +1,132 @@
+WEBVTT
+
+NOTE Sous-titres français
+
+00:00:00.099 --> 00:00:00.119
+...
+
+00:00:00.119 --> 00:00:01.479
+la chose que tu avais sur la
+
+00:00:01.479 --> 00:00:02.330
+dernière diapositive, Nexa.
+
+00:00:02.330 --> 00:00:03.265
+Peux-tu en parler
+
+00:00:03.265 --> 00:00:04.219
+un peu ?
+
+00:00:04.219 --> 00:00:05.406
+Ah, oui. Alors,
+
+00:00:05.406 --> 00:00:08.442
+Nexa est une cryptomonnaie que
+
+00:00:08.442 --> 00:00:10.631
+nous avons lancée pour explorer, euh,
+
+00:00:10.631 --> 00:00:12.282
+ces différents aspects des
+
+00:00:12.282 --> 00:00:13.529
+cryptomonnaies que nous voulons.
+
+00:00:13.529 --> 00:00:15.039
+Nous n'avons pas encore RISC-V
+
+00:00:15.039 --> 00:00:16.032
+qui fonctionne dessus. Ah,
+
+00:00:16.032 --> 00:00:17.020
+nous avons ajouté des registres.
+
+00:00:17.020 --> 00:00:17.579
+Donc, maintenant,
+
+00:00:17.579 --> 00:00:18.779
+notre langage de script est
+
+00:00:18.779 --> 00:00:20.539
+très similaire à celui du BCH, ah,
+
+00:00:20.539 --> 00:00:21.319
+mais nous avons ajouté quelques
+
+00:00:21.319 --> 00:00:21.750
+registres.
+
+00:00:21.750 --> 00:00:23.546
+Et RISC-V n'est qu'une idée
+
+00:00:23.546 --> 00:00:25.410
+qui n'existe pas encore dans Nexa.
+
+00:00:25.410 --> 00:00:27.057
+Mais ce que je trouve vraiment
+
+00:00:27.057 --> 00:00:28.433
+cool avec Nexa, c'est la preuve
+
+00:00:28.433 --> 00:00:29.645
+de travail de Nexa. Donc,
+
+00:00:29.645 --> 00:00:31.959
+ce que les mineurs font dans
+
+00:00:31.959 --> 00:00:33.887
+Nexa, c'est effectuer les mêmes
+
+00:00:33.887 --> 00:00:35.956
+calculs dont vous avez besoin
+
+00:00:35.956 --> 00:00:37.599
+pour vérifier une transaction.
+
+00:00:37.599 --> 00:00:37.906
+Donc,
+
+00:00:37.906 --> 00:00:39.345
+la puissance de Nexa effectue essentiellement
+
+00:00:39.345 --> 00:00:40.496
+une multiplication de points
+
+00:00:40.496 --> 00:00:41.000
+sur des courbes elliptiques et des requêtes,
+
+00:00:41.000 --> 00:00:42.685
+alors, faisons-le !
+
+00:00:42.685 --> 00:00:43.620
+UTXO. Donc,
+
+00:00:43.620 --> 00:00:45.127
+pour être un bon mineur
+
+00:00:45.127 --> 00:00:45.730
+de Nexa,
+
+00:00:45.730 --> 00:00:46.634
+vous devez développer
+
+00:00:46.634 --> 00:00:47.237
+le matériel,
+
+00:00:47.237 --> 00:00:48.768
+le même matériel dont nous avons besoin
+
+00:00:48.768 --> 00:00:49.952
+pour résoudre les goulots d'étranglement
+
+00:00:49.952 --> 00:00:50.880
+informatiques de l'évolutivité
+
+00:00:50.880 --> 00:00:52.520
+des cryptomonnaies en général.
+
+00:00:52.520 --> 00:00:53.863
+Et c'était ma principale motivation
+
+00:00:53.863 --> 00:00:54.759
+pour travailler sur ce projet.

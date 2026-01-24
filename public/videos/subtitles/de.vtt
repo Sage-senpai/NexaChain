@@ -1,0 +1,132 @@
+WEBVTT
+
+NOTE Deutsche Untertitel
+
+00:00:00.099 --> 00:00:00.119
+...
+
+00:00:00.119 --> 00:00:01.479
+das Ding, das du auf der
+
+00:00:01.479 --> 00:00:02.330
+letzten Folie hattest, Nexa.
+
+00:00:02.330 --> 00:00:03.265
+Kannst du ein bisschen
+
+00:00:03.265 --> 00:00:04.219
+darüber sprechen?
+
+00:00:04.219 --> 00:00:05.406
+Ah, ja. Also,
+
+00:00:05.406 --> 00:00:08.442
+Nexa ist eine Kryptowährung, die
+
+00:00:08.442 --> 00:00:10.631
+wir gestartet haben, um, ähm,
+
+00:00:10.631 --> 00:00:12.282
+diese verschiedenen Aspekte von
+
+00:00:12.282 --> 00:00:13.529
+Kryptowährungen zu erkunden, die wir wollen.
+
+00:00:13.529 --> 00:00:15.039
+Wir haben RISC-V noch nicht
+
+00:00:15.039 --> 00:00:16.032
+darauf laufen. Ah,
+
+00:00:16.032 --> 00:00:17.020
+wir haben Register hinzugefügt.
+
+00:00:17.020 --> 00:00:17.579
+Also, jetzt
+
+00:00:17.579 --> 00:00:18.779
+ist unsere Scriptsprache
+
+00:00:18.779 --> 00:00:20.539
+der von BCH sehr ähnlich, ah,
+
+00:00:20.539 --> 00:00:21.319
+aber wir haben einige
+
+00:00:21.319 --> 00:00:21.750
+Register hinzugefügt.
+
+00:00:21.750 --> 00:00:23.546
+Und RISC-V ist nur eine Idee
+
+00:00:23.546 --> 00:00:25.410
+die es in Nexa noch nicht gibt.
+
+00:00:25.410 --> 00:00:27.057
+Aber was ich wirklich
+
+00:00:27.057 --> 00:00:28.433
+cool an Nexa finde, ist Nexas Proof
+
+00:00:28.433 --> 00:00:29.645
+of Work. Also,
+
+00:00:29.645 --> 00:00:31.959
+was Miner in
+
+00:00:31.959 --> 00:00:33.887
+Nexa machen, ist die gleichen
+
+00:00:33.887 --> 00:00:35.956
+Berechnungen durchführen, die man braucht
+
+00:00:35.956 --> 00:00:37.599
+um eine Transaktion zu verifizieren.
+
+00:00:37.599 --> 00:00:37.906
+Also,
+
+00:00:37.906 --> 00:00:39.345
+Nexas Leistung führt im Grunde
+
+00:00:39.345 --> 00:00:40.496
+Punktmultiplikation
+
+00:00:40.496 --> 00:00:41.000
+auf elliptischen Kurven und Abfragen durch,
+
+00:00:41.000 --> 00:00:42.685
+also, los geht's!
+
+00:00:42.685 --> 00:00:43.620
+UTXO. Also,
+
+00:00:43.620 --> 00:00:45.127
+um ein guter Miner
+
+00:00:45.127 --> 00:00:45.730
+von Nexa zu sein,
+
+00:00:45.730 --> 00:00:46.634
+musst du die Hardware
+
+00:00:46.634 --> 00:00:47.237
+entwickeln,
+
+00:00:47.237 --> 00:00:48.768
+die gleiche Hardware, die wir brauchen
+
+00:00:48.768 --> 00:00:49.952
+um die rechenbezogenen
+
+00:00:49.952 --> 00:00:50.880
+Engpässe der Skalierbarkeit
+
+00:00:50.880 --> 00:00:52.520
+von Kryptowährungen im Allgemeinen zu lösen.
+
+00:00:52.520 --> 00:00:53.863
+Und das war meine Hauptmotivation
+
+00:00:53.863 --> 00:00:54.759
+an diesem Projekt zu arbeiten.

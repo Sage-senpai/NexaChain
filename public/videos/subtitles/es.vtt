@@ -1,0 +1,132 @@
+WEBVTT
+
+NOTE Subtítulos en español
+
+00:00:00.099 --> 00:00:00.119
+...
+
+00:00:00.119 --> 00:00:01.479
+lo que tenías en la
+
+00:00:01.479 --> 00:00:02.330
+última diapositiva, Nexa.
+
+00:00:02.330 --> 00:00:03.265
+¿Puedes hablar un
+
+00:00:03.265 --> 00:00:04.219
+poco sobre eso?
+
+00:00:04.219 --> 00:00:05.406
+Ah, sí. Entonces,
+
+00:00:05.406 --> 00:00:08.442
+Nexa es una criptomoneda que
+
+00:00:08.442 --> 00:00:10.631
+lanzamos para explorar, eh,
+
+00:00:10.631 --> 00:00:12.282
+estos diferentes aspectos de las
+
+00:00:12.282 --> 00:00:13.529
+criptomonedas que queremos.
+
+00:00:13.529 --> 00:00:15.039
+Todavía no tenemos RISC-V
+
+00:00:15.039 --> 00:00:16.032
+funcionando en ella. Ah,
+
+00:00:16.032 --> 00:00:17.020
+agregamos registros.
+
+00:00:17.020 --> 00:00:17.579
+Entonces, ahora,
+
+00:00:17.579 --> 00:00:18.779
+nuestro lenguaje de script es
+
+00:00:18.779 --> 00:00:20.539
+muy similar al de BCH, ah,
+
+00:00:20.539 --> 00:00:21.319
+pero agregamos algunos
+
+00:00:21.319 --> 00:00:21.750
+registros.
+
+00:00:21.750 --> 00:00:23.546
+Y RISC-V es solo una idea
+
+00:00:23.546 --> 00:00:25.410
+que aún no existe en Nexa.
+
+00:00:25.410 --> 00:00:27.057
+Pero lo que creo que es realmente
+
+00:00:27.057 --> 00:00:28.433
+genial de Nexa es la prueba de
+
+00:00:28.433 --> 00:00:29.645
+trabajo de Nexa. Entonces,
+
+00:00:29.645 --> 00:00:31.959
+lo que hacen los mineros en
+
+00:00:31.959 --> 00:00:33.887
+Nexa es realizar los mismos
+
+00:00:33.887 --> 00:00:35.956
+cálculos que necesitas hacer
+
+00:00:35.956 --> 00:00:37.599
+para verificar una transacción.
+
+00:00:37.599 --> 00:00:37.906
+Entonces,
+
+00:00:37.906 --> 00:00:39.345
+el poder de Nexa básicamente
+
+00:00:39.345 --> 00:00:40.496
+realiza multiplicación de puntos
+
+00:00:40.496 --> 00:00:41.000
+en curvas elípticas y consultas,
+
+00:00:41.000 --> 00:00:42.685
+¡así que hagámoslo!
+
+00:00:42.685 --> 00:00:43.620
+UTXO. Entonces,
+
+00:00:43.620 --> 00:00:45.127
+para ser un buen minero
+
+00:00:45.127 --> 00:00:45.730
+de Nexa,
+
+00:00:45.730 --> 00:00:46.634
+necesitas desarrollar
+
+00:00:46.634 --> 00:00:47.237
+el hardware,
+
+00:00:47.237 --> 00:00:48.768
+el mismo hardware que necesitamos
+
+00:00:48.768 --> 00:00:49.952
+para resolver los cuellos de botella
+
+00:00:49.952 --> 00:00:50.880
+computacionales de escalabilidad
+
+00:00:50.880 --> 00:00:52.520
+de las criptomonedas en general.
+
+00:00:52.520 --> 00:00:53.863
+Y esa fue mi principal motivación
+
+00:00:53.863 --> 00:00:54.759
+para trabajar en este proyecto.

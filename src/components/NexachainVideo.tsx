@@ -1,9 +1,21 @@
 // src/components/NexachainVideo.tsx
 "use client"
 
-import { useState } from "react"
-import { Play, Volume2, VolumeX, Maximize } from "lucide-react"
-import { motion } from "framer-motion"
+import { useState, useRef, useEffect } from "react"
+import { Play, Volume2, VolumeX, Maximize, Subtitles } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { useTranslation } from "react-i18next"
+
+// Subtitle track configuration for supported languages
+const subtitleTracks = [
+  { code: "en", label: "English", src: "/videos/subtitles/en.vtt" },
+  { code: "es", label: "Español", src: "/videos/subtitles/es.vtt" },
+  { code: "fr", label: "Français", src: "/videos/subtitles/fr.vtt" },
+  { code: "de", label: "Deutsch", src: "/videos/subtitles/de.vtt" },
+  { code: "pt", label: "Português", src: "/videos/subtitles/pt.vtt" },
+  { code: "hi", label: "हिन्दी", src: "/videos/subtitles/hi.vtt" },
+  { code: "ar", label: "العربية", src: "/videos/subtitles/ar.vtt" },
+]
 
 interface NexachainVideoProps {
   title?: string
@@ -11,11 +23,69 @@ interface NexachainVideoProps {
 }
 
 export default function NexachainVideo({ title, description }: NexachainVideoProps) {
+  const { i18n } = useTranslation()
+  const videoRef = useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
+  const [subtitlesEnabled, setSubtitlesEnabled] = useState(true)
+  const [showSubtitleMenu, setShowSubtitleMenu] = useState(false)
+  const [currentSubtitleLang, setCurrentSubtitleLang] = useState(i18n.language || "en")
+
+  // Sync subtitle language with app language
+  useEffect(() => {
+    const langCode = i18n.language?.substring(0, 2) || "en"
+    const supportedLang = subtitleTracks.find(t => t.code === langCode)
+    if (supportedLang) {
+      setCurrentSubtitleLang(langCode)
+      updateSubtitleTrack(langCode)
+    }
+  }, [i18n.language])
+
+  // Update which subtitle track is active
+  const updateSubtitleTrack = (langCode: string) => {
+    const video = videoRef.current
+    if (!video) return
+
+    const tracks = video.textTracks
+    for (let i = 0; i < tracks.length; i++) {
+      const track = tracks[i]
+      if (track.language === langCode && subtitlesEnabled) {
+        track.mode = "showing"
+      } else {
+        track.mode = "hidden"
+      }
+    }
+  }
+
+  // Toggle subtitles on/off
+  const toggleSubtitles = () => {
+    const newState = !subtitlesEnabled
+    setSubtitlesEnabled(newState)
+
+    const video = videoRef.current
+    if (!video) return
+
+    const tracks = video.textTracks
+    for (let i = 0; i < tracks.length; i++) {
+      const track = tracks[i]
+      if (track.language === currentSubtitleLang && newState) {
+        track.mode = "showing"
+      } else {
+        track.mode = "hidden"
+      }
+    }
+  }
+
+  // Change subtitle language manually
+  const changeSubtitleLanguage = (langCode: string) => {
+    setCurrentSubtitleLang(langCode)
+    setSubtitlesEnabled(true)
+    updateSubtitleTrack(langCode)
+    setShowSubtitleMenu(false)
+  }
 
   const handlePlayPause = () => {
-    const video = document.getElementById("nexachain-video") as HTMLVideoElement
+    const video = videoRef.current
     if (video) {
       if (video.paused) {
         video.play()
@@ -28,7 +98,7 @@ export default function NexachainVideo({ title, description }: NexachainVideoPro
   }
 
   const handleMuteToggle = () => {
-    const video = document.getElementById("nexachain-video") as HTMLVideoElement
+    const video = videoRef.current
     if (video) {
       video.muted = !video.muted
       setIsMuted(!isMuted)
@@ -36,7 +106,7 @@ export default function NexachainVideo({ title, description }: NexachainVideoPro
   }
 
   const handleFullscreen = () => {
-    const video = document.getElementById("nexachain-video") as HTMLVideoElement
+    const video = videoRef.current
     if (video) {
       if (video.requestFullscreen) {
         video.requestFullscreen()
@@ -62,15 +132,28 @@ export default function NexachainVideo({ title, description }: NexachainVideoPro
       <div className="relative group rounded-2xl overflow-hidden border-4 border-[#D4AF37]/30 shadow-2xl hover:border-[#D4AF37] transition-all">
         {/* Video Element */}
         <video
+          ref={videoRef}
           id="nexachain-video"
           className="w-full aspect-video object-cover bg-black"
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           poster="/videos/nexachain-thumbnail.jpg"
           controls={false}
+          crossOrigin="anonymous"
         >
           <source src="/videos/nexachain-intro.mp4" type="video/mp4" />
           <source src="/videos/nexachain-intro.webm" type="video/webm" />
+          {/* Subtitle tracks for all supported languages */}
+          {subtitleTracks.map((track) => (
+            <track
+              key={track.code}
+              kind="subtitles"
+              src={track.src}
+              srcLang={track.code}
+              label={track.label}
+              default={track.code === "en"}
+            />
+          ))}
           Your browser does not support the video tag.
         </video>
 
@@ -125,13 +208,79 @@ export default function NexachainVideo({ title, description }: NexachainVideoPro
               </button>
             </div>
 
-            <button
-              onClick={handleFullscreen}
-              className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
-              aria-label="Fullscreen"
-            >
-              <Maximize className="w-5 h-5 text-white" />
-            </button>
+            <div className="flex items-center gap-3">
+              {/* Subtitle Controls */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowSubtitleMenu(!showSubtitleMenu)}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                    subtitlesEnabled
+                      ? "bg-[#D4AF37]/80 hover:bg-[#D4AF37]"
+                      : "bg-white/20 hover:bg-white/30"
+                  }`}
+                  aria-label="Subtitles"
+                >
+                  <Subtitles className="w-5 h-5 text-white" />
+                </button>
+
+                {/* Subtitle Language Menu */}
+                <AnimatePresence>
+                  {showSubtitleMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute bottom-12 right-0 bg-black/90 rounded-lg overflow-hidden min-w-[160px] border border-white/20"
+                    >
+                      {/* Off option */}
+                      <button
+                        onClick={toggleSubtitles}
+                        className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-white/10 ${
+                          !subtitlesEnabled ? "text-[#D4AF37]" : "text-white"
+                        }`}
+                      >
+                        {!subtitlesEnabled && <span className="text-[#D4AF37]">✓</span>}
+                        <span className={!subtitlesEnabled ? "" : "ml-5"}>Off</span>
+                      </button>
+
+                      <div className="border-t border-white/10" />
+
+                      {/* Language options */}
+                      {subtitleTracks.map((track) => (
+                        <button
+                          key={track.code}
+                          onClick={() => changeSubtitleLanguage(track.code)}
+                          className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-white/10 ${
+                            subtitlesEnabled && currentSubtitleLang === track.code
+                              ? "text-[#D4AF37]"
+                              : "text-white"
+                          }`}
+                        >
+                          {subtitlesEnabled && currentSubtitleLang === track.code && (
+                            <span className="text-[#D4AF37]">✓</span>
+                          )}
+                          <span
+                            className={
+                              subtitlesEnabled && currentSubtitleLang === track.code ? "" : "ml-5"
+                            }
+                          >
+                            {track.label}
+                          </span>
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <button
+                onClick={handleFullscreen}
+                className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
+                aria-label="Fullscreen"
+              >
+                <Maximize className="w-5 h-5 text-white" />
+              </button>
+            </div>
           </div>
         </div>
 

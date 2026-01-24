@@ -565,7 +565,7 @@ export default function LandingPage() {
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">{t("contact.title")}</h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-3  gap-8 max-w-4xl mx-auto">
             {[
               { icon: Mail, titleKey: "contact.email", text: "support@nexachain.com" },
               //{ icon: Phone, titleKey: "contact.phone", text: "SA: +27 78 720 8949" },

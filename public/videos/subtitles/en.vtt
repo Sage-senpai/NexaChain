@@ -1,0 +1,132 @@
+WEBVTT
+
+NOTE English subtitles
+
+00:00:00.099 --> 00:00:00.119
+...
+
+00:00:00.119 --> 00:00:01.479
+the thing you had on the
+
+00:00:01.479 --> 00:00:02.330
+last slide, Nexa.
+
+00:00:02.330 --> 00:00:03.265
+Can you talk a
+
+00:00:03.265 --> 00:00:04.219
+little about that?
+
+00:00:04.219 --> 00:00:05.406
+Ah, yes. So,
+
+00:00:05.406 --> 00:00:08.442
+Nexa is a cryptocurrency that
+
+00:00:08.442 --> 00:00:10.631
+we launched to explore, um,
+
+00:00:10.631 --> 00:00:12.282
+these different aspects of
+
+00:00:12.282 --> 00:00:13.529
+cryptocurrencies that we want.
+
+00:00:13.529 --> 00:00:15.039
+We don't have RISC-V
+
+00:00:15.039 --> 00:00:16.032
+running on it yet. Ah,
+
+00:00:16.032 --> 00:00:17.020
+we added registers.
+
+00:00:17.020 --> 00:00:17.579
+So, now,
+
+00:00:17.579 --> 00:00:18.779
+our scripting language is
+
+00:00:18.779 --> 00:00:20.539
+very similar to BCH's, ah,
+
+00:00:20.539 --> 00:00:21.319
+but we added some
+
+00:00:21.319 --> 00:00:21.750
+registers.
+
+00:00:21.750 --> 00:00:23.546
+And RISC-V is just an idea
+
+00:00:23.546 --> 00:00:25.410
+that doesn't exist in Nexa yet.
+
+00:00:25.410 --> 00:00:27.057
+But what I think is really
+
+00:00:27.057 --> 00:00:28.433
+cool about Nexa is Nexa's proof
+
+00:00:28.433 --> 00:00:29.645
+of work. So,
+
+00:00:29.645 --> 00:00:31.959
+what miners do in
+
+00:00:31.959 --> 00:00:33.887
+Nexa is perform the same
+
+00:00:33.887 --> 00:00:35.956
+calculations that you need to do
+
+00:00:35.956 --> 00:00:37.599
+to verify a transaction.
+
+00:00:37.599 --> 00:00:37.906
+So,
+
+00:00:37.906 --> 00:00:39.345
+Nexa's power basically
+
+00:00:39.345 --> 00:00:40.496
+performs point multiplication
+
+00:00:40.496 --> 00:00:41.000
+on elliptic curves and queries
+
+00:00:41.000 --> 00:00:42.685
+so, let's do that!
+
+00:00:42.685 --> 00:00:43.620
+UTXO. So,
+
+00:00:43.620 --> 00:00:45.127
+to be a good miner
+
+00:00:45.127 --> 00:00:45.730
+of Nexa,
+
+00:00:45.730 --> 00:00:46.634
+you need to develop
+
+00:00:46.634 --> 00:00:47.237
+the hardware,
+
+00:00:47.237 --> 00:00:48.768
+the same hardware we need
+
+00:00:48.768 --> 00:00:49.952
+to solve the computational
+
+00:00:49.952 --> 00:00:50.880
+bottlenecks of scalability
+
+00:00:50.880 --> 00:00:52.520
+of cryptocurrencies in general.
+
+00:00:52.520 --> 00:00:53.863
+And that was my main motivation
+
+00:00:53.863 --> 00:00:54.759
+for working on this project.
