@@ -67,6 +67,20 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Block deactivated users from financial routes — only crypto feed + messaging allowed
+  if (session) {
+    const isDeactivated = session.user?.user_metadata?.account_status === "deactivated";
+    const blockedPaths = ["/dashboard/fund", "/dashboard/withdrawal", "/dashboard/referral"];
+    const isBlockedPath = blockedPaths.some(p => request.nextUrl.pathname.startsWith(p));
+
+    if (isDeactivated && isBlockedPath) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      url.searchParams.set("deactivated", "1");
+      return NextResponse.redirect(url);
+    }
+  }
+
   return supabaseResponse;
 }
 

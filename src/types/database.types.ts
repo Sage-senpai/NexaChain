@@ -18,6 +18,7 @@ export interface Profile {
   referral_code: string;
   referred_by: string | null;
   role: 'user' | 'admin';
+  account_status: 'active' | 'deactivated';
   created_at: string;
   updated_at: string;
 }

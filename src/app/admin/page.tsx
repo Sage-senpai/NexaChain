@@ -5,20 +5,23 @@ import { useState, useEffect, useMemo } from "react";
 import useUser from "@/utils/useUser";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Profile } from "@/types/database.types";
-import { 
-  Users, 
-  DollarSign, 
-  CheckCircle, 
-  XCircle, 
-  Eye, 
-  X, 
-  Search, 
-  Plus, 
+import {
+  Users,
+  DollarSign,
+  CheckCircle,
+  XCircle,
+  Eye,
+  X,
+  Search,
+  Plus,
   TrendingUp,
   Shield,
   Settings,
   MessageCircle,
-  Bell
+  Bell,
+  UserX,
+  UserCheck,
+  Trash2
 } from "lucide-react";
 import AdminInbox from "@/components/messaging/AdminInbox";
 import { motion, AnimatePresence } from "framer-motion";
@@ -58,6 +61,12 @@ export default function AdminDashboard() {
   
   // Unified Control Message
   const [controlMessage, setControlMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+
+  // Account Management States
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<UserWithInvestments | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [accountActionLoading, setAccountActionLoading] = useState<string | null>(null); // stores userId
 
   // Notifications
   const [showNotifications, setShowNotifications] = useState(false);
@@ -106,7 +115,8 @@ const formatTimeAgo = (time: Date) => {
         userFilterType === "all" ||
         (userFilterType === "active" && userData.active_investments && userData.active_investments.length > 0) ||
         (userFilterType === "inactive" && (!userData.active_investments || userData.active_investments.length === 0)) ||
-        (userFilterType === "high-balance" && parseFloat(userData.account_balance.toString()) > 10000);
+        (userFilterType === "high-balance" && parseFloat(userData.account_balance.toString()) > 10000) ||
+        (userFilterType === "deactivated" && userData.account_status === "deactivated");
 
       return matchesSearch && matchesFilter;
     });
@@ -406,6 +416,67 @@ useEffect(() => {
   };
   // ============================================
   // ROI CONTROL FUNCTIONS - END
+  // ============================================
+
+  // ============================================
+  // ACCOUNT MANAGEMENT FUNCTIONS - START
+  // ============================================
+  const handleDeactivateUser = async (userData: UserWithInvestments) => {
+    setAccountActionLoading(userData.id);
+    try {
+      const res = await fetch(`/api/admin/users/${userData.id}/deactivate`, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        setUsers(prev => prev.map(u => u.id === userData.id ? { ...u, account_status: 'deactivated' } : u));
+      } else {
+        alert(data.error || 'Failed to deactivate user');
+      }
+    } catch {
+      alert('Failed to deactivate user');
+    } finally {
+      setAccountActionLoading(null);
+    }
+  };
+
+  const handleActivateUser = async (userData: UserWithInvestments) => {
+    setAccountActionLoading(userData.id);
+    try {
+      const res = await fetch(`/api/admin/users/${userData.id}/activate`, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        setUsers(prev => prev.map(u => u.id === userData.id ? { ...u, account_status: 'active' } : u));
+      } else {
+        alert(data.error || 'Failed to activate user');
+      }
+    } catch {
+      alert('Failed to activate user');
+    } finally {
+      setAccountActionLoading(null);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete || deleteConfirmText !== 'DELETE') return;
+    setAccountActionLoading(userToDelete.id);
+    try {
+      const res = await fetch(`/api/admin/users/${userToDelete.id}/delete`, { method: 'DELETE' });
+      const data = await res.json();
+      if (res.ok) {
+        setUsers(prev => prev.filter(u => u.id !== userToDelete.id));
+        setShowDeleteModal(false);
+        setUserToDelete(null);
+        setDeleteConfirmText('');
+      } else {
+        alert(data.error || 'Failed to delete user');
+      }
+    } catch {
+      alert('Failed to delete user');
+    } finally {
+      setAccountActionLoading(null);
+    }
+  };
+  // ============================================
+  // ACCOUNT MANAGEMENT FUNCTIONS - END
   // ============================================
 
   const handleApproveDeposit = async (depositId: string) => {
@@ -773,6 +844,7 @@ useEffect(() => {
                 <option value="active">Active Investors</option>
                 <option value="inactive">Inactive Users</option>
                 <option value="high-balance">High Balance ($10k+)</option>
+                <option value="deactivated">Deactivated Accounts</option>
               </select>
             </div>
             <div className="mt-4 flex gap-4 text-sm">
@@ -1059,13 +1131,21 @@ useEffect(() => {
                   {userData.full_name || 'No name set'}
                 </h3>
                 <p className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">{userData.email}</p>
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
                   <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                    userData.role === 'admin' 
-                      ? 'bg-[#D4AF37]/20 text-[#D4AF37]' 
+                    userData.role === 'admin'
+                      ? 'bg-[#D4AF37]/20 text-[#D4AF37]'
                       : 'bg-[#10B981]/10 text-[#10B981]'
                   }`}>
                     {userData.role.toUpperCase()}
+                  </span>
+                  {/* Account Status Badge */}
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                    userData.account_status === 'deactivated'
+                      ? 'bg-red-500/15 text-red-500'
+                      : 'bg-emerald-500/15 text-emerald-500'
+                  }`}>
+                    {userData.account_status === 'deactivated' ? '⛔ DEACTIVATED' : '✅ ACTIVE'}
                   </span>
                   <span className="text-xs text-[#4A4A4A] dark:text-[#B8B8B8]">
                     Joined {new Date(userData.created_at).toLocaleDateString()}
@@ -1081,10 +1161,51 @@ useEffect(() => {
               {/* BALANCE CONTROL BUTTON */}
               <button
                 onClick={() => openBalanceModal(userData)}
-                className="px-4 py-2 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2"
+                className="px-4 py-2 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2 mb-2"
               >
                 <DollarSign className="w-4 h-4" />
                 💰 Control Balance
+              </button>
+
+              {/* DEACTIVATE / ACTIVATE BUTTON */}
+              {userData.account_status === 'deactivated' ? (
+                <button
+                  onClick={() => handleActivateUser(userData)}
+                  disabled={accountActionLoading === userData.id}
+                  className="w-full px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-all flex items-center gap-2 justify-center mb-2 disabled:opacity-60"
+                >
+                  {accountActionLoading === userData.id ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <UserCheck className="w-4 h-4" />
+                  )}
+                  Activate Account
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleDeactivateUser(userData)}
+                  disabled={accountActionLoading === userData.id || userData.role === 'admin'}
+                  title={userData.role === 'admin' ? 'Cannot deactivate admins' : ''}
+                  className="w-full px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-all flex items-center gap-2 justify-center mb-2 disabled:opacity-60"
+                >
+                  {accountActionLoading === userData.id ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <UserX className="w-4 h-4" />
+                  )}
+                  Deactivate
+                </button>
+              )}
+
+              {/* DELETE BUTTON */}
+              <button
+                onClick={() => { setUserToDelete(userData); setDeleteConfirmText(''); setShowDeleteModal(true); }}
+                disabled={userData.role === 'admin'}
+                title={userData.role === 'admin' ? 'Cannot delete admins' : 'Permanently delete this account'}
+                className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all flex items-center gap-2 justify-center disabled:opacity-40"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete Account
               </button>
             </div>
           </div>
@@ -1627,6 +1748,90 @@ useEffect(() => {
       </AnimatePresence>
       {/* ============================================ */}
       {/* ROI CREDIT MODAL - END */}
+      {/* ============================================ */}
+
+      {/* ============================================ */}
+      {/* DELETE ACCOUNT CONFIRMATION MODAL - START */}
+      {/* ============================================ */}
+      <AnimatePresence>
+        {showDeleteModal && userToDelete && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+            onClick={() => accountActionLoading === null && setShowDeleteModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              className="bg-white dark:bg-[#1A1A1A] rounded-2xl border-2 border-red-500 p-6 sm:p-8 max-w-md w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                    <Trash2 className="w-5 h-5 text-red-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-red-600">Delete Account</h3>
+                </div>
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={!!accountActionLoading}
+                  className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                >
+                  <X className="w-5 h-5 text-[#000000] dark:text-[#FFFFFF]" />
+                </button>
+              </div>
+
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-5">
+                <p className="text-sm font-semibold text-red-700 dark:text-red-400 mb-1">⚠️ This action is permanent and cannot be undone.</p>
+                <p className="text-sm text-red-600 dark:text-red-300">
+                  All data for <strong>{userToDelete.full_name || userToDelete.email}</strong> will be permanently erased — including their profile, investments, deposits, withdrawals, referrals, and messages.
+                </p>
+              </div>
+
+              <div className="mb-5">
+                <label className="block text-sm font-medium text-[#000000] dark:text-[#FFFFFF] mb-2">
+                  Type <span className="font-mono font-bold text-red-600">DELETE</span> to confirm
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder="Type DELETE"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-red-300 dark:border-red-700 bg-[#F8F9FA] dark:bg-[#0A0A0A] text-[#000000] dark:text-[#FFFFFF] focus:border-red-500 focus:outline-none font-mono"
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => { setShowDeleteModal(false); setDeleteConfirmText(''); }}
+                  disabled={!!accountActionLoading}
+                  className="flex-1 px-4 py-3 border-2 border-[#D4AF37]/20 text-[#000000] dark:text-[#FFFFFF] font-semibold rounded-lg hover:bg-[#D4AF37]/10 transition-all disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteUser}
+                  disabled={deleteConfirmText !== 'DELETE' || !!accountActionLoading}
+                  className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {accountActionLoading ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Trash2 className="w-4 h-4" />
+                  )}
+                  {accountActionLoading ? 'Deleting...' : 'Delete Permanently'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {/* ============================================ */}
+      {/* DELETE ACCOUNT CONFIRMATION MODAL - END */}
       {/* ============================================ */}
 
       {/* ============================================ */}

@@ -36,6 +36,7 @@ export default function DashboardPage() {
   const [showCryptoFeed, setShowCryptoFeed] = useState(true)
   const supabase = createClient()
 
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -90,6 +91,8 @@ export default function DashboardPage() {
     }
     return null
   }
+
+  const isDeactivated = profile?.account_status === "deactivated"
 
   const stats = [
     {
@@ -153,6 +156,21 @@ export default function DashboardPage() {
         </div>
       </nav>
 
+      {/* Deactivated Account Banner */}
+      {isDeactivated && (
+        <div className="bg-red-600 text-white px-4 py-3">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-3">
+              <span className="text-xl">⛔</span>
+              <div>
+                <p className="font-bold text-sm sm:text-base">Your account has been deactivated by an administrator.</p>
+                <p className="text-red-100 text-xs sm:text-sm">Deposits, withdrawals, and referrals are disabled. You can still view the market and message support below.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Live Crypto Feed - Collapsible Ticker */}
       <div className="border-b border-[#D4AF37]/20 bg-[#1A1A1A] dark:bg-[#0A0A0A]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -181,67 +199,71 @@ export default function DashboardPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Grid */}
-        <div className="dashboard-grid mb-8">
-          {stats.map((stat, index) => {
-            const Icon = stat.icon
-            return (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
+        {/* Stats Grid + Quick Actions — hidden when deactivated */}
+        {!isDeactivated && (
+          <>
+            <div className="dashboard-grid mb-8">
+              {stats.map((stat, index) => {
+                const Icon = stat.icon
+                return (
+                  <motion.div
+                    key={stat.label}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="bg-white dark:bg-[#1A1A1A] p-6 rounded-2xl border-2 border-[#D4AF37]/20 hover:border-[#D4AF37] transition-all"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <Icon className="w-8 h-8 text-[#D4AF37]" />
+                    </div>
+                    <div className="text-3xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-1">
+                      {stat.prefix}
+                      <AnimatedCounter end={stat.value} />
+                    </div>
+                    <div className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">{stat.label}</div>
+                  </motion.div>
+                )
+              })}
+            </div>
+
+            {/* Quick Actions */}
+            <div className="quick-actions-grid mb-8">
+              <a
+                href="/dashboard/fund"
+                className="bg-gradient-to-r from-[#D4AF37] to-[#FFD700] p-6 rounded-2xl text-white hover:shadow-2xl transition-all"
+              >
+                <h3 className="text-xl font-bold mb-2">{t("dashboard.makeDeposit.title")}</h3>
+                <p className="text-white/90">{t("dashboard.makeDeposit.desc")}</p>
+              </a>
+              <a
+                href="/dashboard/withdrawal"
                 className="bg-white dark:bg-[#1A1A1A] p-6 rounded-2xl border-2 border-[#D4AF37]/20 hover:border-[#D4AF37] transition-all"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <Icon className="w-8 h-8 text-[#D4AF37]" />
-                </div>
-                <div className="text-3xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-1">
-                  {stat.prefix}
-                  <AnimatedCounter end={stat.value} />
-                </div>
-                <div className="text-sm text-[#4A4A4A] dark:text-[#B8B8B8]">{stat.label}</div>
-              </motion.div>
-            )
-          })}
-        </div>
+                <h3 className="text-xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">
+                  {t("dashboard.withdrawFunds.title")}
+                </h3>
+                <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">{t("dashboard.withdrawFunds.desc")}</p>
+              </a>
+              <a
+                href="/dashboard/referral"
+                className="bg-white dark:bg-[#1A1A1A] p-6 rounded-2xl border-2 border-[#D4AF37]/20 hover:border-[#D4AF37] transition-all"
+              >
+                <h3 className="text-xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">
+                  {t("dashboard.referrals.title")}
+                </h3>
+                <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">{t("dashboard.referrals.desc")}</p>
+              </a>
+            </div>
+          </>
+        )}
 
-        {/* LIVE CRYPTO GRAPH */}
+        {/* LIVE CRYPTO GRAPH — always visible */}
         <div className="mb-8">
           <LiveCryptoGraph />
         </div>
 
-        {/* Quick Actions */}
-        <div className="quick-actions-grid mb-8">
-          <a
-            href="/dashboard/fund"
-            className="bg-gradient-to-r from-[#D4AF37] to-[#FFD700] p-6 rounded-2xl text-white hover:shadow-2xl transition-all"
-          >
-            <h3 className="text-xl font-bold mb-2">{t("dashboard.makeDeposit.title")}</h3>
-            <p className="text-white/90">{t("dashboard.makeDeposit.desc")}</p>
-          </a>
-          <a
-            href="/dashboard/withdrawal"
-            className="bg-white dark:bg-[#1A1A1A] p-6 rounded-2xl border-2 border-[#D4AF37]/20 hover:border-[#D4AF37] transition-all"
-          >
-            <h3 className="text-xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">
-              {t("dashboard.withdrawFunds.title")}
-            </h3>
-            <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">{t("dashboard.withdrawFunds.desc")}</p>
-          </a>
-          <a
-            href="/dashboard/referral"
-            className="bg-white dark:bg-[#1A1A1A] p-6 rounded-2xl border-2 border-[#D4AF37]/20 hover:border-[#D4AF37] transition-all"
-          >
-            <h3 className="text-xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">
-              {t("dashboard.referrals.title")}
-            </h3>
-            <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">{t("dashboard.referrals.desc")}</p>
-          </a>
-        </div>
-
-        {/* Referral Link */}
-        {profile?.referral_code && (
+        {/* Referral Link — hidden when deactivated */}
+        {!isDeactivated && profile?.referral_code && (
           <div className="bg-white dark:bg-[#1A1A1A] p-6 rounded-2xl border-2 border-[#D4AF37]/20 mb-8">
             <h3 className="text-lg font-bold text-[#000000] dark:text-[#FFFFFF] mb-4">
               {t("dashboard.yourReferralLink")}
@@ -264,57 +286,69 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Active Investments */}
+        {/* Active Investments — locked when deactivated */}
         <div className="bg-white dark:bg-[#1A1A1A] p-6 rounded-2xl border-2 border-[#D4AF37]/20">
-          <h3 className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-6">
-            {t("dashboard.activeInvestments")}
-          </h3>
-          {investments.length === 0 ? (
+          {isDeactivated ? (
             <div className="text-center py-12">
-              <p className="text-[#4A4A4A] dark:text-[#B8B8B8] mb-4">{t("dashboard.noInvestments")}</p>
-              <a
-                href="/dashboard/fund"
-                className="inline-block px-6 py-3 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white rounded-lg hover:shadow-lg transition-all"
-              >
-                {t("dashboard.makeFirstDeposit")}
-              </a>
+              <div className="text-5xl mb-4">🔒</div>
+              <h3 className="text-xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-2">Account Deactivated</h3>
+              <p className="text-[#4A4A4A] dark:text-[#B8B8B8]">
+                Your investments are locked. Please message support below if you believe this is a mistake.
+              </p>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 gap-4">
-              {investments.map((inv: any) => (
-                <div key={inv.id} className="p-4 rounded-lg bg-[#F8F9FA] dark:bg-[#0A0A0A] border border-[#D4AF37]/20">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-3xl">{inv.plan_emoji}</span>
-                      <span className="font-bold text-[#000000] dark:text-[#FFFFFF]">{inv.plan_name}</span>
-                    </div>
-                    <span className="text-[#D4AF37] font-bold">
-                      {inv.daily_roi}% {t("plans.dailyROI")}
-                    </span>
-                  </div>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">{t("dashboard.principal")}:</span>
-                      <span className="font-semibold text-[#000000] dark:text-[#FFFFFF]">
-                        ${Number.parseFloat(inv.principal_amount).toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">{t("dashboard.currentValue")}:</span>
-                      <span className="font-semibold text-[#000000] dark:text-[#FFFFFF]">
-                        ${Number.parseFloat(inv.current_value).toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">{t("dashboard.expectedReturn")}:</span>
-                      <span className="font-semibold text-[#10B981]">
-                        ${Number.parseFloat(inv.expected_return).toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
+            <>
+              <h3 className="text-2xl font-bold text-[#000000] dark:text-[#FFFFFF] mb-6">
+                {t("dashboard.activeInvestments")}
+              </h3>
+              {investments.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-[#4A4A4A] dark:text-[#B8B8B8] mb-4">{t("dashboard.noInvestments")}</p>
+                  <a
+                    href="/dashboard/fund"
+                    className="inline-block px-6 py-3 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white rounded-lg hover:shadow-lg transition-all"
+                  >
+                    {t("dashboard.makeFirstDeposit")}
+                  </a>
                 </div>
-              ))}
-            </div>
+              ) : (
+                <div className="grid md:grid-cols-2 gap-4">
+                  {investments.map((inv: any) => (
+                    <div key={inv.id} className="p-4 rounded-lg bg-[#F8F9FA] dark:bg-[#0A0A0A] border border-[#D4AF37]/20">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-3xl">{inv.plan_emoji}</span>
+                          <span className="font-bold text-[#000000] dark:text-[#FFFFFF]">{inv.plan_name}</span>
+                        </div>
+                        <span className="text-[#D4AF37] font-bold">
+                          {inv.daily_roi}% {t("plans.dailyROI")}
+                        </span>
+                      </div>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">{t("dashboard.principal")}:</span>
+                          <span className="font-semibold text-[#000000] dark:text-[#FFFFFF]">
+                            ${Number.parseFloat(inv.principal_amount).toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">{t("dashboard.currentValue")}:</span>
+                          <span className="font-semibold text-[#000000] dark:text-[#FFFFFF]">
+                            ${Number.parseFloat(inv.current_value).toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[#4A4A4A] dark:text-[#B8B8B8]">{t("dashboard.expectedReturn")}:</span>
+                          <span className="font-semibold text-[#10B981]">
+                            ${Number.parseFloat(inv.expected_return).toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
