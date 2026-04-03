@@ -4,8 +4,14 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { MessageCircle, Send, CheckCircle, Clock, XCircle, Search, Loader2 } from "lucide-react";
+import { MessageCircle, Send, CheckCircle, Clock, XCircle, Search, Loader2, BellRing } from "lucide-react";
 import { motion } from "framer-motion";
+import { useToast } from "@/components/shared/ToastProvider";
+import {
+  requestBrowserNotificationPermission,
+  showBrowserNotification,
+  getBrowserNotificationPermission,
+} from "@/lib/browserNotifications";
 
 interface Message {
   id: string;
@@ -48,13 +54,37 @@ export default function AdminInbox() {
   const [loading, setLoading] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sending, setSending] = useState(false);
+  const [browserNotifEnabled, setBrowserNotifEnabled] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const conversationsRef = useRef<Conversation[]>([]);
   const supabase = createClient();
+  const { showToast } = useToast();
+
+  // Check browser notification permission on mount
+  useEffect(() => {
+    const perm = getBrowserNotificationPermission();
+    setBrowserNotifEnabled(perm === "granted");
+  }, []);
+
+  const enableBrowserNotifications = async () => {
+    const result = await requestBrowserNotificationPermission();
+    setBrowserNotifEnabled(result === "granted");
+    if (result === "granted") {
+      showToast({ type: "success", title: "Notifications Enabled", message: "You will now receive browser notifications for new messages." });
+    } else if (result === "denied") {
+      showToast({ type: "error", title: "Permission Denied", message: "Browser notifications were blocked. Enable them in your browser settings." });
+    }
+  };
 
   // Fetch conversations
   useEffect(() => {
     fetchConversations();
   }, []);
+
+  // Keep conversations ref in sync for realtime callback
+  useEffect(() => {
+    conversationsRef.current = conversations;
+  }, [conversations]);
 
   // Filter conversations
   useEffect(() => {
@@ -95,6 +125,37 @@ export default function AdminInbox() {
             fetchMessages(selectedConversation.id);
           }
           fetchConversations();
+
+          // 🔔 Trigger notifications for user messages only (not admin's own)
+          if (newMsg.sender_role === "user") {
+            const conv = conversationsRef.current.find((c) => c.id === newMsg.conversation_id);
+            const senderName = conv?.user_name || "A user";
+            const preview = newMsg.content.length > 80 ? newMsg.content.slice(0, 80) + "..." : newMsg.content;
+
+            // Toast notification
+            showToast({
+              type: "message",
+              title: `New message from ${senderName}`,
+              message: preview,
+            });
+
+            // Browser notification (if permitted)
+            showBrowserNotification(`New message from ${senderName}`, {
+              body: preview,
+              tag: `msg-${newMsg.id}`,
+              onClick: () => {
+                const target = conv || null;
+                if (target) setSelectedConversation(target);
+              },
+            });
+
+            // Play notification sound
+            try {
+              const audio = new Audio("/notification.mp3");
+              audio.volume = 0.3;
+              audio.play().catch(() => {});
+            } catch {}
+          }
         }
       )
       .on(
@@ -341,6 +402,26 @@ export default function AdminInbox() {
           </div>
         </motion.div>
       </div>
+
+      {/* Browser Notification Toggle */}
+      {!browserNotifEnabled && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 p-3 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-xl"
+        >
+          <BellRing className="w-5 h-5 text-[#D4AF37] flex-shrink-0" />
+          <p className="text-sm text-[#000000] dark:text-[#FFFFFF] flex-1">
+            Enable browser notifications to get alerted when users send messages.
+          </p>
+          <button
+            onClick={enableBrowserNotifications}
+            className="px-4 py-1.5 bg-[#D4AF37] text-white rounded-lg text-xs font-semibold hover:bg-[#C4A030] transition-all whitespace-nowrap"
+          >
+            Enable
+          </button>
+        </motion.div>
+      )}
 
       {/* Main Interface */}
       <div className="bg-white dark:bg-[#1A1A1A] rounded-2xl border-2 border-[#D4AF37]/20 overflow-hidden">

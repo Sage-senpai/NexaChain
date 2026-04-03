@@ -2,11 +2,11 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Bell, X, DollarSign, UserPlus, AlertCircle, CheckCircle } from 'lucide-react';
+import { Bell, X, DollarSign, UserPlus, AlertCircle, CheckCircle, MessageCircle } from 'lucide-react';
 
 interface Notification {
   id: string;
-  type: 'deposit' | 'withdrawal' | 'user';
+  type: 'deposit' | 'withdrawal' | 'user' | 'message';
   title: string;
   message: string;
   time: Date;
@@ -30,18 +30,29 @@ export default function AdminNotifications() {
 
   const fetchPendingActions = async () => {
     try {
-      const [depositsRes, withdrawalsRes] = await Promise.all([
+      const [depositsRes, withdrawalsRes, conversationsRes] = await Promise.all([
         fetch('/api/admin/deposits'),
         fetch('/api/admin/withdrawals'),
+        fetch('/api/messages/conversations'),
       ]);
 
       const deposits = depositsRes.ok ? (await depositsRes.json()).deposits || [] : [];
       const withdrawals = withdrawalsRes.ok ? (await withdrawalsRes.json()).withdrawals || [] : [];
+      const conversations = conversationsRes.ok ? (await conversationsRes.json()).conversations || [] : [];
 
       const pendingDeposits = deposits.filter((d: any) => d.status === 'pending');
       const pendingWithdrawals = withdrawals.filter((w: any) => w.status === 'pending');
+      const openConversations = conversations.filter((c: any) => c.status === 'open' || c.status === 'pending');
 
       const newNotifications: Notification[] = [
+        ...openConversations.map((c: any) => ({
+          id: `message-${c.id}`,
+          type: 'message' as const,
+          title: 'Unread Conversation',
+          message: `${c.user_name || c.user_email} — ${c.subject || 'Support Request'}`,
+          time: new Date(c.last_message_at || c.created_at),
+          data: c,
+        })),
         ...pendingDeposits.map((d: any) => ({
           id: `deposit-${d.id}`,
           type: 'deposit' as const,
@@ -81,6 +92,8 @@ export default function AdminNotifications() {
         return <DollarSign className="w-5 h-5 text-[#10B981]" />;
       case 'withdrawal':
         return <DollarSign className="w-5 h-5 text-[#3B82F6]" />;
+      case 'message':
+        return <MessageCircle className="w-5 h-5 text-[#8B5CF6]" />;
       case 'user':
         return <UserPlus className="w-5 h-5 text-[#D4AF37]" />;
       default:
@@ -200,6 +213,18 @@ export default function AdminNotifications() {
                             }}
                           >
                             Review Withdrawal
+                          </a>
+                        )}
+                        {notification.type === 'message' && (
+                          <a
+                            href="/admin?tab=messages"
+                            className="px-3 py-1 text-xs bg-[#8B5CF6] text-white rounded-lg hover:bg-[#7C3AED] transition-all"
+                            onClick={() => {
+                              setShowPanel(false);
+                              clearNotification(notification.id);
+                            }}
+                          >
+                            View Conversation
                           </a>
                         )}
                       </div>
