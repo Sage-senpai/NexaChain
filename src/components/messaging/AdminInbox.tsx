@@ -12,6 +12,7 @@ import {
   showBrowserNotification,
   getBrowserNotificationPermission,
 } from "@/lib/browserNotifications";
+import { playNotificationPing } from "@/lib/notificationSound";
 
 interface Message {
   id: string;
@@ -149,12 +150,8 @@ export default function AdminInbox() {
               },
             });
 
-            // Play notification sound
-            try {
-              const audio = new Audio("/notification.mp3");
-              audio.volume = 0.3;
-              audio.play().catch(() => {});
-            } catch {}
+            // Play notification ping sound
+            playNotificationPing(0.4);
           }
         }
       )
