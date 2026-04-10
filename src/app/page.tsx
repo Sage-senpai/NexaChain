@@ -657,7 +657,7 @@ export default function LandingPage() {
       <div className="floating-contact-buttons">
         
          <a
-          href="https://wa.me/+447845843651?text=Hello%2C%20I%27m%20interested%20in%20Nexachain%20investments"
+          href="https://wa.me/+447765595327?text=Hello%2C%20I%27m%20interested%20in%20Nexachain%20investments"
           target="_blank"
           rel="noopener noreferrer"
           className="floating-btn floating-whatsapp"
