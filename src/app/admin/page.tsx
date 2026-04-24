@@ -460,17 +460,20 @@ useEffect(() => {
     setAccountActionLoading(userToDelete.id);
     try {
       const res = await fetch(`/api/admin/users/${userToDelete.id}/delete`, { method: 'DELETE' });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({ error: 'Invalid server response' }));
       if (res.ok) {
         setUsers(prev => prev.filter(u => u.id !== userToDelete.id));
         setShowDeleteModal(false);
         setUserToDelete(null);
         setDeleteConfirmText('');
+        alert('User account permanently deleted.');
       } else {
-        alert(data.error || 'Failed to delete user');
+        console.error('Delete user failed:', data);
+        alert(`Failed to delete user: ${data.error || 'Unknown error'} (HTTP ${res.status})`);
       }
-    } catch {
-      alert('Failed to delete user');
+    } catch (err) {
+      console.error('Delete user exception:', err);
+      alert(`Failed to delete user: ${err instanceof Error ? err.message : 'Network error'}`);
     } finally {
       setAccountActionLoading(null);
     }
