@@ -461,15 +461,22 @@ useEffect(() => {
     try {
       const res = await fetch(`/api/admin/users/${userToDelete.id}/delete`, { method: 'DELETE' });
       const data = await res.json().catch(() => ({ error: 'Invalid server response' }));
+      console.log('Delete user response:', { status: res.status, data });
+
       if (res.ok) {
         setUsers(prev => prev.filter(u => u.id !== userToDelete.id));
         setShowDeleteModal(false);
         setUserToDelete(null);
         setDeleteConfirmText('');
-        alert('User account permanently deleted.');
+        if (data.warnings?.length) {
+          alert(`User deleted, but with warnings:\n\n${data.warnings.join('\n')}`);
+        } else {
+          alert('User account permanently deleted.');
+        }
       } else {
         console.error('Delete user failed:', data);
-        alert(`Failed to delete user: ${data.error || 'Unknown error'} (HTTP ${res.status})`);
+        const diag = data.diagnostics?.length ? `\n\nDiagnostics:\n${data.diagnostics.join('\n')}` : '';
+        alert(`Failed to delete user (HTTP ${res.status}):\n${data.error || 'Unknown error'}${diag}`);
       }
     } catch (err) {
       console.error('Delete user exception:', err);
